@@ -2,6 +2,7 @@
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import type { Plugin, ViteDevServer } from 'vite'
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import type { VirtualKeysDtsOptions, JSONObject } from './types'
 import { extractJson, canonicalize, ensureDir, writeFileAtomic, fnv1a32, debounce } from './utils'
 import { toDtsContent } from './generator'
@@ -17,6 +18,8 @@ export default async function unpluginVueI18nDtsGeneration(options?: Partial<Vir
     banner,
     transformKeys,
   } = options || {}
+
+  const i18nPlugin = VueI18nPlugin() as Plugin
 
   let resolvedRoot = process.cwd()
   let lastWrittenContent = ''      // prevent redundant writes in-process
@@ -112,14 +115,28 @@ export default async function unpluginVueI18nDtsGeneration(options?: Partial<Vir
   const debouncedGenerate = debounce(generate, 400)
 
   return {
+    ...i18nPlugin,
     name: 'unplugin-vue-i18n-dts-generation',
-    apply: 'serve',
 
     configResolved(config) {
+      const hook = (i18nPlugin as { configResolved?: unknown }).configResolved
+      if (typeof hook === 'function') {
+        (hook as (c: unknown) => unknown)(config)
+      } else {
+        (hook as { handler?: (c: unknown) => unknown })?.handler?.(config)
+      }
       resolvedRoot = config.root ?? process.cwd()
     },
 
     async configureServer(server) {
+      const hook = (i18nPlugin as { configureServer?: unknown }).configureServer
+      if (typeof hook === 'function') {
+        await (hook as (s: ViteDevServer) => unknown)(server)
+      } else {
+        const handler = (hook as { handler?: (s: ViteDevServer) => unknown })?.handler
+        if (handler) await handler(server)
+      }
+
       // One initial run when the server is ready
       const run = async () => {
         try {

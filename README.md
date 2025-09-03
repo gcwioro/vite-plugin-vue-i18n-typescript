@@ -1,10 +1,10 @@
 # unplugin-vue-i18n-dts-generation
 
-A Vite plugin that works alongside [`@intlify/unplugin-vue-i18n`](https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n) to generate TypeScript definitions from its virtual i18n modules. This plugin helps you maintain type safety by automatically generating TypeScript definitions for your i18n keys and messages.
+A Vite plugin that uses [`@intlify/unplugin-vue-i18n`](https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n) internally to generate TypeScript definitions from its virtual i18n modules. This plugin helps you maintain type safety by automatically generating TypeScript definitions for your i18n keys and messages.
 
 ## Features
 
-- 🚀 Seamless integration with `@intlify/unplugin-vue-i18n`
+- 🚀 Seamless integration with `@intlify/unplugin-vue-i18n` (included internally)
 - 🔄 Automatic TypeScript definition generation from virtual i18n modules
 - 🎯 Type-safe i18n keys and message structure
 - 🔧 Hot-reload support with file watching in development
@@ -13,7 +13,7 @@ A Vite plugin that works alongside [`@intlify/unplugin-vue-i18n`](https://github
 
 ## Prerequisites
 
-This plugin requires `@intlify/unplugin-vue-i18n` to be installed and configured in your project:
+This plugin bundles `@intlify/unplugin-vue-i18n` for you. Just make sure it's installed:
 
 ```bash
 npm install -D @intlify/unplugin-vue-i18n
@@ -35,23 +35,15 @@ pnpm add -D unplugin-vue-i18n-dts-generation
 
 ## Usage
 
-Add both plugins to your `vite.config.ts`:
+Add the plugin to your `vite.config.ts`:
 
 ```typescript
 import { defineConfig } from 'vite'
-import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
 
 export default defineConfig({
   plugins: [
-    // First, configure unplugin-vue-i18n
-    VueI18nPlugin({
-      include: [path.resolve(__dirname, './src/locales/**')],
-      // Your other unplugin-vue-i18n options...
-    }),
-    
-    // Then add the DTS generation plugin (with default settings)
-    unpluginVueI18nDtsGeneration()
+    unpluginVueI18nDtsGeneration(),
   ]
 })
 ```
@@ -126,29 +118,18 @@ interface VirtualKeysDtsOptions {
 
 ## Examples
 
-### Complete Setup with unplugin-vue-i18n
+### Complete Setup
 
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
-import path from 'node:path'
 
 export default defineConfig({
   plugins: [
     vue(),
-    
-    // Configure unplugin-vue-i18n
-    VueI18nPlugin({
-      include: [path.resolve(__dirname, './src/locales/**')],
-      strictMessage: false,
-      escapeHtml: true,
-    }),
-    
-    // Generate TypeScript definitions
-    unpluginVueI18nDtsGeneration()
+    unpluginVueI18nDtsGeneration(),
   ]
 })
 ```
