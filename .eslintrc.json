@@ -32,6 +32,8 @@
     "node_modules",
     "*.config.js",
     "*.config.ts",
-    "coverage"
+    "coverage",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }

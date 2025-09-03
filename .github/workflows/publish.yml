@@ -17,8 +17,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
 #      - run: npm test
-#      - run: npm run lint
-#      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run typecheck
       - run: npm run build          # tsup generates dist
       - run: npm publish --access public
         env:
