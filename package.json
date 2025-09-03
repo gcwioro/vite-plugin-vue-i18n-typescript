@@ -1,0 +1,75 @@
+{
+  "name": "unplugin-vue-i18n-dts-generation",
+  "version": "0.1.0",
+  "description": "Vite plugin for generating TypeScript definitions from unplugin-vue-i18n virtual modules",
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "unplugin-vue-i18n",
+    "vue-i18n",
+    "typescript",
+    "i18n",
+    "dts",
+    "code-generation",
+    "type-safety"
+  ],
+  "homepage": "https://github.com/your-username/unplugin-vue-i18n-dts-generation#readme",
+  "bugs": {
+    "url": "https://github.com/your-username/unplugin-vue-i18n-dts-generation/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/unplugin-vue-i18n-dts-generation.git"
+  },
+  "license": "MIT",
+  "author": "Your Name",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
+    "release": "npm run build && npm publish",
+    "test": "vitest"
+  },
+  "peerDependencies": {
+    "vite": ">=4.0.0",
+    "@intlify/unplugin-vue-i18n": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@intlify/unplugin-vue-i18n": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.12.0",
+    "@typescript-eslint/parser": "^7.12.0",
+    "eslint": "^8.57.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

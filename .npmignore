@@ -1,0 +1,49 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+
+# Config files
+tsconfig.json
+tsup.config.ts
+vite.config.ts
+vitest.config.ts
+.eslintrc.json
+
+# Testing
+coverage/
+*.test.ts
+*.spec.ts
+__tests__/
+test/
+
+# Development files
+.github/
+.vscode/
+.idea/
+*.log
+*.tmp
+.DS_Store
+
+# Build files
+*.tsbuildinfo
+
+# Documentation source
+docs/
+
+# Package manager
+.npm
+.yarn-integrity
+pnpm-lock.yaml
+yarn.lock
+
+# Environment
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# Keep only dist folder
+!dist/
