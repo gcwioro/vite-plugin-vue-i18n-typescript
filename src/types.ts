@@ -62,8 +62,9 @@ export type JSONValue = string | number | boolean | null | JSONObject | JSONArra
 export interface JSONObject { [key: string]: JSONValue }
 export type JSONArray = JSONValue[]
 
-export interface DtsContentParams {
-  messagesForBaseLocale: JSONObject
+export interface DtsContentParams<TMessages extends Record<string,unknown>=Record<string,unknown>> {
+  messages: Record<string, TMessages>
+  messagesForBaseLocale: TMessages
   supportedLanguages: string[]
   banner?: string
   transformKeys?: (keys: string[]) => string[]

@@ -1,7 +1,7 @@
-import type { DtsContentParams } from './types'
-import { getJsonLeafPaths, canonicalize } from './utils/json'
-import { defaultTransformKeys } from './utils/keys'
-import { fnv1a32 } from './utils/hash'
+import type {DtsContentParams, JSONObject, JSONValue} from './types'
+import {canonicalize, getJsonLeafPaths} from './utils/json'
+import {defaultTransformKeys} from './utils/keys'
+import {fnv1a32} from './utils/hash'
 
 /**
  * Create .d.ts content. Keeps it tight, deterministic, and TS-friendly.
@@ -21,7 +21,7 @@ export function toDtsContent(params: DtsContentParams): string {
   const finalKeys = (transformKeys ?? defaultTransformKeys)(allKeysRaw)
 
   // Canonicalize the base-locale object to make JSON stable across runs/platforms
-  const canonicalBase = canonicalize(messagesForBaseLocale)
+  const canonicalBase = canonicalize(messagesForBaseLocale as JSONValue) as JSONObject
 
   // Deterministic banner (no timestamps). Include a small content hash for traceability.
   const messagesJson = JSON.stringify(canonicalBase)
@@ -49,7 +49,8 @@ const _messages = ${messagesJson} as const
 export type AllTranslationKeysGen = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}
 export type SupportedLanguagesGen = typeof _SupportedLanguages
 export type SupportedLanguageUnionGen = typeof _SupportedLanguages[number]
-export type AllTranslationsGen = typeof _messages
+export type AllLocaleGen = typeof _messages
+export type AllTranslationsGen = Record<SupportedLanguageUnionGen, AllLocaleGen>
 `
 
   // Force POSIX newlines, single trailing newline

@@ -15,6 +15,10 @@ describe('i18n type generation', () => {
       configFile: path.resolve(projectRoot, 'vite.config.ts'),
       logLevel: 'error',
     })
+    await server.listen(4000);
+    //sleep 3 seconds to allow the server to start
+    await new Promise(resolve => setTimeout(resolve, 4000));
+
     await server.close()
 
     const content = await fs.readFile(dtsPath, 'utf-8')
