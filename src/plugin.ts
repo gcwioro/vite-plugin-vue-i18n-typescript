@@ -1,25 +1,27 @@
 /* eslint-disable no-console */
 import path from 'node:path'
 import fs from 'node:fs/promises'
-import type { Plugin, ViteDevServer } from 'vite'
+import type {Plugin, ViteDevServer} from 'vite'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
-import type { VirtualKeysDtsOptions, JSONObject } from './types'
-import { extractJson, canonicalize, ensureDir, writeFileAtomic, fnv1a32, debounce } from './utils'
-import { toDtsContent } from './generator'
-import { loadExportFromVirtual } from './loader'
+import type {VirtualKeysDtsOptions, JSONObject} from './types'
+import type {PluginOptions} from "@intlify/unplugin-vue-i18n";
+import {extractJson, canonicalize, ensureDir, writeFileAtomic, fnv1a32, debounce} from './utils'
+import {toDtsContent} from './generator'
+import {loadExportFromVirtual} from './loader'
 
-export default async function unpluginVueI18nDtsGeneration(options?: Partial<VirtualKeysDtsOptions>): Promise<Plugin> {
+export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOptions): Promise<Plugin> {
   const {
+    i18nPluginOptions = {},
     sourceId = '@intlify/unplugin-vue-i18n/messages',
     dtsPath = 'src/types/i18n.d.ts',
     watchInDev = true,
-    exportName = 'default',
     baseLocale = 'en',
     banner,
     transformKeys,
   } = options || {}
 
-  const i18nPlugin = VueI18nPlugin() as Plugin
+  const defaultI18nOptions = {include: ['./src/**/[a-z][a-z].{json,json5,yml,yaml}', path.resolve(__dirname, './src/**/*-[a-z][a-z].{json,json5,yml,yaml}', path.resolve(__dirname, './src/**/[a-z][a-z]-*.{json,json5,yml,yaml}'))]} as PluginOptions
+  const i18nPlugin = VueI18nPlugin({...defaultI18nOptions, ...i18nPluginOptions}) as Plugin
 
   let resolvedRoot = process.cwd()
   let lastWrittenContent = ''      // prevent redundant writes in-process
@@ -34,11 +36,11 @@ export default async function unpluginVueI18nDtsGeneration(options?: Partial<Vir
 
     try {
       // 1) Extract the normalized object from the virtual module
-      const raw = await loadExportFromVirtual(server, sourceId, exportName)
+      const raw = await loadExportFromVirtual(server, sourceId)
       const value = extractJson(raw) as Record<string, unknown>
 
       // 2) Gather languages & select base locale
-      const languages = Object.keys(value)
+      const languages = Object.keys(raw)
       if (!languages.length) {
         throw new Error(`[unplugin-vue-i18n-dts-generation] "${sourceId}" yielded an empty object.`)
       }
@@ -46,7 +48,7 @@ export default async function unpluginVueI18nDtsGeneration(options?: Partial<Vir
       const base = (value[baseLocale] ?? value[languages[0]]) as JSONObject | undefined
       if (!base || typeof base !== 'object' || Array.isArray(base)) {
         throw new Error(
-          `[unplugin-vue-i18n-dts-generation] Could not resolve base locale "${baseLocale}".`
+          `[unplugin-vue-i18n-dts-generation] Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
         )
       }
 
@@ -75,7 +77,7 @@ export default async function unpluginVueI18nDtsGeneration(options?: Partial<Vir
       await ensureDir(outPath)
 
       // 6) Only write if file content actually changed (covers restart cases)
-      let shouldWrite = true
+      let shouldWrite :boolean
       try {
         const existing = await fs.readFile(outPath, 'utf8')
         shouldWrite = existing !== content
@@ -164,14 +166,12 @@ export default async function unpluginVueI18nDtsGeneration(options?: Partial<Vir
         // Watch a minimal, relevant set of inputs; ignore .d.ts to avoid loops and .vue/.ts to reduce noise.
         // You can extend this if your virtual source depends on more.
         const globs = [
-          'src/**/*.{json,json5,yml,yaml}',
-          '!**/*.d.ts',
+          'src/**/*.{json,json5,yaml,yml}',
+          '!**/*.d.ts*',
           '!**/node_modules/**',
         ]
 
-        const onFsEvent = async (changedPath: string) => {
-          // Skip if the change is the generated file itself or clearly irrelevant
-          if (changedPath.endsWith('.d.ts')) return
+        const onFsEvent = async () => {
           debouncedGenerate(server, resolvedRoot)
         }
 

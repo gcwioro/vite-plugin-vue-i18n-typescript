@@ -66,6 +66,701 @@ describe('extractJson', () => {
       },
     })
   })
+
+  it('should work correctly', () => {
+    const input = {
+      "de": {
+        "greeting": {
+          "type": 0,
+          "start": 0,
+          "end": 5,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 1,
+              "offset": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 6,
+              "offset": 5
+            },
+            "source": "Hallo"
+          },
+          "body": {
+            "type": 2,
+            "start": 0,
+            "end": 5,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1,
+                "offset": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 6,
+                "offset": 5
+              }
+            },
+            "items": [
+              {
+                "type": 3,
+                "start": 0,
+                "end": 5,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 1,
+                    "offset": 0
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 6,
+                    "offset": 5
+                  }
+                }
+              }
+            ],
+            "static": "Hallo"
+          }
+        },
+        "fruits": [
+          {
+            "type": 0,
+            "start": 0,
+            "end": 5,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1,
+                "offset": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 6,
+                "offset": 5
+              },
+              "source": "Apfel"
+            },
+            "body": {
+              "type": 2,
+              "start": 0,
+              "end": 5,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 6,
+                  "offset": 5
+                }
+              },
+              "items": [
+                {
+                  "type": 3,
+                  "start": 0,
+                  "end": 5,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 1,
+                      "offset": 0
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 6,
+                      "offset": 5
+                    }
+                  }
+                }
+              ],
+              "static": "Apfel"
+            }
+          },
+          {
+            "type": 0,
+            "start": 0,
+            "end": 6,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1,
+                "offset": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 7,
+                "offset": 6
+              },
+              "source": "Banane"
+            },
+            "body": {
+              "type": 2,
+              "start": 0,
+              "end": 6,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 7,
+                  "offset": 6
+                }
+              },
+              "items": [
+                {
+                  "type": 3,
+                  "start": 0,
+                  "end": 6,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 1,
+                      "offset": 0
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 7,
+                      "offset": 6
+                    }
+                  }
+                }
+              ],
+              "static": "Banane"
+            }
+          }
+        ],
+        "nested": {
+          "title": {
+            "type": 0,
+            "start": 0,
+            "end": 10,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1,
+                "offset": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 11,
+                "offset": 10
+              },
+              "source": "Willkommen"
+            },
+            "body": {
+              "type": 2,
+              "start": 0,
+              "end": 10,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 11,
+                  "offset": 10
+                }
+              },
+              "items": [
+                {
+                  "type": 3,
+                  "start": 0,
+                  "end": 10,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 1,
+                      "offset": 0
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 11,
+                      "offset": 10
+                    }
+                  }
+                }
+              ],
+              "static": "Willkommen"
+            }
+          },
+          "menu": [
+            {
+              "type": 0,
+              "start": 0,
+              "end": 10,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 11,
+                  "offset": 10
+                },
+                "source": "Startseite"
+              },
+              "body": {
+                "type": 2,
+                "start": 0,
+                "end": 10,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 1,
+                    "offset": 0
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 11,
+                    "offset": 10
+                  }
+                },
+                "items": [
+                  {
+                    "type": 3,
+                    "start": 0,
+                    "end": 10,
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 1,
+                        "offset": 0
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 11,
+                        "offset": 10
+                      }
+                    }
+                  }
+                ],
+                "static": "Startseite"
+              }
+            },
+            {
+              "type": 0,
+              "start": 0,
+              "end": 4,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 5,
+                  "offset": 4
+                },
+                "source": "Über"
+              },
+              "body": {
+                "type": 2,
+                "start": 0,
+                "end": 4,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 1,
+                    "offset": 0
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 5,
+                    "offset": 4
+                  }
+                },
+                "items": [
+                  {
+                    "type": 3,
+                    "start": 0,
+                    "end": 4,
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 1,
+                        "offset": 0
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 5,
+                        "offset": 4
+                      }
+                    }
+                  }
+                ],
+                "static": "Über"
+              }
+            }
+          ]
+        }
+      },
+      "en": {
+        "greeting": {
+          "type": 0,
+          "start": 0,
+          "end": 5,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 1,
+              "offset": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 6,
+              "offset": 5
+            },
+            "source": "Hello"
+          },
+          "body": {
+            "type": 2,
+            "start": 0,
+            "end": 5,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1,
+                "offset": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 6,
+                "offset": 5
+              }
+            },
+            "items": [
+              {
+                "type": 3,
+                "start": 0,
+                "end": 5,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 1,
+                    "offset": 0
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 6,
+                    "offset": 5
+                  }
+                }
+              }
+            ],
+            "static": "Hello"
+          }
+        },
+        "fruits": [
+          {
+            "type": 0,
+            "start": 0,
+            "end": 5,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1,
+                "offset": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 6,
+                "offset": 5
+              },
+              "source": "apple"
+            },
+            "body": {
+              "type": 2,
+              "start": 0,
+              "end": 5,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 6,
+                  "offset": 5
+                }
+              },
+              "items": [
+                {
+                  "type": 3,
+                  "start": 0,
+                  "end": 5,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 1,
+                      "offset": 0
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 6,
+                      "offset": 5
+                    }
+                  }
+                }
+              ],
+              "static": "apple"
+            }
+          },
+          {
+            "type": 0,
+            "start": 0,
+            "end": 6,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1,
+                "offset": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 7,
+                "offset": 6
+              },
+              "source": "banana"
+            },
+            "body": {
+              "type": 2,
+              "start": 0,
+              "end": 6,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 7,
+                  "offset": 6
+                }
+              },
+              "items": [
+                {
+                  "type": 3,
+                  "start": 0,
+                  "end": 6,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 1,
+                      "offset": 0
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 7,
+                      "offset": 6
+                    }
+                  }
+                }
+              ],
+              "static": "banana"
+            }
+          }
+        ],
+        "nested": {
+          "title": {
+            "type": 0,
+            "start": 0,
+            "end": 7,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 1,
+                "offset": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 8,
+                "offset": 7
+              },
+              "source": "Welcome"
+            },
+            "body": {
+              "type": 2,
+              "start": 0,
+              "end": 7,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 8,
+                  "offset": 7
+                }
+              },
+              "items": [
+                {
+                  "type": 3,
+                  "start": 0,
+                  "end": 7,
+                  "loc": {
+                    "start": {
+                      "line": 1,
+                      "column": 1,
+                      "offset": 0
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 8,
+                      "offset": 7
+                    }
+                  }
+                }
+              ],
+              "static": "Welcome"
+            }
+          },
+          "menu": [
+            {
+              "type": 0,
+              "start": 0,
+              "end": 4,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 5,
+                  "offset": 4
+                },
+                "source": "home"
+              },
+              "body": {
+                "type": 2,
+                "start": 0,
+                "end": 4,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 1,
+                    "offset": 0
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 5,
+                    "offset": 4
+                  }
+                },
+                "items": [
+                  {
+                    "type": 3,
+                    "start": 0,
+                    "end": 4,
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 1,
+                        "offset": 0
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 5,
+                        "offset": 4
+                      }
+                    }
+                  }
+                ],
+                "static": "home"
+              }
+            },
+            {
+              "type": 0,
+              "start": 0,
+              "end": 5,
+              "loc": {
+                "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+                },
+                "end": {
+                  "line": 1,
+                  "column": 6,
+                  "offset": 5
+                },
+                "source": "about"
+              },
+              "body": {
+                "type": 2,
+                "start": 0,
+                "end": 5,
+                "loc": {
+                  "start": {
+                    "line": 1,
+                    "column": 1,
+                    "offset": 0
+                  },
+                  "end": {
+                    "line": 1,
+                    "column": 6,
+                    "offset": 5
+                  }
+                },
+                "items": [
+                  {
+                    "type": 3,
+                    "start": 0,
+                    "end": 5,
+                    "loc": {
+                      "start": {
+                        "line": 1,
+                        "column": 1,
+                        "offset": 0
+                      },
+                      "end": {
+                        "line": 1,
+                        "column": 6,
+                        "offset": 5
+                      }
+                    }
+                  }
+                ],
+                "static": "about"
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    const resultExpected = {
+      "greeting": "Hallo",
+      "fruits": ["Apfel", "Banane"],
+      "nested": {
+        "title": "Willkommen",
+        "menu": ["Startseite", "Über"]
+      }
+    }
+
+    const result = extractJson(input);
+
+    expect(result).toEqual(resultExpected)
+  })
+
 })
 
 describe('getJsonLeafPaths', () => {

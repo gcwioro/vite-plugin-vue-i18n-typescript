@@ -3,15 +3,45 @@ import type { JSONValue, JSONObject, JSONArray } from '../types'
 /**
  * Create an O(1) set for keys to strip during structural JSON extraction.
  */
-const keysToRemoveSet = new Set(['loc', 'type', 'start', 'end'])
 
+// ---------- Config ----------
+const keysToRemoveSet = new Set<string>(['type', 'start', 'end', 'loc', 'source'])
+
+
+// ---------- Helpers ----------
+function isPlainObject(value: unknown): value is JSONObject {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+function unwrapBody(node: JSONObject): JSONValue | undefined {
+  // We only unwrap if this *node itself* has a "body" object
+  const maybeBody = node['body']
+  if (!isPlainObject(maybeBody)) return undefined
+
+  // Prefer `{ static: ... }` if present
+  if ('static' in maybeBody) {
+    return (maybeBody as JSONObject)['static'] as JSONValue
+  }
+
+  // Fall back to `{ items: ... }`
+  if ('items' in maybeBody) {
+    return (maybeBody as JSONObject)['items'] as JSONValue
+  }
+
+  return undefined
+}
+
+
+// ---------- Core ----------
 /**
  * Structure-normalizing extractor. Removes AST-ish metadata, unwraps translation bodies,
  * and preserves shape while pruning noise. It's defensive and avoids repeated lookups.
  */
 export function extractJson<T extends JSONValue>(obj: T): T {
+  // Primitives are returned as-is
   if (obj === null || typeof obj !== 'object') return obj
 
+  // Arrays: normalize each element
   if (Array.isArray(obj)) {
     const arr = obj as JSONArray
     const out: JSONArray = new Array(arr.length)
@@ -21,38 +51,34 @@ export function extractJson<T extends JSONValue>(obj: T): T {
     return out as T
   }
 
+  // Objects
   const input = obj as JSONObject
-  const result: JSONObject = {}
 
+  // If this object is an AST node with a "body", unwrap it *before* key-iteration.
+  const unwrapped = unwrapBody(input)
+  if (unwrapped !== undefined) {
+    return extractJson(unwrapped as JSONValue) as T
+  }
+
+  // If this looks like a locale map (e.g., { de: {...}, en: {...} }), collapse to a preferred locale.
+  // if (isLikelyLocaleMap(input)) {
+  //   const chosen = pickLocaleKey(input)
+  //   return extractJson(input[chosen] as JSONValue) as T
+  // }
+
+  // Otherwise, build a cleaned object
+  const result: JSONObject = {}
   for (const key of Object.keys(input)) {
     if (keysToRemoveSet.has(key)) continue
 
     const value = input[key]
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      const body = (value as JSONObject)['body'] as JSONValue | undefined
 
-      // Body with { static: ... }
-      const hasStatic = !!(body && typeof body === 'object' && !Array.isArray(body) && 'static' in (body as JSONObject))
-      if (hasStatic) {
-        result[key] = (body as JSONObject)['static'] ?? null
-        continue
-      }
-
-      // Body with { items: ... }
-      const items = body && typeof body === 'object' && !Array.isArray(body) ? (body as JSONObject)['items'] : undefined
-      if (items !== undefined) {
-        result[key] = extractJson(items as JSONValue)
-        continue
-      }
-    }
-
-    // Default recursive descent
+    // Recurse; this will handle nested arrays and nested AST nodes
     result[key] = extractJson(value)
   }
 
   return result as T
 }
-
 /**
  * Collect dot-notated leaf paths of an object. Arrays count as leaves.
  * Example: { a: { b: 1 }, c: [1,2] } => ["a.b", "c"]

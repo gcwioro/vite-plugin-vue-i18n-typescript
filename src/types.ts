@@ -1,7 +1,16 @@
+import {PluginOptions} from "@intlify/unplugin-vue-i18n";
+
 /**
  * Options for the virtual keys DTS generator.
  */
 export interface VirtualKeysDtsOptions {
+
+
+
+  // Options to pass to unplugin-vue-i18n.
+  // Default: "{sources: [ path.resolve(__dirname, './src/**/[a - z][a - z].{json, json5, ts, yaml}'), path.resolve(__dirname, './src/**/*-[a-z][a-z].{json,json5,ts,yaml}'), path.resolve(__dirname, './src/**/[a-z][a-z]-*.{json,json5,ts,yaml}') ]}"
+  // See: https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n#-options
+  i18nPluginOptions?: PluginOptions,
   /**
    * The virtual module ID from unplugin-vue-i18n.
    * Default: "@intlify/unplugin-vue-i18n/messages"
@@ -9,13 +18,7 @@ export interface VirtualKeysDtsOptions {
    */
   sourceId?: string
 
-  /**
-   * Which export to read from the virtual module.
-   * - "default" to use default export
-   * - any named export, e.g. "icons", "routesMap", etc.
-   * Default: "default"
-   */
-  exportName?: string
+
 
   /**
    * Absolute or relative path (from Vite root) where the generated .d.ts file should be written.

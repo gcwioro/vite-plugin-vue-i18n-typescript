@@ -9,7 +9,7 @@ export async function loadExportFromVirtual(
   server: ViteDevServer,
   sourceId: string,
   exportName: string = 'default',
-): Promise<JSONValue> {
+): Promise<Record<string, JSONValue>> {
   const mod = await server.ssrLoadModule(sourceId)
   if (!mod) {
     throw new Error(`Could not ssrLoadModule("${sourceId}")`)

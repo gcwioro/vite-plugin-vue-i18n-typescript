@@ -1,0 +1,33 @@
+{
+  "name": "unplugin-vue-i18n-dts-generation test",
+  "version": "1.0.0",
+  "description": "",
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/unplugin-vue-i18n-dts-generation.git"
+  },
+  "license": "MIT",
+  "author": "Your Name",
+  "type": "module",
+
+  "scripts": {
+
+    "dev": "vite",
+    "dev:debug": "vite --debug"
+
+  },
+
+  "devDependencies": {
+    "@intlify/unplugin-vue-i18n": "^6.0.8",
+    "@types/node": "^20.14.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vitest": "^1.6.0",
+    "vue": "^3.5.21"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
