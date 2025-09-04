@@ -44,6 +44,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "dev:debug": "tsup --watch --sourcemap inline",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
@@ -67,15 +68,16 @@
     "@typescript-eslint/parser": "^7.12.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "eslint": "^8.57.0",
-    "tsup": "^8.0.2",
+
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
     "vitest": "^1.6.0",
-    "vue": "^3.5.21",
-    "vue-i18n": "^11.1.11"
+    "vue-i18n": "^11.1.11",
+
+    "vue-tsc": "^3.0.5"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "publishConfig": {
     "access": "public"

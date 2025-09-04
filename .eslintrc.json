@@ -28,6 +28,7 @@
     "no-var": "error"
   },
   "ignorePatterns": [
+    "example",
     "dist",
     "node_modules",
     "*.config.js",

@@ -3,21 +3,21 @@ import path from 'node:path'
 import fs from 'node:fs/promises'
 import type {Plugin, ViteDevServer} from 'vite'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
-import type {VirtualKeysDtsOptions, JSONObject} from './types'
+import type {VirtualKeysDtsOptions, JSONObject, JSONValue} from './types'
 import type {PluginOptions} from "@intlify/unplugin-vue-i18n";
 import {extractJson, canonicalize, ensureDir, writeFileAtomic, fnv1a32, debounce} from './utils'
 import {toDtsContent} from './generator'
 import {loadExportFromVirtual} from './loader'
 
-export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOptions): Promise<Plugin> {
+export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOptions) {
   const {
     i18nPluginOptions = {},
     sourceId = '@intlify/unplugin-vue-i18n/messages',
-    dtsPath = 'src/types/i18n.d.ts',
+    tsPath = 'src/i18n/i18n.gen.ts',
     watchInDev = true,
     baseLocale = 'en',
     banner,
-    transformKeys,
+
   } = options || {}
 
   const defaultI18nOptions = {include: [ './**/[a-z][a-z].{json,json5,yml,yaml}', './**/*-[a-z][a-z].{json,json5,yml,yaml}', './**/[a-z][a-z]-*.{json,json5,yml,yaml}']} as PluginOptions
@@ -38,10 +38,10 @@ export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeys
     try {
       // 1) Extract the normalized object from the virtual module
       const raw = await loadExportFromVirtual(server, sourceId)
-      const value = extractJson(raw) as Record<string, unknown>
+      const value = extractJson({...raw,'js-reserved':undefined})
 
       // 2) Gather languages & select base locale
-      const languages = Object.keys(raw)
+      const languages = [...Object.keys(raw), 'en-US']
       if (!languages.length) {
         throw new Error(`[unplugin-vue-i18n-dts-generation] "${sourceId}" yielded an empty object.`)
       }
@@ -54,15 +54,16 @@ export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeys
       }
 
       // 3) Deterministic inputs for DTS
-      const sortedLanguages = Array.from(new Set(languages)).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
-      const canonicalBase = canonicalize(base)
+      const sortedLanguages = Array.from(new Set(languages.filter(a=>a!=' js-reserved'))).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      const canonicalBase = canonicalize(value as JSONValue) as Record<string, JSONValue>
 
       // 4) Build content (deterministic)
       const content = toDtsContent({
-        messagesForBaseLocale: canonicalBase,
-        supportedLanguages: sortedLanguages,
+        messages:canonicalBase,
+
+        baseLocale: baseLocale,
+          supportedLanguages: sortedLanguages,
         banner,
-        transformKeys,
       })
 
       // 5) Short-circuit on semantic hash (stable across line-endings and formatting)
@@ -74,7 +75,7 @@ export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeys
         return
       }
 
-      const outPath = path.isAbsolute(dtsPath) ? dtsPath : path.join(rootDir, dtsPath)
+      const outPath = path.isAbsolute(tsPath) ? tsPath : path.join(rootDir, tsPath)
       await ensureDir(outPath)
 
       // 6) Only write if file content actually changed (covers restart cases)
@@ -183,5 +184,5 @@ export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeys
           .on('change', onFsEvent)
       }
     },
-  }
+  } as Plugin
 }

@@ -3,6 +3,7 @@ import {PluginOptions} from "@intlify/unplugin-vue-i18n";
 /**
  * Options for the virtual keys DTS generator.
  */
+
 export interface VirtualKeysDtsOptions {
 
 
@@ -22,10 +23,10 @@ export interface VirtualKeysDtsOptions {
 
   /**
    * Absolute or relative path (from Vite root) where the generated .d.ts file should be written.
-   * Example: "src/types/i18n.d.ts"
-   * Default: "src/types/i18n.d.ts"
+   * Example: "src/i18n/i18n.d.ts"
+   * Default: "src/i18n/i18n.d.ts"
    */
-  dtsPath?: string
+  tsPath?: string
 
   /**
    * Name for the generated union type. (Kept for compatibility; not strictly needed.)
@@ -45,11 +46,6 @@ export interface VirtualKeysDtsOptions {
    */
   watchInDev?: boolean
 
-  /**
-   * Optional function to post-process the keys (e.g., sort, filter, dedupe).
-   * Default: sort ascending, unique.
-   */
-  transformKeys?: (keys: string[]) => string[]
 
   /**
    * Base locale to introspect for key-path generation.
@@ -62,10 +58,10 @@ export type JSONValue = string | number | boolean | null | JSONObject | JSONArra
 export interface JSONObject { [key: string]: JSONValue }
 export type JSONArray = JSONValue[]
 
-export interface DtsContentParams<TMessages extends Record<string, unknown> = Record<string, unknown>> {
-  messagesForBaseLocale: TMessages
+export interface DtsContentParams<TMessages extends JSONValue =JSONValue> {
+
+  messages:Record<string, TMessages>
+  baseLocale: string
   supportedLanguages: string[]
   banner?: string
-  transformKeys?: (keys: string[]) => string[]
-  typeName?: string
 }

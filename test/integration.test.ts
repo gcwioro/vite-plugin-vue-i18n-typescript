@@ -9,8 +9,8 @@ import vue from "@vitejs/plugin-vue";
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const root = path.resolve(__dirname, '../test-project')
-const dtsPath = path.resolve(root, 'src/types/i18n.d.ts')
+const root = path.resolve(__dirname, '../example')
+const dtsPath = path.resolve(root, 'src/types/i18n.ts')
 describe('i18n type generation', () => {
   it('generates types for array keys', async () => {
     await fs.rm(dtsPath, {force: true, recursive: true})

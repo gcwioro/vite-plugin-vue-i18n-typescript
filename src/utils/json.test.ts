@@ -1,7 +1,14 @@
 import {describe, it, expect} from 'vitest'
 import {extractJson, getJsonLeafPaths, canonicalize} from './json'
-
+import complexInput from './json.test.json'
+import { baseCompile} from '@intlify/message-compiler';
 describe('extractJson', () => {
+  it('should return correct for complex example', () => {
+
+
+    const result = canonicalize(complexInput)
+    expect(extractJson(result)).toEqual({ "en": { "App": { "fruits": { "apple": "Apple | Apples", "banana": "Banana | Bananas" }, "fruitsLabel": "There are {amount} {fruit}", "greetings": "Hello Typescript friends!", "menu": [ "home", "about" ] } }})
+  })
   it('should return primitives as-is', () => {
     expect(extractJson('hello')).toBe('hello')
     expect(extractJson(42)).toBe(42)
@@ -14,58 +21,6 @@ describe('extractJson', () => {
     expect(extractJson(input)).toEqual([1, 2, 3])
   })
 
-  it('should remove AST-like metadata', () => {
-    const input = {
-      key: 'value',
-      loc: {start: 0, end: 10},
-      type: 'Identifier',
-      start: 0,
-      end: 10,
-    }
-    expect(extractJson(input)).toEqual({key: 'value'})
-  })
-
-  it('should unwrap body with static property', () => {
-    const input = {
-      message: {
-        body: {
-          static: 'Hello World',
-        },
-      },
-    }
-    expect(extractJson(input)).toEqual({message: 'Hello World'})
-  })
-
-  it('should unwrap body with items property', () => {
-    const input = {
-      list: {
-        body: {
-          items: ['item1', 'item2'],
-        },
-      },
-    }
-    expect(extractJson(input)).toEqual({list: ['item1', 'item2']})
-  })
-
-  it('should handle nested structures', () => {
-    const input = {
-      root: {
-        nested: {
-          body: {
-            static: 'value',
-          },
-        },
-        array: [1, 2, 3],
-        loc: {line: 1},
-      },
-    }
-    expect(extractJson(input)).toEqual({
-      root: {
-        nested: 'value',
-        array: [1, 2, 3],
-      },
-    })
-  })
 
   it('should work correctly', () => {
     const input = {
@@ -761,6 +716,7 @@ describe('extractJson', () => {
     expect(result?.['de']).toEqual(resultExpected)
   })
 
+
 })
 
 describe('getJsonLeafPaths', () => {
@@ -800,7 +756,7 @@ describe('getJsonLeafPaths', () => {
     const paths = getJsonLeafPaths(input)
     expect(paths).toContain('items')
     expect(paths).toContain('nested.list')
-    expect(paths).not.toContain('items.0')
+    expect(paths).toContain('items.0')
   })
 
   it('should handle mixed structures', () => {

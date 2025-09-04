@@ -1,0 +1,15 @@
+{
+
+  "App": {
+    "greetings": "Hello Typescript friends!",
+    "fruitsLabel": "There are {amount} {fruit}",
+    "fruits": {
+      "apple": "Apple | Apples",
+      "banana": "Banana | Bananas"
+    },
+    "menu": [
+      "home",
+      "about"
+    ]
+  }
+}
