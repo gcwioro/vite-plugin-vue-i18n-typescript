@@ -2,8 +2,6 @@
   "greeting": "Hallo",
   "fruits": ["Apfel", "Banane"],
   "nested": {
-    "title": "Willkommen",
-
     "menu": ["Startseite", "Über"]
   }
 }
