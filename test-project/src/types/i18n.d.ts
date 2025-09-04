@@ -6,4 +6,5 @@ const _messages = {"fruits":["apple","banana"],"greeting":"Hello","nested":{"men
 export type AllTranslationKeysGen = 'fruits' | 'greeting' | 'nested.menu' | 'nested.title'
 export type SupportedLanguagesGen = typeof _SupportedLanguages
 export type SupportedLanguageUnionGen = typeof _SupportedLanguages[number]
-export type AllTranslationsGen = typeof _messages
+export type AllLocaleGen = typeof _messages
+export type AllTranslationsGen = Record<SupportedLanguageUnionGen, AllLocaleGen>
