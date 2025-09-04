@@ -1,6 +1,6 @@
 {
   "name": "unplugin-vue-i18n-dts-generation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Vite plugin for generating TypeScript definitions from unplugin-vue-i18n virtual modules",
   "keywords": [
     "vite",
@@ -9,20 +9,24 @@
     "vue-i18n",
     "typescript",
     "i18n",
+    "vue3",
+    "vue",
     "dts",
+    "localization",
     "code-generation",
-    "type-safety"
+    "translation-keys",
+    "internationalization"
   ],
-  "homepage": "https://github.com/your-username/unplugin-vue-i18n-dts-generation#readme",
+  "homepage": "https://github.com/gcwioro/unplugin-vue-i18n-dts-generation#readme",
   "bugs": {
-    "url": "https://github.com/your-username/unplugin-vue-i18n-dts-generation/issues"
+    "url": "https://github.com/gcwioro/unplugin-vue-i18n-dts-generation/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/unplugin-vue-i18n-dts-generation.git"
+    "url": "git+https://github.com/gcwioro/unplugin-vue-i18n-dts-generation.git"
   },
   "license": "MIT",
-  "author": "Your Name",
+  "author": "Günther Cwioro",
   "type": "module",
   "exports": {
     ".": {
