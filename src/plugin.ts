@@ -58,7 +58,6 @@ export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeys
 
       // 4) Build content (deterministic)
       const content = toDtsContent({
-        messages: value,
         messagesForBaseLocale: canonicalBase,
         supportedLanguages: sortedLanguages,
         banner,
