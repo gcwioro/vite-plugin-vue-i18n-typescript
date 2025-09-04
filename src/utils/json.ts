@@ -83,16 +83,16 @@ export function extractJson<T extends JSONValue>(obj: T): T {
  * Collect dot-notated leaf paths of an object. Arrays count as leaves.
  * Example: { a: { b: 1 }, c: [1,2] } => ["a.b", "c"]
  */
-export function getJsonLeafPaths(obj: JSONValue): string[] {
+export function getJsonLeafPaths(obj: Record<string, unknown>): string[] {
   const paths: string[] = []
 
-  function walk(value: JSONValue, currentPath: string) {
+  function walk(value:  Record<string, unknown>, currentPath: string) {
     if (value !== null && typeof value === 'object') {
       if (Array.isArray(value)) {
         paths.push(currentPath)
         return
       }
-      const entries = Object.entries(value as JSONObject)
+      const entries = Object.entries(value as  Record<string,   Record<string, unknown>>)
       if (entries.length === 0 && currentPath === '') {
         // Empty root object - return empty array
         return

@@ -20,7 +20,8 @@ export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeys
     transformKeys,
   } = options || {}
 
-  const defaultI18nOptions = {include: ['./src/**/[a-z][a-z].{json,json5,yml,yaml}', path.resolve(__dirname, './src/**/*-[a-z][a-z].{json,json5,yml,yaml}', path.resolve(__dirname, './src/**/[a-z][a-z]-*.{json,json5,yml,yaml}'))]} as PluginOptions
+  const defaultI18nOptions = {include: [ './**/[a-z][a-z].{json,json5,yml,yaml}', './**/*-[a-z][a-z].{json,json5,yml,yaml}', './**/[a-z][a-z]-*.{json,json5,yml,yaml}']} as PluginOptions
+
   const i18nPlugin = VueI18nPlugin({...defaultI18nOptions, ...i18nPluginOptions}) as Plugin
 
   let resolvedRoot = process.cwd()
@@ -77,7 +78,7 @@ export default async function unpluginVueI18nDtsGeneration(options?: VirtualKeys
       await ensureDir(outPath)
 
       // 6) Only write if file content actually changed (covers restart cases)
-      let shouldWrite :boolean
+      let shouldWrite: boolean
       try {
         const existing = await fs.readFile(outPath, 'utf8')
         shouldWrite = existing !== content

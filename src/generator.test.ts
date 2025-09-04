@@ -15,7 +15,7 @@ describe('toDtsContent', () => {
     expect(result).toContain("declare const _SupportedLanguages: readonly ['en', 'de']")
     expect(result).toContain('export type SupportedLanguagesGen = typeof _SupportedLanguages')
     expect(result).toContain('export type SupportedLanguageUnionGen = typeof _SupportedLanguages[number]')
-    expect(result).toContain('export type AllTranslationsGen = typeof _messages')
+    expect(result).toContain('export type AllLocaleGen = typeof _messages')
   })
 
   it('should handle nested message structure', () => {
