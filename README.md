@@ -114,13 +114,11 @@ export default defineConfig({
                 compositionOnly: true,  // example: use composition API only mode for vue-i18n
                 // ...any other @intlify/unplugin-vue-i18n options
             },
-
-            // Type generation options:
-            dtsPath: 'src/i18n-types/custom-i18n.d.ts', // custom output file (default: src/types/i18n.d.ts)
+            typesPath: "src/i18n/i18n.types.d.ts",
+            constsPath: "src/i18n/i18n.consts.ts",
             baseLocale: 'en',        // base locale for key generation (default: "en")
             watchInDev: true,        // regenerate types on-the-fly in dev (default: true)
             // banner: '...',        // you can add a custom header comment to the generated file
-            // transformKeys: keys => keys.filter(...), // custom key post-processing (sorting, filtering, etc.)
         }),
     ]
 })
@@ -136,52 +134,69 @@ All options are optional – the plugin comes with sensible defaults. Here is th
 can use:
 
 ```typescript
-interface VirtualKeysDtsOptions {
+/**
+ * Options for the unplugin-vue-i18n-dts-generation Vite plugin.
+ *
+ * This plugin generates TypeScript definitions from unplugin-vue-i18n virtual modules,
+ * providing type-safe i18n keys for your Vue application.
+ */
+export interface VirtualKeysDtsOptions {
+    /**
+     * Options to pass to the underlying unplugin-vue-i18n plugin.
+     * @see https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n#-options
+     */
+    i18nPluginOptions?: PluginOptions,
 
-    // Options to pass to the internal @intlify/unplugin-vue-i18n.
-    // If not provided, default include patterns are used.
-    // @default { include: ['./src/**/[a-z][a-z].{json,json5,yml,yaml}', ...] }
-    i18nPluginOptions?: Partial<PluginOptions>
-
-    // The virtual module ID from unplugin-vue-i18n that provides the messages.
-    // @default "@intlify/unplugin-vue-i18n/messages"
-    // (Usually you don't need to change this.)
+    /**
+     * The virtual module ID from unplugin-vue-i18n.
+     * Default: "@intlify/unplugin-vue-i18n/messages"
+     * Usually you don't need to change this.
+     */
     sourceId?: string
 
-    // Which export to read from the virtual module.
-    // @default "default"
-    exportName?: string
+    /**
+     * Path for the TypeScript type definitions file (.d.ts).
+     *
+     * @default "src/i18n/i18n.types.d.ts"
+     * @example "src/types/i18n.types.d.ts"
+     */
+    typesPath?: string
 
-    // Path where the generated .d.ts file should be written.
-    // Can be absolute or relative to the Vite project root.
-    // @default "src/types/i18n.d.ts"
-    dtsPath?: string
+    /**
+     * Path for the constants file (.ts) with runtime values.
+     *
+     * @default "src/i18n/i18n.consts.ts"
+     * @example "src/types/i18n.consts.ts"
+     */
+    constsPath?: string
 
-    // The base locale to use for generating key paths (keys from this locale will form the union).
-    // @default "en"
-    baseLocale?: string
 
-    // Banner text to add at the top of the generated file (e.g. to warn not to edit).
-    // If not set, a default banner without timestamps is used.
+    /**
+     * Optional banner comment at the top of the generated file.
+     * If omitted, a deterministic banner without timestamps is emitted.
+     */
     banner?: string
 
-    // Whether to watch and regenerate on every relevant file change during development.
-    // @default true
+    /**
+     * Whether to watch for changes and regenerate types automatically in development mode.
+     *
+     * @default true
+     */
     watchInDev?: boolean
 
-    // Function to post-process the collected translation keys (e.g. to filter or sort them).
-    // @default keys sorted in ascending order, duplicates removed
-    transformKeys?: (keys: string[]) => string[]
-
-    // Name for the generated union type of keys (primarily for compatibility with older versions).
-    // @default "VirtualKey"
-    typeName?: string
+    /**
+     * Base locale to use for generating TypeScript key paths.
+     * The plugin will introspect this locale's messages to generate the type definitions.
+     *
+     * @default "en"
+     */
+    baseLocale?: string
 }
-
 ```
 
 Most users will only need to tweak a few of these. In particular, you might commonly adjust the
-`i18nPluginOptions.include` to point to your locale files if they are in non-standard locations, change `dtsPath` if you
+`i18nPluginOptions.include` to point to your locale files if they are in non-standard locations, change `typesPath` and
+`constsPath` if you
 prefer a different output path, or set a different `baseLocale` if your base language isn't "en". The rest can typically
 remain at their defaults.
 
