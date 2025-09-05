@@ -40,13 +40,27 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
 
     try {
       // 1) Extract the normalized object from the virtual module
-      const raw = await loadExportFromVirtual(server, sourceId)
-      const value = extractJson({...raw, 'js-reserved': undefined})
+      let raw = await loadExportFromVirtual(server, sourceId)
+      let value = extractJson({...raw, 'js-reserved': undefined})
 
       // 2) Gather languages & select base locale
-      const languages = Object.keys(raw)
-      if (!languages.length) {
-        throw new Error(`"${sourceId}" yielded an empty object.` + JSON.stringify(i18nPluginSettings))
+      let languages = Object.keys(raw)
+
+      let count = 0;
+      while (!languages.length) {
+        if (count > 4) {
+          throw new Error(`"${sourceId}" yielded an empty object repeatedly. Aborting.`)
+        }
+        console.error(`"${sourceId}" yielded an empty object.`, i18nPluginSettings);
+        await new Promise(res => setTimeout(res, 2500))
+        // 1) Extract the normalized object from the virtual module
+        raw = await loadExportFromVirtual(server, sourceId)
+        value = extractJson({...raw, 'js-reserved': undefined})
+
+        // 2) Gather languages & select base locale
+        languages = Object.keys(raw)
+        count++
+
       }
 
       const base = (value[baseLocale] ?? value[languages[0]]) as JSONObject | undefined
