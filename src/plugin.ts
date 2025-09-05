@@ -26,7 +26,8 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
 
   const defaultI18nOptions = {include: ['./**/[a-z][a-z].{json,json5,yml,yaml}', './**/*-[a-z][a-z].{json,json5,yml,yaml}', './**/[a-z][a-z]-*.{json,json5,yml,yaml}']} as PluginOptions
 
-  const i18nPlugin: Rollup.Plugin = VueI18nPlugin({...defaultI18nOptions, ...i18nPluginOptions}) as Plugin
+  const i18nPluginSettings = {...defaultI18nOptions, ...i18nPluginOptions};
+  const i18nPlugin: Rollup.Plugin = VueI18nPlugin(i18nPluginSettings) as Plugin
 
   let logger: Logger
   let resolvedRoot = process.cwd()
@@ -45,7 +46,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
       // 2) Gather languages & select base locale
       const languages = Object.keys(raw)
       if (!languages.length) {
-        throw new Error(`"${sourceId}" yielded an empty object.`)
+        throw new Error(`"${sourceId}" yielded an empty object.` + JSON.stringify(i18nPluginSettings))
       }
 
       const base = (value[baseLocale] ?? value[languages[0]]) as JSONObject | undefined

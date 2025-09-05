@@ -165,7 +165,7 @@ export function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>) {
       fallbackLocale: '${baseLocale}'
     }, {messages: messagesI18n}))
 
-  const t = originalT as I18nCustom satisfies I18nCustom
+  const t: I18nCustom = originalT as I18nCustom satisfies I18nCustom
   return {
     ...rest,
     t,

@@ -1,6 +1,6 @@
 {
   "name": "unplugin-vue-i18n-dts-generation",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Vite plugin for generating TypeScript definitions from unplugin-vue-i18n virtual modules",
   "keywords": [
     "vite",
@@ -74,7 +74,7 @@
     "typescript": "^5.9.2",
     "vite": "^7.1.4",
     "vitest": "^3.2.4",
-    "vue-i18n": "^11.1.11",
+    "vue-i18n": "^11.1.12",
     "vue-tsc": "^3.0.6"
   },
   "engines": {
