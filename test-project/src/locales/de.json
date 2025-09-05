@@ -1,7 +1,0 @@
-{
-  "greeting": "Hallo",
-  "fruits": ["Apfel", "Banane"],
-  "nested": {
-    "menu": ["Startseite", "Über"]
-  }
-}

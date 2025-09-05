@@ -1,7 +1,7 @@
 /**
  * Default key normalization: unique + ascending lexicographic sort.
  */
-export function defaultTransformKeys(keys: string[]): string[] {
+export function transformKeys(keys: string[]): string[] {
   const set = new Set<string>()
   for (const k of keys) {
     if (typeof k === 'string' && k) set.add(k)
