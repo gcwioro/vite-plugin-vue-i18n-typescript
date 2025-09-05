@@ -1,9 +1,10 @@
 import App from './App.vue'
 import {createApp} from "vue";
-import {i18nApp} from "./i18n";
+
+import {createI18nInstance} from "./i18n/i18n.gen.ts";
 
 const app = createApp(App)
 
-app.use(i18nApp)
+app.use(createI18nInstance())
 
 app.mount('#app')

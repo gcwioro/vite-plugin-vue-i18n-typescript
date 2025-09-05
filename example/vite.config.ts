@@ -3,10 +3,12 @@ import vue from '@vitejs/plugin-vue'
 import viteTsChecker from 'vite-plugin-checker';
 import {join} from "path";
 import {fileURLToPath, URL} from "url";
-import unpluginVueI18nDtsGeneration from "../src";
+import unpluginVueI18nDtsGeneration from "../src/plugin";
 
 
+const plug = unpluginVueI18nDtsGeneration();
 export default defineConfig({
+  cacheDir: '.cache',
   resolve: {
     alias: {
 
@@ -16,10 +18,9 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    unpluginVueI18nDtsGeneration({
-      typesPath: 'src/i18n/i18n.types.d.ts',
-      constsPath: 'src/i18n/i18n.consts.ts'
-    }) as Plugin,
+    unpluginVueI18nDtsGeneration(),
+    unpluginVueI18nDtsGeneration() as Plugin,
+
     viteTsChecker({
       overlay: {initialIsOpen: true},
       typescript: true,

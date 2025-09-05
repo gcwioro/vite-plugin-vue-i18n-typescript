@@ -55,12 +55,14 @@
 
 
 <script setup lang="ts" >
-import type {AllLocaleGen} from "@/i18n/i18n.types";
+
+import {useI18nTypeSafe} from "./i18n/i18n.gen.ts";
+import type {AllLocaleGen} from "./i18n/i18n.types.gen";
+
 import {computed, ref} from "vue";
-import {useI18nTypeSafe} from "./translateHook";
+
 
 const {t, tm, rt} = useI18nTypeSafe()
-
 
 const amount = ref<number>(1)
 type FruitType = keyof AllLocaleGen['App']['fruits']
