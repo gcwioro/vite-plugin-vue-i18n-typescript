@@ -1,17 +1,18 @@
 import {PluginOptions} from "@intlify/unplugin-vue-i18n";
 
 /**
- * Options for the virtual keys DTS generator.
+ * Options for the unplugin-vue-i18n-dts-generation Vite plugin.
+ * 
+ * This plugin generates TypeScript definitions from unplugin-vue-i18n virtual modules,
+ * providing type-safe i18n keys for your Vue application.
  */
-
 export interface VirtualKeysDtsOptions {
-
-
-
-  // Options to pass to unplugin-vue-i18n.
-  // Default: "{sources: [ path.resolve(__dirname, './src/**/[a - z][a - z].{json, json5, ts, yaml}'), path.resolve(__dirname, './src/**/*-[a-z][a-z].{json,json5,ts,yaml}'), path.resolve(__dirname, './src/**/[a-z][a-z]-*.{json,json5,ts,yaml}') ]}"
-  // See: https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n#-options
+  /**
+   * Options to pass to the underlying unplugin-vue-i18n plugin.
+   * @see https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n#-options
+   */
   i18nPluginOptions?: PluginOptions,
+  
   /**
    * The virtual module ID from unplugin-vue-i18n.
    * Default: "@intlify/unplugin-vue-i18n/messages"
@@ -19,18 +20,38 @@ export interface VirtualKeysDtsOptions {
    */
   sourceId?: string
 
-
-
   /**
-   * Absolute or relative path (from Vite root) where the generated .d.ts file should be written.
-   * Example: "src/i18n/i18n.d.ts"
-   * Default: "src/i18n/i18n.d.ts"
+   * Absolute or relative path (from Vite root) where the generated TypeScript definitions file should be written.
+   * 
+   * @default "src/i18n/i18n.gen.ts"
+   * @example "src/types/i18n.d.ts"
+   * @deprecated Use `typesPath` and `constsPath` instead for separate file generation
    */
   tsPath?: string
 
   /**
-   * Name for the generated union type. (Kept for compatibility; not strictly needed.)
-   * Default: "VirtualKey"
+   * Path for the TypeScript type definitions file (.d.ts).
+   * If specified along with `constsPath`, generates two separate files.
+   * 
+   * @default undefined (uses `tsPath` for single file)
+   * @example "src/i18n/i18n.types.d.ts"
+   */
+  typesPath?: string
+
+  /**
+   * Path for the constants file (.ts) with runtime values.
+   * If specified along with `typesPath`, generates two separate files.
+   * 
+   * @default undefined (uses `tsPath` for single file)
+   * @example "src/i18n/i18n.consts.ts"
+   */
+  constsPath?: string
+
+  /**
+   * Name for the generated union type.
+   * 
+   * @default "VirtualKey"
+   * @deprecated This option is kept for backwards compatibility but may be removed in future versions
    */
   typeName?: string
 
@@ -41,26 +62,34 @@ export interface VirtualKeysDtsOptions {
   banner?: string
 
   /**
-   * If true, the plugin will re-generate on every relevant file change in dev.
-   * Default: true
+   * Whether to watch for changes and regenerate types automatically in development mode.
+   * 
+   * @default true
    */
   watchInDev?: boolean
 
-
   /**
-   * Base locale to introspect for key-path generation.
-   * Default: "en"
+   * Base locale to use for generating TypeScript key paths.
+   * The plugin will introspect this locale's messages to generate the type definitions.
+   * 
+   * @default "en"
    */
   baseLocale?: string
 }
 
+/**
+ * JSON types for message structure
+ */
 export type JSONValue = string | number | boolean | null | JSONObject | JSONArray
 export interface JSONObject { [key: string]: JSONValue }
 export type JSONArray = JSONValue[]
 
-export interface DtsContentParams<TMessages extends JSONValue =JSONValue> {
-
-  messages:Record<string, TMessages>
+/**
+ * Parameters for generating TypeScript definition content
+ * @internal
+ */
+export interface DtsContentParams<TMessages extends JSONValue = JSONValue> {
+  messages: Record<string, TMessages>
   baseLocale: string
   supportedLanguages: string[]
   banner?: string

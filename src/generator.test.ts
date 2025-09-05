@@ -4,31 +4,37 @@ import { toDtsContent } from './generator'
 describe('toDtsContent', () => {
   it('should generate basic type definitions', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: {
-        hello: 'Hello',
-        world: 'World',
+      messages: {
+        en: {
+          hello: 'Hello',
+          world: 'World',
+        },
       },
+      baseLocale: 'en',
       supportedLanguages: ['en', 'de'],
     })
 
     expect(result).toContain("export type AllTranslationKeysGen = 'hello' | 'world'")
-    expect(result).toContain("declare const _SupportedLanguages: readonly ['en', 'de']")
-    expect(result).toContain('export type SupportedLanguagesGen = typeof _SupportedLanguages')
-    expect(result).toContain('export type SupportedLanguageUnionGen = typeof _SupportedLanguages[number]')
-    expect(result).toContain('export type AllLocaleGen = typeof _messages')
+    expect(result).toContain("export const supportedLanguages = ['en', 'de'] as const")
+    expect(result).toContain('export type SupportedLanguagesGen = typeof supportedLanguages')
+    expect(result).toContain('export type SupportedLanguageUnionGen = typeof supportedLanguages[number]')
+    expect(result).toContain("export type AllLocaleGen = typeof  messages['en']")
   })
 
   it('should handle nested message structure', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: {
-        nav: {
-          home: 'Home',
-          about: 'About',
-        },
-        forms: {
-          submit: 'Submit',
+      messages: {
+        en: {
+          nav: {
+            home: 'Home',
+            about: 'About',
+          },
+          forms: {
+            submit: 'Submit',
+          },
         },
       },
+      baseLocale: 'en',
       supportedLanguages: ['en'],
     })
 
@@ -40,7 +46,8 @@ describe('toDtsContent', () => {
   it('should use custom banner when provided', () => {
     const customBanner = '// Custom banner\n// Do not edit\n'
     const result = toDtsContent({
-      messagesForBaseLocale: { test: 'test' },
+      messages: { en: { test: 'test' } },
+      baseLocale: 'en',
       supportedLanguages: ['en'],
       banner: customBanner,
     })
@@ -51,7 +58,8 @@ describe('toDtsContent', () => {
 
   it('should use default banner when not provided', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: { test: 'test' },
+      messages: { en: { test: 'test' } },
+      baseLocale: 'en',
       supportedLanguages: ['en'],
     })
 
@@ -60,25 +68,28 @@ describe('toDtsContent', () => {
     expect(result).toContain('Content-Hash:')
   })
 
-  it('should apply custom key transformation', () => {
+  it('should apply default key transformation', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: {
-        userProfile: 'Profile',
-        userSettings: 'Settings',
-        adminDashboard: 'Dashboard',
+      messages: {
+        en: {
+          userProfile: 'Profile',
+          userSettings: 'Settings',
+          adminDashboard: 'Dashboard',
+        },
       },
+      baseLocale: 'en',
       supportedLanguages: ['en'],
-      transformKeys: (keys) => keys.filter(k => !k.startsWith('admin')),
     })
 
+    expect(result).toContain("'adminDashboard'")
     expect(result).toContain("'userProfile'")
     expect(result).toContain("'userSettings'")
-    expect(result).not.toContain("'adminDashboard'")
   })
 
   it('should handle empty messages', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: {},
+      messages: { en: {} },
+      baseLocale: 'en',
       supportedLanguages: ['en'],
     })
 
@@ -87,22 +98,26 @@ describe('toDtsContent', () => {
 
   it('should sort languages alphabetically', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: { test: 'test' },
+      messages: { en: { test: 'test' } },
+      baseLocale: 'en',
       supportedLanguages: ['zh', 'en', 'de', 'fr'],
     })
 
     // Languages should be in the same order as provided (already sorted in plugin)
-    expect(result).toContain("declare const _SupportedLanguages: readonly ['zh', 'en', 'de', 'fr']")
+    expect(result).toContain("export const supportedLanguages = ['zh', 'en', 'de', 'fr'] as const")
   })
 
   it('should handle arrays in messages', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: {
-        items: ['item1', 'item2'],
-        nested: {
-          list: ['a', 'b'],
+      messages: {
+        en: {
+          items: ['item1', 'item2'],
+          nested: {
+            list: ['a', 'b'],
+          },
         },
       },
+      baseLocale: 'en',
       supportedLanguages: ['en'],
     })
 
@@ -112,7 +127,8 @@ describe('toDtsContent', () => {
 
   it('should normalize line endings', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: { test: 'test' },
+      messages: { en: { test: 'test' } },
+      baseLocale: 'en',
       supportedLanguages: ['en'],
     })
 
@@ -124,14 +140,17 @@ describe('toDtsContent', () => {
 
   it('should generate deterministic output', () => {
     const params = {
-      messagesForBaseLocale: {
-        z: 'Z value',
-        a: 'A value',
-        m: {
-          y: 'Y value',
-          b: 'B value',
+      messages: {
+        en: {
+          z: 'Z value',
+          a: 'A value',
+          m: {
+            y: 'Y value',
+            b: 'B value',
+          },
         },
       },
+      baseLocale: 'en',
       supportedLanguages: ['en', 'de'],
     }
 
@@ -143,11 +162,14 @@ describe('toDtsContent', () => {
 
   it('should properly escape special characters in JSON', () => {
     const result = toDtsContent({
-      messagesForBaseLocale: {
-        quote: 'He said "Hello"',
-        backslash: 'Path\\to\\file',
-        newline: 'Line 1\nLine 2',
+      messages: {
+        en: {
+          quote: 'He said "Hello"',
+          backslash: 'Path\\to\\file',
+          newline: 'Line 1\nLine 2',
+        },
       },
+      baseLocale: 'en',
       supportedLanguages: ['en'],
     })
 

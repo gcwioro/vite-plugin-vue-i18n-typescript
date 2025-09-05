@@ -1,5 +1,6 @@
-import {type AllTranslationKeysGen} from "./i18n/i18n.gen";
+
 import {i18n} from "./i18n";
+import type {AllTranslationKeysGen} from "@/i18n/i18n.types";
 
 type TranslateParams = (string | number | undefined | null) | Record<string, unknown>
 

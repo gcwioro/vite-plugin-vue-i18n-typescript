@@ -1,12 +1,8 @@
 
 import {createI18n} from "vue-i18n";
-import {
-  messagesI18n,
-  type AllLocaleGen,
+import type {AllLocaleGen, SupportedLanguagesGen} from "@/i18n/i18n.types";
+import {messagesI18n} from "@/i18n/i18n.consts.ts";
 
- type SupportedLanguagesGen,
-
-} from "./i18n/i18n.gen";
 
 export const i18nApp = createI18n<[AllLocaleGen], SupportedLanguagesGen, false>({
   locale: localStorage.getItem('locale') ?? 'en', // Default language

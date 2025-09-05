@@ -1,4 +1,4 @@
-import {defineConfig} from 'vite'
+import {defineConfig, type Plugin} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import viteTsChecker from 'vite-plugin-checker';
 import {join} from "path";
@@ -16,7 +16,10 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    unpluginVueI18nDtsGeneration(),
+    unpluginVueI18nDtsGeneration({
+      typesPath: 'src/i18n/i18n.types.d.ts',
+      constsPath: 'src/i18n/i18n.consts.ts'
+    }) as Plugin,
     viteTsChecker({
       overlay: {initialIsOpen: true},
       typescript: true,

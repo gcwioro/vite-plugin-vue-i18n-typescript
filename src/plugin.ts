@@ -1,19 +1,24 @@
-/* eslint-disable no-console */
 import path from 'node:path'
 import fs from 'node:fs/promises'
-import type {Plugin, ViteDevServer} from 'vite'
+import type {Plugin, ViteDevServer, ResolvedConfig, Logger} from 'vite'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import type {VirtualKeysDtsOptions, JSONObject, JSONValue} from './types'
 import type {PluginOptions} from "@intlify/unplugin-vue-i18n";
 import {extractJson, canonicalize, ensureDir, writeFileAtomic, fnv1a32, debounce} from './utils'
-import {toDtsContent} from './generator'
+import {toDtsContent, toTypesContent, toConstsContent} from './generator'
 import {loadExportFromVirtual} from './loader'
 
-export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOptions) {
+/**
+ * Vite plugin for generating TypeScript definitions from unplugin-vue-i18n virtual modules
+ * Follows Vite 7 plugin API conventions
+ */
+export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOptions): Plugin {
   const {
     i18nPluginOptions = {},
     sourceId = '@intlify/unplugin-vue-i18n/messages',
     tsPath = 'src/i18n/i18n.gen.ts',
+    typesPath,
+    constsPath,
     watchInDev = true,
     baseLocale = 'en',
     banner,
@@ -24,6 +29,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
 
   const i18nPlugin = VueI18nPlugin({...defaultI18nOptions, ...i18nPluginOptions}) as Plugin
 
+  let logger: Logger
   let resolvedRoot = process.cwd()
   let lastWrittenContent = ''      // prevent redundant writes in-process
   let lastComputedHash = ''        // fast short-circuit when nothing semantically changed
@@ -43,13 +49,13 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
       // 2) Gather languages & select base locale
       const languages = [...Object.keys(raw), 'en-US']
       if (!languages.length) {
-        throw new Error(`[unplugin-vue-i18n-dts-generation] "${sourceId}" yielded an empty object.`)
+        throw new Error(`"${sourceId}" yielded an empty object.`)
       }
 
       const base = (value[baseLocale] ?? value[languages[0]]) as JSONObject | undefined
       if (!base || typeof base !== 'object' || Array.isArray(base)) {
         throw new Error(
-          `[unplugin-vue-i18n-dts-generation] Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
+          `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
         )
       }
 
@@ -57,60 +63,134 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
       const sortedLanguages = Array.from(new Set(languages.filter(a=>a!=' js-reserved'))).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
       const canonicalBase = canonicalize(value as JSONValue) as Record<string, JSONValue>
 
-      // 4) Build content (deterministic)
-      const content = toDtsContent({
-        messages:canonicalBase,
-
-        baseLocale: baseLocale,
+      // 4) Check if we should generate dual files or single file
+      const useDualFiles = typesPath && constsPath
+      
+      if (useDualFiles) {
+        // Generate two separate files
+        const typesContent = toTypesContent({
+          messages: canonicalBase,
+          baseLocale: baseLocale,
           supportedLanguages: sortedLanguages,
-        banner,
-      })
-
-      // 5) Short-circuit on semantic hash (stable across line-endings and formatting)
-      const semanticHash = fnv1a32(
-        JSON.stringify(canonicalBase) + '|' + sortedLanguages.join('|')
-      )
-      if (semanticHash === lastComputedHash && content === lastWrittenContent) {
-        // Nothing new to do
-        return
-      }
-
-      const outPath = path.isAbsolute(tsPath) ? tsPath : path.join(rootDir, tsPath)
-      await ensureDir(outPath)
-
-      // 6) Only write if file content actually changed (covers restart cases)
-      let shouldWrite: boolean
-      try {
-        const existing = await fs.readFile(outPath, 'utf8')
-        shouldWrite = existing !== content
-      } catch {
-        // File does not exist -> write
-        shouldWrite = true
-      }
-
-      if (shouldWrite) {
-        await writeFileAtomic(outPath, content)
-        lastWrittenContent = content
-        lastComputedHash = semanticHash
-
-        // Make Vite aware of the file in dev so TS server & HMR pick it up
+          banner,
+        })
+        
+        const constsContent = toConstsContent({
+          messages: canonicalBase,
+          baseLocale: baseLocale,
+          supportedLanguages: sortedLanguages,
+          banner,
+        })
+        
+        // Write types file
+        const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath)
+        await ensureDir(typesOutPath)
+        
+        let shouldWriteTypes: boolean
         try {
-          if (!watcherAddedForOutPath) {
-            server.watcher.add(outPath)
-            watcherAddedForOutPath = true
-          }
-          server.watcher.emit('change', outPath)
+          const existing = await fs.readFile(typesOutPath, 'utf8')
+          shouldWriteTypes = existing !== typesContent
         } catch {
-          // watcher may not be ready in build mode
+          shouldWriteTypes = true
         }
+        
+        if (shouldWriteTypes) {
+          await writeFileAtomic(typesOutPath, typesContent)
+          try {
+            server.watcher.add(typesOutPath)
+            server.watcher.emit('change', typesOutPath)
+          } catch {
+            // watcher may not be ready in build mode
+          }
+        }
+        
+        // Write consts file
+        const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath)
+        await ensureDir(constsOutPath)
+        
+        // Update import path in consts file to point to types file
+        const relativePath = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\\.d\\.ts$/, '')
+        const adjustedConstsContent = constsContent.replace(
+          `from './i18n.types'`,
+          `from './${relativePath}'`
+        )
+        
+        let shouldWriteConsts: boolean
+        try {
+          const existing = await fs.readFile(constsOutPath, 'utf8')
+          shouldWriteConsts = existing !== adjustedConstsContent
+        } catch {
+          shouldWriteConsts = true
+        }
+        
+        if (shouldWriteConsts) {
+          await writeFileAtomic(constsOutPath, adjustedConstsContent)
+          try {
+            server.watcher.add(constsOutPath)
+            server.watcher.emit('change', constsOutPath)
+          } catch {
+            // watcher may not be ready in build mode
+          }
+        }
+        
+        logger.info(
+          `Generated ${path.relative(rootDir, typesOutPath)} and ${path.relative(rootDir, constsOutPath)} in ${Math.round((globalThis.performance?.now?.() ?? Date.now()) - start)}ms`,
+        )
       } else {
-        lastWrittenContent = content
-        lastComputedHash = semanticHash
-      }
+        // Generate single file (backward compatibility)
+        const content = toDtsContent({
+          messages: canonicalBase,
+          baseLocale: baseLocale,
+          supportedLanguages: sortedLanguages,
+          banner,
+        })
 
-      server.config.logger.info(
-        `[unplugin-vue-i18n-dts-generation] ${path.relative(rootDir, outPath)} generated in ${Math.round((globalThis.performance?.now?.() ?? Date.now()) - start)}ms`,
-      )
+        // 5) Short-circuit on semantic hash (stable across line-endings and formatting)
+        const semanticHash = fnv1a32(
+          JSON.stringify(canonicalBase) + '|' + sortedLanguages.join('|')
+        )
+        if (semanticHash === lastComputedHash && content === lastWrittenContent) {
+          // Nothing new to do
+          return
+        }
+
+        const outPath = path.isAbsolute(tsPath) ? tsPath : path.join(rootDir, tsPath)
+        await ensureDir(outPath)
+
+        // 6) Only write if file content actually changed (covers restart cases)
+        let shouldWrite: boolean
+        try {
+          const existing = await fs.readFile(outPath, 'utf8')
+          shouldWrite = existing !== content
+        } catch {
+          // File does not exist -> write
+          shouldWrite = true
+        }
+
+        if (shouldWrite) {
+          await writeFileAtomic(outPath, content)
+          lastWrittenContent = content
+          lastComputedHash = semanticHash
+
+          // Make Vite aware of the file in dev so TS server & HMR pick it up
+          try {
+            if (!watcherAddedForOutPath) {
+              server.watcher.add(outPath)
+              watcherAddedForOutPath = true
+            }
+            server.watcher.emit('change', outPath)
+          } catch {
+            // watcher may not be ready in build mode
+          }
+        } else {
+          lastWrittenContent = content
+          lastComputedHash = semanticHash
+        }
+
+        logger.info(
+          `${path.relative(rootDir, outPath)} generated in ${Math.round((globalThis.performance?.now?.() ?? Date.now()) - start)}ms`,
+        )
+      }
     } finally {
       isGenerating = false
     }
@@ -121,18 +201,23 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
   return {
     ...i18nPlugin,
     name: 'unplugin-vue-i18n-dts-generation',
+    enforce: 'pre' as const,
 
-    configResolved(config) {
+    configResolved(config: ResolvedConfig) {
+      logger = config.logger
+      resolvedRoot = config.root ?? process.cwd()
+      
+      // Call parent plugin's configResolved hook
       const hook = (i18nPlugin as { configResolved?: unknown }).configResolved
       if (typeof hook === 'function') {
         (hook as (c: unknown) => unknown)(config)
       } else {
         (hook as { handler?: (c: unknown) => unknown })?.handler?.(config)
       }
-      resolvedRoot = config.root ?? process.cwd()
     },
 
-    async configureServer(server) {
+    async configureServer(server: ViteDevServer) {
+      // Call parent plugin's configureServer hook first
       const hook = (i18nPlugin as { configureServer?: unknown }).configureServer
       if (typeof hook === 'function') {
         await (hook as (s: ViteDevServer) => unknown)(server)
@@ -144,16 +229,17 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
       // One initial run when the server is ready
       const run = async () => {
         try {
-          server.config.logger.info('[unplugin-vue-i18n-dts-generation] Generating keys for i18n...')
+          logger.info('Generating keys for i18n...', { timestamp: true })
           await generate(server, resolvedRoot)
-          server.config.logger.info('[unplugin-vue-i18n-dts-generation] Initial generation complete.')
+          logger.info('Initial generation complete.', { timestamp: true })
         } catch (err) {
-          server.config.logger.error(
-            `[unplugin-vue-i18n-dts-generation] Initial generation failed: ${(err as Error).message}`,
+          logger.error(
+            `Initial generation failed: ${(err as Error).message}`,
+            { timestamp: true }
           )
         } finally {
           if (watchInDev) {
-            server.config.logger.info('[unplugin-vue-i18n-dts-generation] Watching for changes...')
+            logger.info('Watching for changes...', { timestamp: true })
           }
         }
       }
@@ -184,5 +270,21 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
           .on('change', onFsEvent)
       }
     },
-  } as Plugin
+
+    /**
+     * Vite 7 handleHotUpdate hook for better HMR support
+     */
+    async handleHotUpdate({ file, server }) {
+      // Only regenerate for i18n source files
+      if (file.match(/\.(json|json5|yaml|yml)$/)) {
+        // Skip generated files to avoid loops
+        if (file.includes('.gen.') || file.includes('.d.ts')) {
+          return
+        }
+        
+        logger.info(`i18n source file changed: ${path.basename(file)}`, { timestamp: true })
+        await debouncedGenerate(server, resolvedRoot)
+      }
+    },
+  }
 }
