@@ -53,7 +53,7 @@ export const allTranslationKeys: AllTranslationKeysGen[] = [
  * @param options - Optional I18n configuration (messages will be automatically provided)
  * @returns Configured i18n instance
  */
-export function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : {}, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : {}, T["locale"] extends string ? T["locale"] : Locale, false> {
+export function createI18nInstance<T extends Partial<ComposerOptions>>(options?: T): I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : {}, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : {}, T["locale"] extends string ? T["locale"] : Locale, false> {
   const i18Options = {
     fallbackLocale: 'en',
     missingWarn: false,
@@ -81,6 +81,7 @@ export declare interface I18nCustom {
   (key: AllTranslationKeysGen, named: NamedValue, plural?: number): string
 
   (key: AllTranslationKeysGen, named: NamedValue, options?: TranslateOptions): string
+
   (key: AllTranslationKeysGen, plural: number, named: NamedValue): string
 }
 
