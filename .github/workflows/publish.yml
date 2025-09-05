@@ -12,13 +12,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20          # matches repo's Node engine
+          node-version: 22
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
 #      - run: npm test
-      - run: npm run lint
-      - run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test -- --run
       - run: npm run build          # tsup generates dist
       - run: npm publish --access public
         env:

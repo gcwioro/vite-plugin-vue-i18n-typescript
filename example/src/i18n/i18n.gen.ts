@@ -83,6 +83,8 @@ export declare interface I18nCustom {
   (key: AllTranslationKeysGen, named: NamedValue, options?: TranslateOptions): string
 
   (key: AllTranslationKeysGen, plural: number, named: NamedValue): string
+
+  (key: AllTranslationKeysGen, plural: number, defaultMsg: string): string
 }
 
 
@@ -93,7 +95,7 @@ export function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>) {
       fallbackLocale: 'en'
     }, {messages: messagesI18n}))
 
-  const t = originalT as I18nCustom satisfies I18nCustom
+  const t: I18nCustom = originalT as I18nCustom satisfies I18nCustom
   return {
     ...rest,
     t,
