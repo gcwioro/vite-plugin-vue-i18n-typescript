@@ -1,466 +1,199 @@
 # unplugin-vue-i18n-dts-generation
 
-<p align="center">
-  <img src="https://img.shields.io/npm/v/unplugin-vue-i18n-dts-generation?style=flat-square" alt="npm version" />
-  <img src="https://img.shields.io/npm/dm/unplugin-vue-i18n-dts-generation?style=flat-square" alt="npm downloads" />
-  <img src="https://img.shields.io/badge/vite-4.x%20%7C%205.x%20%7C%206.x%20%7C%207.x-blue?style=flat-square" alt="vite compatibility" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="license" />
-</p>
+**A lightweight Vite plugin that generates TypeScript declaration files from Vue I18n locale messages, enabling
+type-safe internationalization keys for Vue 3 applications**
 
-**Generate TypeScript declaration files for Vue I18n with a lightweight Vite plugin.**
+This plugin works alongside (and includes) the Vue I18n Vite plugin **@intlify/unplugin-vue-i18n** to keep your
+translation keys and messages in sync with TypeScript types.
 
-unplugin-vue-i18n-dts-generation works alongside [`@intlify/unplugin-vue-i18n`](https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n) to automatically create TypeScript files with both type definitions and runtime exports from virtual i18n modules. The plugin enables type-safe internationalization and localization for Vue 3 applications by keeping translation keys and messages in sync.
+## Features
 
-## ✨ Features
+- 🚀 Seamless integration with Vue 3 + Vite (wraps @intlify/unplugin-vue-i18n internally)
+- 🔄 Automatic generation of .d.ts TypeScript definitions from your i18n message files
+- 🎯 Ensures type-safe i18n keys and message structure across your app
+- 🔧 Supports hot-reload: watches locale files in development for instant updates
+- 📦 Deterministic output (no changing timestamps) for consistent builds
+- ⚡ Fast generation with debouncing and caching to minimize overhead
 
-- 🚀 **Vite 7 Support** - Fully compatible with Vite 4, 5, 6, and 7
-- 📂 **Dual File Generation** - Generate separate type definitions and runtime constants files
-- 🔄 Automatic TypeScript file generation with both types and runtime exports
-- 🎯 Type-safe i18n keys and message structure
-- 🔧 Hot-reload support with file watching in development
-- 📦 Deterministic output (no timestamps in generated files)
-- ⚡ Fast generation with debouncing and caching
-- 🔌 Seamless integration with Vue 3 and `@intlify/unplugin-vue-i18n`
+## Prerequisites
 
-## 🚀 What's New in v1.1.0
+- Node.js >= 18.0.0
+- Vite >= 4.0.0
+- Vue I18n plugin: @intlify/unplugin-vue-i18n >= 1.0.0 (peer dependency)
 
-### Vite 7 Support
-Full compatibility with Vite 7's new plugin API, including:
-- Enhanced `handleHotUpdate` hook for better HMR
-- Proper logger integration
-- Improved plugin ordering with `enforce: 'pre'`
+Ensure you have the above requirements in your project before using this plugin.
 
-### Dual File Generation
-Generate separate files for types and runtime constants:
-- **Types file** (`.d.ts`) - Pure TypeScript definitions for compile-time type safety
-- **Constants file** (`.ts`) - Runtime values with proper typing
+## Installation
 
-## 📋 Prerequisites
-
-- Node.js >= 20.19.0 or >= 22.12.0
-- Vite >= 4.0.0 (including Vite 7)
-- `@intlify/unplugin-vue-i18n` >= 1.0.0 (installed as a peer dependency)
-
-## 📦 Installation
+Install the plugin **as a development dependency** (along with the Vue I18n unplugin peer dependency) using your package
+manager:
 
 ```bash
+# Using npm
 npm install -D unplugin-vue-i18n-dts-generation @intlify/unplugin-vue-i18n
 ```
 
-```bash
-yarn add -D unplugin-vue-i18n-dts-generation @intlify/unplugin-vue-i18n
-```
+## Usage
 
-```bash
-pnpm add -D unplugin-vue-i18n-dts-generation @intlify/unplugin-vue-i18n
-```
-
-```bash
-bun add -D unplugin-vue-i18n-dts-generation @intlify/unplugin-vue-i18n
-```
-
-## 🔧 Basic Usage
-
-Add the plugin to your `vite.config.ts`. Note that this plugin **includes** `@intlify/unplugin-vue-i18n` internally:
+Add the plugin in your Vite configuration (e.g. vite.config.ts). **Note:** You do **not** need to add the Vue I18n
+plugin separately – this plugin already includes and configures it internally.
 
 ```typescript
-import { defineConfig } from 'vite'
+// vite.config.ts
+import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
 
 export default defineConfig({
-  plugins: [
-    vue(),
-    // No need to add VueI18nPlugin separately - it's included!
-    unpluginVueI18nDtsGeneration(), // Works with sensible defaults!
-  ]
+    plugins: [
+        vue(),
+        // This plugin handles both vue-i18n and type generation
+        unpluginVueI18nDtsGeneration(),  // Uses smart defaults out-of-the-box
+    ]
 })
 ```
 
-By default, the plugin will look for locale files matching these patterns:
-- `./src/**/[a-z][a-z].{json,json5,yml,yaml}` (e.g., `en.json`, `de.yaml`)
-- `./src/**/*-[a-z][a-z].{json,json5,yml,yaml}` (e.g., `messages-en.json`)
-- `./src/**/[a-z][a-z]-*.{json,json5,yml,yaml}` (e.g., `en-US.json`)
+By default, the plugin will automatically discover your locale message files. It looks for files matching common
+patterns in your source directory, for example:
 
-## 🎯 Configuration Options
+- `./src/**/[a-z][a-z].{json,json5,yml,yaml}` (e.g. en.json, de.yaml)
+- `./src/**/*-[a-z][a-z].{json,json5,yml,yaml}` (e.g. messages-en.json)
+- `./src/**/[a-z][a-z]-*.{json,json5,yml,yaml}` (e.g. en-US.json)
 
-Generates separate files for better code organization and tree-shaking:
+You can organize your translations in one of these patterns and the plugin will include them automatically.
 
-```typescript
-unpluginVueI18nDtsGeneration({
-  // Generate two separate files
-  typesPath: 'src/i18n/i18n.types.d.ts',  // Type definitions only
-  constsPath: 'src/i18n/i18n.consts.ts',  // Runtime constants
-  baseLocale: 'en',
-  watchInDev: true,
-})
+### Example: Using in a Vue Component
+
+After adding the plugin and running your dev server, it will generate a TypeScript definitions file (by default at
+`src/types/i18n.d.ts`). You can then use the generated types in your Vue components for type-safe internationalization.
+For example:
+
+```vue
+
+<script setup lang="ts" >
+    import {useI18nTypeSafe} from "@/i18n/i18n.gen.ts";
+    import type {AllTranslationKeysGen} from "@/i18n/i18n.types.gen";
+
+    const {t} = useI18nTypeSafe()
+
+// Use a type-safe translation key
+const title: AllTranslationKeysGen = 'home.title'
+const translatedTitle = t(title)  // `t` is now aware of available keys
+</script >
 ```
 
-### Complete Configuration
+In the above example, the `AllTranslationKeysGen` type (automatically generated) ensures that `'home.title'` is a valid
+key according to your locale messages. If you mistype a key, TypeScript will error, preventing runtime translation
+errors.
 
-```typescript
-interface VirtualKeysDtsOptions {
-  /**
-   * Options to pass to the internal @intlify/unplugin-vue-i18n plugin.
-   * @default { include: ['./src/**/[a-z][a-z].{json,json5,yml,yaml}', ...] }
-   */
-  i18nPluginOptions?: Partial<PluginOptions>
+### Configuration & Customization
 
-  /**
-   * The virtual module ID from unplugin-vue-i18n.
-   * @default "@intlify/unplugin-vue-i18n/messages"
-   */
-  sourceId?: string
+The plugin provides an options API to customize its behavior. You can pass an options object to
+`unpluginVueI18nDtsGeneration()` in your Vite config to override things like the locales path, output file location,
+base locale, etc.
 
-  /**
-   * Path for TypeScript type definitions file.
-   * @example "src/i18n/i18n.types.d.ts"
-   */
-  typesPath?: string
+### Custom Options Example
 
-  /**
-   * Path for runtime constants file.
-   * @example "src/i18n/i18n.consts.ts"
-   */
-  constsPath?: string
-
-  /**
-   * Base locale to introspect for key-path generation.
-   * @default "en"
-   */
-  baseLocale?: string
-
-  /**
-   * Optional banner comment at the top of generated files.
-   */
-  banner?: string
-
-  /**
-   * Watch and regenerate on file changes in development.
-   * @default true
-   */
-  watchInDev?: boolean
-}
-```
-
-## 📝 Examples
-
-### Basic Setup
+For instance, if your locale files are in a custom location or you want to adjust other settings, you can do the
+following:
 
 ```typescript
 // vite.config.ts
-export default defineConfig({
-  plugins: [
-    vue(),
-    unpluginVueI18nDtsGeneration({
-      typesPath: 'src/i18n/i18n.types.d.ts',
-      constsPath: 'src/i18n/i18n.consts.ts'
-    })
-  ]
-})
-```
-
-Generated files:
-
-**i18n.types.d.ts** - Pure type definitions:
-```typescript
-// AUTO-GENERATED FILE. DO NOT EDIT.
-export type AllTranslationKeysGen = 'home.title' | 'home.description' | ...
-export type SupportedLanguagesGen = readonly ['en', 'de', 'fr']
-export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]
-export type AllLocaleGen = { /* message structure */ }
-export type AllTranslationsGen = Record<SupportedLanguageUnionGen, AllLocaleGen>
-```
-
-**i18n.consts.ts** - Runtime values with types and helper functions:
-```typescript
-// AUTO-GENERATED FILE. DO NOT EDIT.
-import { createI18n } from 'vue-i18n'
-import type { I18n } from 'vue-i18n'
-import _messagesI18n from '@intlify/unplugin-vue-i18n/messages'
-import type { AllTranslationsGen, SupportedLanguagesGen, AllTranslationKeysGen } from './i18n.types'
-
-export const supportedLanguages = ['en', 'de', 'fr'] as const satisfies SupportedLanguagesGen
-export const messages = { /* actual messages */ } as const
-export const messagesI18n = _messagesI18n as unknown as AllTranslationsGen
-export const allTranslationKeys: AllTranslationKeysGen[] = [
-  'home.title',
-  'home.description',
-  // ... all keys
-]
-
-// Pre-configured i18n instance creator
-export function createI18nInstance(options?: Partial<I18nConfigOptions>): I18n<...>
-
-// Type-safe translation function
-export function translate(i18n: I18n, key: AllTranslationKeysGen, ...params): string
-
-// Type-safe i18n hook
-export function useI18nTypeSafe(i18n?: I18n): { t: TypeSafeTranslate, ... }
-```
-
-### Using with Vue I18n
-
-#### Option 1: Use the Pre-configured Instance Creator (Recommended)
-
-```typescript
-// src/i18n/index.ts
-import { createI18nInstance } from '@/i18n/i18n.consts'
-
-// Create i18n instance with automatic type safety
-export const i18n = createI18nInstance({
-  locale: localStorage.getItem('locale') ?? 'en',
-  fallbackLocale: 'en',
-  // Messages are automatically included and typed!
-})
-
-// Export for use in components
-export const { t, d, n } = i18n.global
-```
-
-#### Option 2: Manual Setup
-
-```typescript
-// src/i18n/index.ts
-import { createI18n } from 'vue-i18n'
-import {
-    messagesI18n,
-  supportedLanguages,
-  type AllLocaleGen,
-    type SupportedLanguagesGen
-} from './i18n.consts'
-
-// Type-safe i18n instance
-export const i18n = createI18n<[AllLocaleGen], SupportedLanguagesGen, false>({
-  legacy: false,
-  locale: supportedLanguages[0],
-  fallbackLocale: 'en',
-  messages: messagesI18n,
-})
-```
-
-### Type-Safe Components
-
-#### Using the Type-Safe Hook (Recommended)
-
-```vue
-<script setup lang="ts">
-import { useI18nTypeSafe } from '@/i18n/i18n.consts'
-
-// Fully type-safe hook with auto-completion
-const { t, locale, availableLocales } = useI18nTypeSafe()
-
-// Auto-completion and type checking for all keys!
-const title = t('home.title')
-const description = t('home.description', { name: 'Vue' })
-const count = t('items.count', 5, { item: 'apples' })
-</script>
-
-<template>
-  <h1>{{ t('home.title') }}</h1>
-  <p>{{ description }}</p>
-  <span>{{ count }}</span>
-</template>
-```
-
-#### Using Standard Vue I18n
-
-```vue
-<script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import type { AllTranslationKeysGen } from '@/i18n/i18n.types'
-
-const { t } = useI18n()
-
-// Type-safe translation keys
-const key: AllTranslationKeysGen = 'home.title'
-const translated = t(key)
-</script>
-
-<template>
-  <h1>{{ t('home.title') }}</h1>
-</template>
-```
-
-### Custom Locale Paths
-
-```typescript
+import {defineConfig} from 'vite'
 import path from 'path'
-
-unpluginVueI18nDtsGeneration({
-  i18nPluginOptions: {
-    include: [
-      path.resolve(__dirname, './src/locales/**'),
-      path.resolve(__dirname, './src/modules/**/locales/**')
-    ],
-  },
-  typesPath: 'src/types/i18n.d.ts',
-  constsPath: 'src/types/i18n.consts.ts'
-})
-```
-
-## 🔄 Migration Guides
-
-### From v1.0.x to v1.1.x
-
-The plugin is fully backward compatible. To use the new dual file generation:
-
-```typescript
-// Old (still works)
-unpluginVueI18nDtsGeneration({
-  tsPath: 'src/i18n/i18n.gen.ts'
-})
-
-// New (recommended)
-unpluginVueI18nDtsGeneration({
-  typesPath: 'src/i18n/i18n.types.d.ts',
-  constsPath: 'src/i18n/i18n.consts.ts'
-})
-```
-
-### From Separate Plugin Configuration
-
-If you were using both `@intlify/unplugin-vue-i18n` and this plugin separately:
-
-```typescript
-// Before
-import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
+import vue from '@vitejs/plugin-vue'
 import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
 
 export default defineConfig({
-  plugins: [
-    VueI18nPlugin({
-      include: [path.resolve(__dirname, './src/locales/**')],
-    }),
-    unpluginVueI18nDtsGeneration(),
-  ]
-})
+    plugins: [
+        vue(),
+        unpluginVueI18nDtsGeneration({
+            // Pass custom options here
+            i18nPluginOptions: {
+                include: [path.resolve(__dirname, './src/locales/**')], // custom locale file path pattern
+                compositionOnly: true,  // example: use composition API only mode for vue-i18n
+                // ...any other @intlify/unplugin-vue-i18n options
+            },
 
-// After
-import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
-
-export default defineConfig({
-  plugins: [
-    unpluginVueI18nDtsGeneration({
-      i18nPluginOptions: {
-        include: [path.resolve(__dirname, './src/locales/**')],
-      }
-    }),
-  ]
+            // Type generation options:
+            dtsPath: 'src/i18n-types/custom-i18n.d.ts', // custom output file (default: src/types/i18n.d.ts)
+            baseLocale: 'en',        // base locale for key generation (default: "en")
+            watchInDev: true,        // regenerate types on-the-fly in dev (default: true)
+            // banner: '...',        // you can add a custom header comment to the generated file
+            // transformKeys: keys => keys.filter(...), // custom key post-processing (sorting, filtering, etc.)
+        }),
+    ]
 })
 ```
 
-## 🎨 Advanced Features
+In this example, we customized the locale file path (to look under `src/locales/**`), set `compositionOnly: true` to
+only support the Composition API mode of Vue I18n, changed the output .d.ts file path, and left other options at their
+defaults. You can adjust these as needed for your project.
 
-### Custom Banner
+### Available Options
+
+All options are optional – the plugin comes with sensible defaults. Here is the full set of configuration options you
+can use:
 
 ```typescript
-unpluginVueI18nDtsGeneration({
-  banner: `/**
- * Generated by My Company Build System
- * Do not edit manually
- * @generated
- */`,
-  typesPath: 'src/i18n/types.d.ts',
-  constsPath: 'src/i18n/consts.ts'
-})
+interface VirtualKeysDtsOptions {
+
+    // Options to pass to the internal @intlify/unplugin-vue-i18n.
+    // If not provided, default include patterns are used.
+    // @default { include: ['./src/**/[a-z][a-z].{json,json5,yml,yaml}', ...] }
+    i18nPluginOptions?: Partial<PluginOptions>
+
+    // The virtual module ID from unplugin-vue-i18n that provides the messages.
+    // @default "@intlify/unplugin-vue-i18n/messages"
+    // (Usually you don't need to change this.)
+    sourceId?: string
+
+    // Which export to read from the virtual module.
+    // @default "default"
+    exportName?: string
+
+    // Path where the generated .d.ts file should be written.
+    // Can be absolute or relative to the Vite project root.
+    // @default "src/types/i18n.d.ts"
+    dtsPath?: string
+
+    // The base locale to use for generating key paths (keys from this locale will form the union).
+    // @default "en"
+    baseLocale?: string
+
+    // Banner text to add at the top of the generated file (e.g. to warn not to edit).
+    // If not set, a default banner without timestamps is used.
+    banner?: string
+
+    // Whether to watch and regenerate on every relevant file change during development.
+    // @default true
+    watchInDev?: boolean
+
+    // Function to post-process the collected translation keys (e.g. to filter or sort them).
+    // @default keys sorted in ascending order, duplicates removed
+    transformKeys?: (keys: string[]) => string[]
+
+    // Name for the generated union type of keys (primarily for compatibility with older versions).
+    // @default "VirtualKey"
+    typeName?: string
+}
+
 ```
 
-### Programmatic Usage
+Most users will only need to tweak a few of these. In particular, you might commonly adjust the
+`i18nPluginOptions.include` to point to your locale files if they are in non-standard locations, change `dtsPath` if you
+prefer a different output path, or set a different `baseLocale` if your base language isn't "en". The rest can typically
+remain at their defaults.
 
-You can also use the generation functions directly:
+## Important Notes
 
-```typescript
-import { toTypesContent, toConstsContent } from 'unplugin-vue-i18n-dts-generation'
-
-const typesContent = toTypesContent({
-  messages: yourMessages,
-  baseLocale: 'en',
-  supportedLanguages: ['en', 'de', 'fr'],
-  banner: '// Custom banner'
-})
-
-const constsContent = toConstsContent({
-  messages: yourMessages,
-  baseLocale: 'en',
-  supportedLanguages: ['en', 'de', 'fr']
-})
-```
-
-## 🏗️ How It Works
-
-1. **Plugin Integration**: Internally configures and runs `@intlify/unplugin-vue-i18n`
-2. **Virtual Module**: Reads i18n messages from the virtual module `@intlify/unplugin-vue-i18n/messages`
-3. **Type Extraction**: Analyzes message structure to extract all translation keys
-4. **File Generation**: Creates TypeScript files with:
-   - Type definitions for all translation keys
-   - Runtime constants for supported languages
-   - Properly typed message exports
-5. **Watch Mode**: In development, watches for locale file changes and regenerates automatically
-6. **HMR Support**: Integrates with Vite's HMR for instant updates
-
-## 🧪 Development
-
-```bash
-# Install dependencies
-npm install
-
-# Build the plugin
-npm run build
-
-# Run in watch mode
-npm run dev
-
-# Run tests
-npm run test
-
-# Type check
-npm run typecheck
-
-# Lint code
-npm run lint
-```
-
-### Example Project
-
-```bash
-cd example
-npm install
-npm run dev
-```
-
-The example demonstrates:
-- Dual file generation
-- Type-safe translations with auto-completion
-- Pluralization support
-- Runtime constant usage
-- Vite 7 integration
-
-## 📊 Performance
-
-- **Fast Generation**: Typically < 50ms for medium-sized projects
-- **Debounced Updates**: 400ms debounce in watch mode to batch changes
-- **Caching**: Content hash-based caching prevents unnecessary writes
-- **Deterministic Output**: Consistent output across runs for better git diffs
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-## 📄 License
-
-MIT
-
-## 🐛 Issues
-
-If you find a bug or have a feature request, please open an issue on [GitHub](https://github.com/gcwioro/unplugin-vue-i18n-dts-generation/issues).
-
-## 🙏 Acknowledgments
-
-- Built on top of [`@intlify/unplugin-vue-i18n`](https://github.com/intlify/bundle-tools)
-- Inspired by the need for better TypeScript support in Vue I18n projects
-- Thanks to all contributors and users of this plugin
-
----
-
-<p align="center">Made with ❤️ for the Vue.js community</p>
+- **No duplicate plugin needed**: This plugin already includes the Vue I18n Vite plugin, so do not add
+  @intlify/unplugin-vue-i18n separately in your Vite config.
+- **Simply use unpluginVueI18nDtsGeneration()** as shown above.
+- **Works out-of-the-box**: The default configuration will find most conventional locale files without any custom setup.
+- **Default locale patterns**: By default, it looks for files like `**/en.json`, `**/en-US.yaml`, or
+  `**/messages-en.json` (see patterns above). Adjust the `include` option if your files are elsewhere.
+- **Customize via i18nPluginOptions**: Any option from @intlify/unplugin-vue-i18n can be passed through the
+  `i18nPluginOptions` field to control how locales are loaded (e.g., `include`, `compositionOnly`, etc.)
+- **Virtual module name**: Internally, the plugin uses the virtual module ID `"@intlify/unplugin-vue-i18n/messages"` to
+  load messages. You normally shouldn't change `sourceId` from the default unless you know what you're doing.
