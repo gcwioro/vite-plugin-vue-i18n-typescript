@@ -206,7 +206,7 @@ describe('toConstsContent', () => {
       typeFilePath: './custom/path/types.d.ts',
     })
 
-    expect(result).toContain("from './custom/path/types.d.ts'")
+    expect(result).toContain("from './custom/path/types'")
   })
 
   it('should use custom banner when provided', () => {

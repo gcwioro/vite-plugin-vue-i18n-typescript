@@ -43,7 +43,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
       const value = extractJson({...raw, 'js-reserved': undefined})
 
       // 2) Gather languages & select base locale
-      const languages = [...Object.keys(raw), 'en-US']
+      const languages = Object.keys(raw)
       if (!languages.length) {
         throw new Error(`"${sourceId}" yielded an empty object.`)
       }

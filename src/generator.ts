@@ -14,17 +14,16 @@ export function toTypesContent(params: Omit<DtsContentParams, 'typeFilePath'>): 
     banner,
   } = params
 
-  const messagesForBaseLocale = {...messages, ['en-US']: messages?.['en']??messages?.['en-US']??{}}
   // Derive leaf paths
-  const messagesWithUsEn = (messages?.[baseLocale] ?? Object.values(baseLocale)[0])  as Record<string, JSONValue> ;
-  const allKeysRaw = getJsonLeafPaths(messagesWithUsEn)
+  const messagesForBaseLocale = (messages?.[baseLocale] ?? Object.values(messages)[0]) as Record<string, JSONValue>;
+  const allKeysRaw = getJsonLeafPaths(messagesForBaseLocale)
     // Remove trailing ".body.cases" (Vue I18n 9.x specific)
     .map((p) => p.replace(/\.body\.cases$/g, ''))
 
   const finalKeys = transformKeys(allKeysRaw)
 
   // Canonicalize the base-locale object to make JSON stable across runs/platforms
-  const canonicalBase = canonicalize(messagesForBaseLocale as JSONValue) as JSONObject
+  const canonicalBase = canonicalize(messages as JSONValue) as JSONObject
 
   // Deterministic banner (no timestamps). Include a small content hash for traceability.
   const messagesJson = JSON.stringify(canonicalBase)
@@ -74,10 +73,8 @@ export function toConstsContent(params: DtsContentParams): string {
     banner,
   } = params
 
-  const messagesForBaseLocale = {...messages, ['en-US']: messages?.['en']??messages?.['en-US']??{}}
-
   // Canonicalize the base-locale object to make JSON stable across runs/platforms
-  const canonicalBase = canonicalize(messagesForBaseLocale as JSONValue) as JSONObject
+  const canonicalBase = canonicalize(messages as JSONValue) as JSONObject
 
   // Deterministic banner
   const messagesJson = JSON.stringify(canonicalBase)
@@ -135,6 +132,7 @@ export function createI18nInstance<T extends Partial<ComposerOptions> >(options?
     fallbackWarn: false,
     ...options,
     // Messages are provided and cannot be overridden
+    messages: messagesI18n,
     legacy: false
   } as const;
   const i18n = createI18n<false, typeof i18Options, AllTranslationsGen>(i18Options);
