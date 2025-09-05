@@ -113,13 +113,6 @@ interface VirtualKeysDtsOptions {
   sourceId?: string
 
   /**
-   * Path for single file generation (legacy mode).
-   * @default "src/i18n/i18n.gen.ts"
-   * @deprecated Use typesPath and constsPath for dual file generation
-   */
-  tsPath?: string
-
-  /**
    * Path for TypeScript type definitions file.
    * @example "src/i18n/i18n.types.d.ts"
    */
@@ -221,7 +214,7 @@ export const i18n = createI18nInstance({
   // Messages are automatically included and typed!
 })
 
-// Export for use in components  
+// Export for use in components
 export const { t, d, n } = i18n.global
 ```
 
@@ -230,11 +223,11 @@ export const { t, d, n } = i18n.global
 ```typescript
 // src/i18n/index.ts
 import { createI18n } from 'vue-i18n'
-import { 
-  messagesI18n, 
+import {
+    messagesI18n,
   supportedLanguages,
   type AllLocaleGen,
-  type SupportedLanguagesGen 
+    type SupportedLanguagesGen
 } from './i18n.consts'
 
 // Type-safe i18n instance

@@ -1,6 +1,6 @@
 import path from 'node:path'
 import fs from 'node:fs/promises'
-import {Plugin, ViteDevServer, ResolvedConfig, Logger, Rollup, ViteBuilder} from 'vite'
+import {Plugin, ViteDevServer, ResolvedConfig, Logger, Rollup, HmrContext} from 'vite'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import type {VirtualKeysDtsOptions, JSONObject, JSONValue} from './types'
 import type {PluginOptions} from "@intlify/unplugin-vue-i18n";
@@ -12,7 +12,7 @@ import {loadExportFromVirtual} from './loader'
  * Vite plugin for generating TypeScript definitions from unplugin-vue-i18n virtual modules
  * Follows Vite 7 plugin API conventions
  */
-export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOptions) {
+export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOptions): Rollup.Plugin {
   const {
     i18nPluginOptions = {},
     sourceId = '@intlify/unplugin-vue-i18n/messages',
@@ -26,7 +26,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
 
   const defaultI18nOptions = {include: ['./**/[a-z][a-z].{json,json5,yml,yaml}', './**/*-[a-z][a-z].{json,json5,yml,yaml}', './**/[a-z][a-z]-*.{json,json5,yml,yaml}']} as PluginOptions
 
-  const i18nPlugin = VueI18nPlugin({...defaultI18nOptions, ...i18nPluginOptions}) as Plugin
+  const i18nPlugin: Rollup.Plugin = VueI18nPlugin({...defaultI18nOptions, ...i18nPluginOptions}) as Plugin
 
   let logger: Logger
   let resolvedRoot = process.cwd()
@@ -214,7 +214,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
     /**
      * Vite 7 handleHotUpdate hook for better HMR support
      */
-    async handleHotUpdate({file, server}) {
+    async handleHotUpdate({file, server}: HmrContext) {
       // Only regenerate for i18n source files
       if (file.match(/\.(json|json5|yaml|yml)$/)) {
         // Skip generated files to avoid loops
@@ -226,5 +226,5 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
         await debouncedGenerate(server, resolvedRoot)
       }
     },
-  }
+  } as Rollup.Plugin
 }

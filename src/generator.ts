@@ -110,7 +110,7 @@ import type {
   AllTranslationKeysGen,
   AllTranslationsGen,
   SupportedLanguagesGen,
-} from '${typeFilePath}'
+} from '${typeFilePath.replace(/\.d\.ts$/, '')}'
 
 export const supportedLanguages = ${languagesTuple} as const satisfies SupportedLanguagesGen
 export const messages = ${messagesJson} as const
@@ -163,8 +163,7 @@ export function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>) {
   // const instance = i18n || createI18nInstance()
   const {t: originalT, d, n, locale, ...rest} =
     useI18n(Object.assign(options ?? {
-      fallbackLocale: 'en',
-
+      fallbackLocale: '${baseLocale}'
     }, {messages: messagesI18n}))
 
   const t = originalT as I18nCustom satisfies I18nCustom

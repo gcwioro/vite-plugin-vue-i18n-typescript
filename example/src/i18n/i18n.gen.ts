@@ -17,7 +17,7 @@ import type {
   AllTranslationKeysGen,
   AllTranslationsGen,
   SupportedLanguagesGen,
-} from './i18n.types.gen.d.ts'
+} from './i18n.types.gen'
 
 export const supportedLanguages = ['en', 'en-US'] as const satisfies SupportedLanguagesGen
 export const messages = {"en":{"App":{"fruits":{"apple":"Apple | Apples","banana":"Banana | Bananas"},"fruitsLabel":"There are {amount} {fruit}","greetings":"Hello Typescript friends!","menu":["home","about"]}},"en-US":{"App":{"fruits":{"apple":"Apple | Apples","banana":"Banana | Bananas"},"fruitsLabel":"There are {amount} {fruit}","greetings":"Hello Typescript friends!","menu":["home","about"]}}} as const
@@ -76,8 +76,7 @@ export function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>) {
   // const instance = i18n || createI18nInstance()
   const {t: originalT, d, n, locale, ...rest} =
     useI18n(Object.assign(options ?? {
-      fallbackLocale: 'en',
-
+      fallbackLocale: 'en'
     }, {messages: messagesI18n}))
 
   const t = originalT as I18nCustom satisfies I18nCustom
