@@ -4,7 +4,14 @@ import {Plugin, ViteDevServer, ResolvedConfig, Logger, Rollup, HmrContext} from 
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import type {VirtualKeysDtsOptions, JSONObject, JSONValue} from './types'
 import type {PluginOptions} from "@intlify/unplugin-vue-i18n";
-import {extractJson, canonicalize, ensureDir, writeFileAtomic, debounce} from './utils'
+import {
+  extractJson,
+  canonicalize,
+  detectKeyConflicts,
+  ensureDir,
+  writeFileAtomic,
+  debounce
+} from './utils'
 import {toTypesContent, toConstsContent} from './generator'
 import {loadExportFromVirtual} from './loader'
 
@@ -68,6 +75,15 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
         throw new Error(
           `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
         )
+      }
+
+      // Check for conflicting keys across locales
+      const conflicts = detectKeyConflicts(value)
+      if (conflicts.length > 0) {
+        logger.warn('⚠️  Conflicting translation keys detected:', {timestamp: true})
+        for (const conflict of conflicts) {
+          logger.warn(`   ${conflict}`, {timestamp: true})
+        }
       }
 
       // 3) Deterministic inputs for DTS
@@ -151,7 +167,8 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
     }
   }
 
-  const debouncedGenerate = debounce(generate, 400)
+  // Debounce generation with 30-second delay to avoid excessive regeneration
+  const debouncedGenerate = debounce(generate, 30000)
 
   return {
     ...i18nPlugin,
@@ -206,16 +223,20 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
       }
 
       if (watchInDev) {
-        // Watch a minimal, relevant set of inputs; ignore .d.ts to avoid loops and .vue/.ts to reduce noise.
-        // You can extend this if your virtual source depends on more.
+        // Only watch JSON files (i18n translation files)
         const globs = [
-          'src/**/*.{json,json5,yaml,yml}',
+          'src/**/*.json',
+          'src/**/*.json5',
+          '!**/*.gen.*',
           '!**/*.d.ts*',
           '!**/node_modules/**',
         ]
 
-        const onFsEvent = async () => {
-          debouncedGenerate(server, resolvedRoot)
+        const onFsEvent = async (filepath: string) => {
+          // Only trigger on JSON file changes
+          if (filepath.match(/\.json5?$/)) {
+            debouncedGenerate(server, resolvedRoot)
+          }
         }
 
         server.watcher.add(globs)
@@ -230,14 +251,14 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
      * Vite 7 handleHotUpdate hook for better HMR support
      */
     async handleHotUpdate({file, server}: HmrContext) {
-      // Only regenerate for i18n source files
-      if (file.match(/\.(json|json5|yaml|yml)$/)) {
+      // Only regenerate for JSON i18n source files
+      if (file.match(/\.json5?$/)) {
         // Skip generated files to avoid loops
         if (file.includes('.gen.') || file.includes('.d.ts')) {
           return
         }
 
-        logger.info(`i18n source file changed: ${path.basename(file)}`, {timestamp: true})
+        logger.info(`i18n JSON file changed: ${path.basename(file)}`, {timestamp: true})
         await debouncedGenerate(server, resolvedRoot)
       }
     },

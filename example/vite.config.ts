@@ -3,7 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import viteTsChecker from 'vite-plugin-checker';
 import {join} from "path";
 import {fileURLToPath, URL} from "url";
-import unpluginVueI18nDtsGeneration from "../src/plugin";
+import unpluginVueI18nDtsGeneration from "../src";
+// import unpluginVueI18nDtsGeneration from "../src/plugin";
 
 export default defineConfig({
   cacheDir: '.cache',

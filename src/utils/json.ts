@@ -131,3 +131,90 @@ export function canonicalize<T extends JSONValue>(value: T): T {
   for (const k of keys) out[k] = canonicalize(obj[k])
   return out as T
 }
+
+/**
+ * Detect conflicting keys across different locales.
+ * A conflict occurs when the same key path has different types (e.g., string vs object) across locales.
+ * @param messages - Object with locale codes as keys and message objects as values
+ * @returns Array of conflict descriptions
+ */
+export function detectKeyConflicts(messages: Record<string, JSONValue>): string[] {
+  const conflicts: string[] = []
+  const keyTypeMap = new Map<string, Map<string, string>>() // key -> locale -> type
+
+  // Helper to get the type of a value
+  const getValueType = (val: unknown): string => {
+    if (val === null) return 'null'
+    if (val === undefined) return 'undefined'
+    if (Array.isArray(val)) return 'array'
+    if (typeof val === 'object') return 'object'
+    return typeof val
+  }
+
+  // Helper to traverse and collect all key paths with their types
+  const collectKeyTypes = (obj: unknown, locale: string, path = ''): void => {
+    if (obj === null || obj === undefined) {
+      if (path) {
+        if (!keyTypeMap.has(path)) keyTypeMap.set(path, new Map())
+        keyTypeMap.get(path)!.set(locale, getValueType(obj))
+      }
+      return
+    }
+
+    if (Array.isArray(obj)) {
+      if (path) {
+        if (!keyTypeMap.has(path)) keyTypeMap.set(path, new Map())
+        keyTypeMap.get(path)!.set(locale, 'array')
+      }
+      // Don't traverse array items for conflict detection
+      return
+    }
+
+    if (typeof obj === 'object') {
+      if (path) {
+        if (!keyTypeMap.has(path)) keyTypeMap.set(path, new Map())
+        keyTypeMap.get(path)!.set(locale, 'object')
+      }
+      for (const [key, value] of Object.entries(obj)) {
+        const newPath = path ? `${path}.${key}` : key
+        collectKeyTypes(value, locale, newPath)
+      }
+      return
+    }
+
+    // Primitive value
+    if (path) {
+      if (!keyTypeMap.has(path)) keyTypeMap.set(path, new Map())
+      keyTypeMap.get(path)!.set(locale, getValueType(obj))
+    }
+  }
+
+  // Collect all key types for each locale
+  for (const [locale, localeMessages] of Object.entries(messages)) {
+    if (locale === 'js-reserved') continue
+    collectKeyTypes(localeMessages, locale)
+  }
+
+  // Check for conflicts
+  for (const [key, localeTypes] of keyTypeMap.entries()) {
+    const types = Array.from(localeTypes.entries())
+    const uniqueTypes = new Set(types.map(([_, type]) => type))
+
+    if (uniqueTypes.size > 1) {
+      // We have a conflict
+      const typeGroups = new Map<string, string[]>()
+      for (const [locale, type] of types) {
+        if (!typeGroups.has(type)) typeGroups.set(type, [])
+        typeGroups.get(type)!.push(locale)
+      }
+
+      const groupDescriptions = Array.from(typeGroups.entries())
+        .map(([type, locales]) => `${type} in [${locales.join(', ')}]`)
+        .join(' vs ')
+
+      conflicts.push(`Key "${key}" has conflicting types: ${groupDescriptions}`)
+    }
+  }
+
+  return conflicts
+}

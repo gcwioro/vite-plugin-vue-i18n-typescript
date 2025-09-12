@@ -5,7 +5,7 @@
       "name": "unplugin-vue-i18n-dts-generation",
       "devDependencies": {
         "@eslint/js": "^9.34.0",
-        "@intlify/unplugin-vue-i18n": "^11.0.0",
+        "@intlify/unplugin-vue-i18n": "6.0.8",
         "@types/node": "^24.3.1",
         "@typescript-eslint/eslint-plugin": "^8.42.0",
         "@typescript-eslint/parser": "^8.42.0",
@@ -20,7 +20,7 @@
         "vue-tsc": "^3.0.6",
       },
       "peerDependencies": {
-        "@intlify/unplugin-vue-i18n": ">=1.0.0",
+        "@intlify/unplugin-vue-i18n": "<=6.0.8",
         "vite": ">=4.0.0 || ^7.0.0",
       },
     },

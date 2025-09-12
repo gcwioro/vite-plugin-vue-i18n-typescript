@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import {extractJson, getJsonLeafPaths, canonicalize} from './json'
+import {extractJson, getJsonLeafPaths, canonicalize, detectKeyConflicts} from './json'
 import complexInput from './json.test.json'
 import { baseCompile} from '@intlify/message-compiler';
 describe('extractJson', () => {
@@ -828,5 +828,141 @@ describe('canonicalize', () => {
     expect(Object.keys((result.settings as any))).toEqual(['lang', 'theme'])
     // Arrays should preserve order
     expect((result.users as any)[0]).toEqual({age: 30, name: 'John'})
+  })
+})
+
+describe('detectKeyConflicts', () => {
+  it('should detect no conflicts when all locales have same structure', () => {
+    const messages = {
+      en: {
+        greeting: 'Hello',
+        nested: {
+          message: 'Message'
+        }
+      },
+      fr: {
+        greeting: 'Bonjour',
+        nested: {
+          message: 'Message'
+        }
+      }
+    }
+    expect(detectKeyConflicts(messages)).toEqual([])
+  })
+
+  it('should detect conflicts when key has different types', () => {
+    const messages = {
+      en: {
+        item: 'Single item'
+      },
+      fr: {
+        item: {
+          one: 'Un article',
+          many: 'Des articles'
+        }
+      }
+    }
+    const conflicts = detectKeyConflicts(messages)
+    expect(conflicts).toHaveLength(1)
+    expect(conflicts[0]).toContain('Key "item"')
+    expect(conflicts[0]).toContain('string in [en]')
+    expect(conflicts[0]).toContain('object in [fr]')
+  })
+
+  it('should detect array vs string conflicts', () => {
+    const messages = {
+      en: {
+        menu: ['Home', 'About', 'Contact']
+      },
+      de: {
+        menu: 'Menu'
+      }
+    }
+    const conflicts = detectKeyConflicts(messages)
+    expect(conflicts).toHaveLength(1)
+    expect(conflicts[0]).toContain('Key "menu"')
+    expect(conflicts[0]).toContain('array in [en]')
+    expect(conflicts[0]).toContain('string in [de]')
+  })
+
+  it('should detect nested conflicts', () => {
+    const messages = {
+      en: {
+        user: {
+          profile: {
+            name: 'Name'
+          }
+        }
+      },
+      es: {
+        user: {
+          profile: 'Perfil'
+        }
+      }
+    }
+    const conflicts = detectKeyConflicts(messages)
+    expect(conflicts).toHaveLength(1)
+    expect(conflicts[0]).toContain('Key "user.profile"')
+    expect(conflicts[0]).toContain('object in [en]')
+    expect(conflicts[0]).toContain('string in [es]')
+  })
+
+  it('should handle multiple locales with same conflict', () => {
+    const messages = {
+      en: {
+        item: 'Item'
+      },
+      de: {
+        item: 'Artikel'
+      },
+      fr: {
+        item: {
+          one: 'Article',
+          many: 'Articles'
+        }
+      },
+      es: {
+        item: {
+          singular: 'Artículo',
+          plural: 'Artículos'
+        }
+      }
+    }
+    const conflicts = detectKeyConflicts(messages)
+    expect(conflicts).toHaveLength(1)
+    expect(conflicts[0]).toContain('string in [en, de]')
+    expect(conflicts[0]).toContain('object in [fr, es]')
+  })
+
+  it('should ignore js-reserved key', () => {
+    const messages = {
+      en: {
+        greeting: 'Hello'
+      },
+      'js-reserved': {
+        greeting: {some: 'metadata'}
+      }
+    }
+    expect(detectKeyConflicts(messages)).toEqual([])
+  })
+
+  it('should detect multiple different conflicts', () => {
+    const messages = {
+      en: {
+        title: 'Title',
+        menu: ['Home', 'About']
+      },
+      fr: {
+        title: {
+          main: 'Titre principal',
+          sub: 'Sous-titre'
+        },
+        menu: 'Menu principal'
+      }
+    }
+    const conflicts = detectKeyConflicts(messages)
+    expect(conflicts).toHaveLength(2)
+    expect(conflicts.some(c => c.includes('Key "title"'))).toBe(true)
+    expect(conflicts.some(c => c.includes('Key "menu"'))).toBe(true)
   })
 })

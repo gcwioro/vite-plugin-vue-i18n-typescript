@@ -81,9 +81,7 @@ export declare interface I18nCustom {
   (key: AllTranslationKeysGen, named: NamedValue, plural?: number): string
 
   (key: AllTranslationKeysGen, named: NamedValue, options?: TranslateOptions): string
-
   (key: AllTranslationKeysGen, plural: number, named: NamedValue): string
-
   (key: AllTranslationKeysGen, plural: number, defaultMsg: string): string
 }
 
