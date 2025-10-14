@@ -86,7 +86,7 @@ export interface VirtualKeysDtsOptions {
    * Whether to export the messages object from the generated constants file.
    * This can be useful if you want to access the raw messages at runtime.
    *
-   * @default true
+   * @default false
    */
   exportMessages?: boolean
 }

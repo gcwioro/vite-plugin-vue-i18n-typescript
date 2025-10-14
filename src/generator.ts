@@ -120,10 +120,13 @@ ${exportMessages ? `export const messages = ${messagesJson} as const` : ''}
 // Type-safe i18n messages
 export const messagesI18n = _messagesI18n as unknown as AllTranslationsGen
 
-// Helper to get all translation keys
+
+${exportMessages ? `// Helper to get all translation keys
 export const allTranslationKeys: AllTranslationKeysGen[] = [
 ${transformKeys(getJsonLeafPaths((messages?.[baseLocale] ?? Object.values(messages)[0]) as Record<string, JSONValue>).map((p) => p.replace(/\.body\.cases$/g, ''))).map(k => `  '${k}'`).join(',\n')}
-]
+]` : ''}
+
+
 
 /**
  * Creates a type-safe i18n instance with pre-configured messages

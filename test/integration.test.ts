@@ -18,7 +18,7 @@ describe('i18n type generation', () => {
     const server = await createServer({
       root,
       configFile: false,
-      plugins: [vue(), unpluginVueI18nDtsGeneration()],
+      plugins: [vue(), unpluginVueI18nDtsGeneration({exportMessages: true})],
     })
     try {
       await server.listen()

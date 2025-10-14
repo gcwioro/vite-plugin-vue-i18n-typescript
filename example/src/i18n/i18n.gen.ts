@@ -25,6 +25,7 @@ export const messages = {"en":{"App":{"fruits":{"apple":"Apple | Apples","banana
 // Type-safe i18n messages
 export const messagesI18n = _messagesI18n as unknown as AllTranslationsGen
 
+
 // Helper to get all translation keys
 export const allTranslationKeys: AllTranslationKeysGen[] = [
   'App.fruits.apple',
@@ -35,6 +36,8 @@ export const allTranslationKeys: AllTranslationKeysGen[] = [
   'App.menu.0',
   'App.menu.1'
 ]
+
+
 
 /**
  * Creates a type-safe i18n instance with pre-configured messages

@@ -31,7 +31,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
     debounceMs = 5_000,
     debounceMaxWaitMs = 30_000,
     banner,
-    exportMessages
+    exportMessages = false
 
   } = options || {}
 
