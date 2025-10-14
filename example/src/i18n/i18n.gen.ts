@@ -20,19 +20,7 @@ import type {
 } from './i18n.types.gen'
 
 export const supportedLanguages = ['en'] as const satisfies SupportedLanguagesGen
-export const messages = {
-  "en": {
-    "App": {
-      "fruits": {
-        "apple": "Apple | Apples",
-        "banana": "Banana | Bananas"
-      },
-      "fruitsLabel": "There are {amount} {fruit}",
-      "greetings": "Hello Typescript friends!",
-      "menu": ["home", "about"]
-    }
-  }
-} as const
+export const messages = {"en":{"App":{"fruits":{"apple":"Apple | Apples","banana":"Banana | Bananas"},"fruitsLabel":"There are {amount} {fruit}","greetings":"Hello Typescript friends!","menu":["home","about"]}}} as const
 
 // Type-safe i18n messages
 export const messagesI18n = _messagesI18n as unknown as AllTranslationsGen
@@ -53,9 +41,9 @@ export const allTranslationKeys: AllTranslationKeysGen[] = [
  * @param options - Optional I18n configuration (messages will be automatically provided)
  * @returns Configured i18n instance
  */
-export function createI18nInstance<T extends Partial<ComposerOptions>>(options?: T): I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : {}, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : {}, T["locale"] extends string ? T["locale"] : Locale, false> {
+export function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : {}, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : {}, T["locale"] extends string ? T["locale"] : Locale, false> {
   const i18Options = {
-    fallbackLocale: 'en',
+    fallbackLocale: 'de',
     missingWarn: false,
     fallbackWarn: false,
     ...options,
@@ -90,7 +78,7 @@ export function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>) {
   // const instance = i18n || createI18nInstance()
   const {t: originalT, d, n, locale, ...rest} =
     useI18n(Object.assign(options ?? {
-      fallbackLocale: 'en'
+      fallbackLocale: 'de'
     }, {messages: messagesI18n}))
 
   const t: I18nCustom = originalT as I18nCustom satisfies I18nCustom

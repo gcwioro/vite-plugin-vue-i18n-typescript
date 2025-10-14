@@ -1,18 +1,18 @@
 import path from 'node:path'
 import fs from 'node:fs/promises'
-import {Plugin, ViteDevServer, ResolvedConfig, Logger, Rollup, HmrContext} from 'vite'
+import {HmrContext, Logger, Plugin, ResolvedConfig, Rollup, ViteDevServer} from 'vite'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
-import type {VirtualKeysDtsOptions, JSONObject, JSONValue} from './types'
+import type {JSONObject, JSONValue, VirtualKeysDtsOptions} from './types'
 import type {PluginOptions} from "@intlify/unplugin-vue-i18n";
 import {
-  extractJson,
   canonicalize,
+  debounceWithMaxWait,
   detectKeyConflicts,
   ensureDir,
-  writeFileAtomic,
-  debounce
+  extractJson,
+  writeFileAtomic
 } from './utils'
-import {toTypesContent, toConstsContent} from './generator'
+import {toConstsContent, toTypesContent} from './generator'
 import {loadExportFromVirtual} from './loader'
 
 /**
@@ -26,8 +26,12 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
     typesPath = 'src/i18n/i18n.types.gen.d.ts',
     constsPath = 'src/i18n/i18n.gen.ts',
     watchInDev = true,
-    baseLocale = 'en',
+    baseLocale = 'de',
+    initialDelayMs = 500,
+    debounceMs = 5_000,
+    debounceMaxWaitMs = 30_000,
     banner,
+    exportMessages
 
   } = options || {}
 
@@ -56,10 +60,10 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
       let count = 0;
       while (!languages.length) {
         if (count > 4) {
-          throw new Error(`"${sourceId}" yielded an empty object repeatedly. Aborting.`)
+          logger.error(`"${sourceId}" yielded an empty object repeatedly. Aborting.`)
         }
         console.error(`"${sourceId}" yielded an empty object.`, i18nPluginSettings);
-        await new Promise(res => setTimeout(res, 2500))
+        await new Promise(res => setTimeout(res, initialDelayMs))
         // 1) Extract the normalized object from the virtual module
         raw = await loadExportFromVirtual(server, sourceId)
         value = extractJson({...raw, 'js-reserved': undefined})
@@ -72,7 +76,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
 
       const base = (value[baseLocale] ?? value[languages[0]]) as JSONObject | undefined
       if (!base || typeof base !== 'object' || Array.isArray(base)) {
-        throw new Error(
+        logger.error(
           `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
         )
       }
@@ -108,6 +112,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
         baseLocale: baseLocale,
         supportedLanguages: sortedLanguages,
         banner,
+        exportMessages,
       })
 
       // Write types file
@@ -128,6 +133,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
           server.watcher.emit('change', typesOutPath)
         } catch {
           // watcher may not be ready in build mode
+          logger.warn('Watcher not ready to track types file changes.', {timestamp: true})
         }
       }
 
@@ -168,7 +174,7 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
   }
 
   // Debounce generation with 30-second delay to avoid excessive regeneration
-  const debouncedGenerate = debounce(generate, 30000)
+  const debouncedGenerate = debounceWithMaxWait(generate, debounceMs, debounceMaxWaitMs)
 
   return {
     ...i18nPlugin,
@@ -227,6 +233,8 @@ export default function unpluginVueI18nDtsGeneration(options?: VirtualKeysDtsOpt
         const globs = [
           'src/**/*.json',
           'src/**/*.json5',
+          'src/**/*.vue',
+          'src/**/*.ts',
           '!**/*.gen.*',
           '!**/*.d.ts*',
           '!**/node_modules/**',

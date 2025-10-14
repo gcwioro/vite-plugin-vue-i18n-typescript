@@ -39,7 +39,6 @@ export interface VirtualKeysDtsOptions {
 
   /**
    * Optional banner comment at the top of the generated file.
-   * If omitted, a deterministic banner without timestamps is emitted.
    */
   banner?: string
 
@@ -57,6 +56,39 @@ export interface VirtualKeysDtsOptions {
    * @default "en"
    */
   baseLocale?: string
+
+  /**
+   * Delay in milliseconds before the initial type generation.
+   * Useful if you need to wait for other plugins to finish processing.
+   *
+   * @default 500
+   */
+  initialDelayMs?: number
+
+  /**
+   * Debounce time in milliseconds for regenerating types on file changes.
+   * Prevents excessive regeneration during rapid file changes.
+   *
+   * @default 5_000
+   */
+  debounceMs?: number
+
+
+  /**
+   * Maximum wait time in milliseconds before forcing type regeneration.
+   * Ensures that types are regenerated even if changes are frequent.
+   *
+   * @default 30_000
+   */
+  debounceMaxWaitMs?: number
+
+  /**
+   * Whether to export the messages object from the generated constants file.
+   * This can be useful if you want to access the raw messages at runtime.
+   *
+   * @default true
+   */
+  exportMessages?: boolean
 }
 
 /**
@@ -75,5 +107,6 @@ export interface DtsContentParams<TMessages extends JSONValue = JSONValue> {
   baseLocale: string
   typeFilePath: string
   supportedLanguages: string[]
-  banner?: string
+  banner?: string,
+  exportMessages?: boolean
 }
