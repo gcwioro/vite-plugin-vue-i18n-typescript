@@ -1,0 +1,5 @@
+{
+  "App": {
+    "fruitsLabel": "There are {amount} {fruit}"
+  }
+}

@@ -8,3 +8,4 @@ const app = createApp(App)
 app.use(createI18nInstance())
 
 app.mount('#app')
+

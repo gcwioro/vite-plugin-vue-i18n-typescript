@@ -7,13 +7,16 @@ import type { JSONValue } from './types'
  *
  * Follows Vite 7 best practices for virtual module loading without SSR
  */
+
 export async function loadExportFromVirtual(
   server: ViteDevServer,
   sourceId: string,
   exportName: string = 'default',
 ): Promise<Record<string, JSONValue>> {
+
   // Transform the virtual module to get its code
   const result = await server.transformRequest(sourceId)
+  console.log('locales', result)
   if (!result || !result.code) {
     throw new Error(`Could not transform module "${sourceId}"`)
   }

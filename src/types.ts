@@ -108,5 +108,6 @@ export interface DtsContentParams<TMessages extends JSONValue = JSONValue> {
   typeFilePath: string
   supportedLanguages: string[]
   banner?: string,
+  sourceId?: string,
   exportMessages?: boolean
 }
