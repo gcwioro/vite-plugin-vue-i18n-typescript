@@ -30,7 +30,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   }
 
 // I18n config options (excludes messages as they're provided by the plugin)
-  export type I18nConfigOptions = Omit<ComposerOptions<MessageSchemaGen, {}, SupportedLanguageUnionGen, false>, 'messages'>;
+  export type I18nConfigOptions = Omit<ComposerOptions<MessageSchemaGen, object, SupportedLanguageUnionGen, false>, 'messages'>;
   export type UseI18nTypesafeReturn =
     Omit<Composer<NonNullable<ComposerOptions['messages']>, NonNullable<ComposerOptions['datetimeFormats']>, NonNullable<ComposerOptions['numberFormats']>, ComposerOptions['locale'] extends unknown ? string : Options['locale']>, 't'>
     & { t: I18nCustom };
@@ -49,7 +49,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]
 
 // Message structure types
-  export type MessageSchemaGen = {}
+  export type MessageSchemaGen = Record<string, unknown>
   export type AllLocaleGen = Readonly<Record<SupportedLanguageUnionGen, MessageSchemaGen>>
   export type AllTranslationsGen = AllLocaleGen
   export type MessagesType = AllLocaleGen

@@ -1,0 +1,13 @@
+{
+  "App": {
+    "greetings": "Hallo Typescript Freunde!",
+    "fruits": {
+      "apple": "Apfel | Äpfel",
+      "banana": "Banane | Bananen"
+    },
+    "menu": [
+      "startseite",
+      "über"
+    ]
+  }
+}

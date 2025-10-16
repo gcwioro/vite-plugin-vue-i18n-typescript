@@ -388,7 +388,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       await fs.access(typesOutPath, fs.constants.W_OK);
       logger.info(`Types file is accessible at: ${typesOutPath}.`);
     } catch (e: unknown) {
-      logger.warn(`Types file does not exist at: ${typesOutPath}. Will be created during buildStart.`);
+      logger.warn(`Types file does not exist at: ${typesOutPath}. Will be created during buildStart. ` + e.message);
     }
   }
 
