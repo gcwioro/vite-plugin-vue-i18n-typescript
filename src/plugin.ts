@@ -2,7 +2,7 @@ import path from "node:path";
 import {promises as fs} from "node:fs";
 import {
   EnvironmentModuleNode,
-  HotUpdateOptions,
+  HotUpdateOptions, Logger,
   normalizePath,
   PluginOption,
   ViteDevServer
@@ -63,6 +63,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
   const doMerge = merge === "deep" ? deepMerge : shallowMerge;
 
   let root = "";
+  let logger: Logger;
   let serverRef: ViteDevServer | undefined;
 
   let groupedCache: Record<string, any> = {};
@@ -379,21 +380,60 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     return typesContent;
   }
 
+  async function checkIfModuleDefinitionFileExists() {
+    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(root, typesPath);
+
+    // Check if file exists and if not create it and let the build fail with a clear message that the path is not writable
+    try {
+      await fs.access(typesOutPath, fs.constants.W_OK);
+      logger.info(`Types file is accessible at: ${typesOutPath}.`);
+    } catch (e: unknown) {
+      logger.error(`Types file is not accessible at: ${typesOutPath}. Attempting to create it...`);
+      await generateFile(groupedCache, root);
+      logger.error(`Types file created at: ${typesOutPath}. Please RESTART the build.`, {
+        error: {
+          name: "VITE_PLUGIN_LOCALE_JSON_TYPES_FILE_CREATED",
+          message: "Types file created. Please restart the build."
+        }
+      });
+      throw e;
+
+    }
+  }
+
 
   return {
     name: "vite-plugin-locale-json",
     enforce: "pre",
 
-    configResolved(cfg) {
+    async configResolved(cfg) {
       root = cfg.root;
       isBuild = cfg.command === "build";
+      logger = cfg.logger;
+
+      logger.info("Config resolved. Root: " + root + ", isBuild: " + isBuild);
+      await checkIfModuleDefinitionFileExists();
+
+      // Generate types file synchronously to ensure it exists before vue-tsc runs
+      if (typesPath) {
+        // check if typesPath exists and is writable
+
+      }
     },
 
-    async buildStart() {
+    async buildStart(cfg) {
+      // Load files async for runtime
+
       const rawGrouped = await readAndGroup();
-      // Canonicalize once and cache it to avoid repeated canonicalization
       groupedCache = canonicalize(rawGrouped as JSONValue) as Record<string, any>;
       jsonTextCache = JSON.stringify(groupedCache);
+
+      // Regenerate types file with full async pipeline
+      if (typesPath) {
+        // await generateFile(groupedCache, root);
+      }
+
+      // In build mode, emit the asset file
       if (isBuild) {
         emittedRefId = this.emitFile({
           type: "asset",
