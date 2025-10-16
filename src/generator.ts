@@ -274,7 +274,7 @@ function helperMethodsDefinition(baseLocale: string) {
     '    d,',
     '    n,',
     '    locale,',
-    '    availableLocales: AllSupportedLanguages',
+    '    availableLocales: supportedLanguages',
     '  }',
     '}',
     ''];
