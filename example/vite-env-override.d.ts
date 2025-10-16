@@ -50,7 +50,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   export {createI18nInstance, createI18nInstancePlugin, useI18nTypeSafe};
 
   export type SupportedLanguage = AllSupportedLanguages[number] | string
-  const supportedLanguages: SupportedLanguage = ['de', 'en'] as const
+  export const supportedLanguages: SupportedLanguage = ['de', 'en'] as const
   export type AllTranslationKeys =
     'App.fruits.apple'
     | 'App.fruits.banana'
@@ -86,5 +86,5 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
   // Type-safe translate function parameters
 
-  export {supportedLanguages, messages}
+  export {messages}
 }

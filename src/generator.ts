@@ -95,7 +95,7 @@ export function getMessageTypeDefinitions(baseLocale: string, messages: Record<s
   return [
     '',
     'export type SupportedLanguage = AllSupportedLanguages[number] | string',
-    'const supportedLanguages: SupportedLanguage = ' + `['${AllSupportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}'] as const`,
+    'const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages = ' + `['${AllSupportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}'] as const`,
     `export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
     `export type AllSupportedLanguages = readonly [${AllSupportedLanguages.filter(l => l != 'js-reserved').map(l => `'${l}'`).join(', ')}]`,
 
