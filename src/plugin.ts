@@ -3,363 +3,180 @@ import {promises as fs} from "node:fs";
 import {
   EnvironmentModuleNode,
   HotUpdateOptions,
+  Logger,
   normalizePath,
   PluginOption,
-  ViteDevServer
 } from "vite";
-// NOTE: fast-glob is no longer eagerly imported.
-// It will be lazy-loaded ONLY as a fallback on older Node versions.
-import {
-  canonicalize,
-  deepMerge,
-  defaultGetLocaleFromPath,
-  detectKeyConflicts,
-  ensureDir,
-  shallowMerge,
-  toArray,
-  writeFileAtomic
-} from "./utils";
-import type {JSONObject, JSONValue, VirtualKeysDtsOptions} from "./types";
-import {createVirtualModuleCode, toConstsContent, toTypesContent} from "./generator";
+import type {VirtualKeysDtsOptions} from "./types";
+import {createVirtualModuleCode} from "./generator";
+import {normalizeConfig} from "./core/config";
+import {FileManager} from "./core/file-manager";
+import {GenerationCoordinator} from "./core/generation-coordinator";
+import {RebuildManager} from "./core/rebuild-manager";
 
-/* ------------------------ helpers ------------------------ */
+/**
+ * Vite plugin for generating TypeScript definitions from Vue i18n locale files
+ */
+export default function unpluginVueI18nDtsGeneration(
+  userOptions: VirtualKeysDtsOptions = {}
+): PluginOption {
+  // Normalize configuration
+  const config = normalizeConfig(userOptions);
 
-export function log(server: ViteDevServer | undefined, enabled: boolean | undefined, ...args: any[]) {
-  if (!enabled) return;
-  const prefix = "[vite-plugin-locale-json]";
-  if (server) server.config.logger.info(prefix + " " + args.join(" "));
-  else console.log(prefix, ...args);
-}
-
-/* ------------------------ plugin ------------------------ */
-
-export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDtsOptions = {}): PluginOption {
-  const {
-    sourceId = '@unplug-i18n-types-locales',
-    typesPath = 'src/i18n/i18n.types.gen.d.ts',
-    constsPath = 'src/i18n/i18n.gen.ts',
-    getLocaleFromPath = defaultGetLocaleFromPath,
-    baseLocale = 'de',
-    include = ["src/**/locales/*.json", "src/**/locales/*.vue.*.json", `src/**/*${baseLocale}.json`],
-
-    exclude = [
-      '**/node_modules/**',
-      '**/.git/**',
-      '**/dist/**',
-      '**/.output/**',
-      '**/.vercel/**',
-      '**/.next/**',
-      '**/build/**',
-    ],
-    merge = 'deep',
-    banner,
-    debug = false,
-    devUrlPath = "/_virtual_locales.json",
-    emit =
-      {
-        fileName: (userOptions || {}).emit?.fileName ?? "assets/locales.json",
-        inlineDataInBuild: (userOptions || {}).emit?.inlineDataInBuild ?? true,
-      },
-    transformJson,
-    exportMessages = false
-
-  } = userOptions || {};
-  const VIRTUAL_ID = sourceId;
-  const RESOLVED_VIRTUAL_ID = "\0" + VIRTUAL_ID;
-
-  const doMerge = merge === "deep" ? deepMerge : shallowMerge;
-
+  // Plugin state
   let root = "";
-  let serverRef: ViteDevServer | undefined;
-
+  let logger: Logger;
+  let isBuild = false;
+  let emittedRefId: string | undefined;
   let groupedCache: Record<string, any> = {};
   let jsonTextCache = "{}";
   let lastFiles: string[] = [];
 
-  let isBuild = false;
-  let emittedRefId: string | undefined;
+  // Core managers (initialized in configResolved)
+  let fileManager: FileManager;
+  let generationCoordinator: GenerationCoordinator;
+  let rebuildManager: RebuildManager;
 
   /**
-   * Prefer Node's native glob (Node >= 22).
-   * Fallback to fast-glob only when native glob isn't available.
+   * Check if types file exists and is accessible
    */
-  async function collectJsonFiles(): Promise<string[]> {
-    const patterns = toArray(include);
-    const ignore = toArray(exclude);
-    const entries = new Set<string>();
-    const cwd = root;
+  async function checkTypesFileExists(): Promise<void> {
+    const typesOutPath = path.isAbsolute(config.typesPath)
+      ? config.typesPath
+      : path.join(root, config.typesPath);
 
-    // Node 22+: fs.promises.glob exists
-    const fsAny = fs as unknown as {
-      glob?: (pattern: string | readonly string[], options?: any) => AsyncIterable<string>;
-    };
-
-    if (typeof fsAny.glob === "function") {
-      // Use native glob; iterate patterns to avoid relying on array support differences.
-      for (const pattern of patterns) {
-        // Pass cwd and exclude. Native glob yields paths relative to cwd by default.
-        for await (const rel of fsAny.glob(pattern, {cwd, exclude: ignore})) {
-          const abs = path.isAbsolute(rel) ? rel : path.join(cwd, rel);
-          entries.add(path.normalize(abs));
-        }
-      }
-    } else {
-      // Fallback: fast-glob (lazy-loaded so projects on Node 22+ don't need it installed)
-      const {default: fg} = await import("fast-glob");
-      const list: string[] = await fg(patterns, {
-        cwd,
-        ignore,
-        absolute: true,
-        onlyFiles: true,
-        dot: false
-      });
-      for (const p of list) entries.add(path.normalize(p));
-    }
-
-    const out = Array.from(entries);
-    out.sort((a, b) => a.localeCompare(b));
-    return out;
-  }
-
-  async function readAndGroup(): Promise<Record<string, any>> {
-    const files = await collectJsonFiles();
-    lastFiles = files;
-    const grouped: Record<string, any> = {};
-
-    for (const abs of files) {
-      const localeKey = getLocaleFromPath(abs, root);
-      if (!localeKey) {
-        console.warn(`Skipping file with invalid locale: ${abs}`);
-        continue;
-      }
-      console.warn(`${abs} -> ${localeKey}`);
-      try {
-        const raw = await fs.readFile(abs, "utf8");
-        const parsed = JSON.parse(raw);
-        const prepared = transformJson ? transformJson(parsed, abs) : parsed;
-        if (!(localeKey in grouped)) grouped[localeKey] = {};
-        grouped[localeKey] = doMerge(grouped[localeKey], prepared);
-      } catch (err: any) {
-        const message = `Failed to parse/merge JSON: ${abs}\n${err?.message ?? err}`;
-        if (serverRef) serverRef.config.logger.error(message);
-        else console.error(message);
-        if (!serverRef) throw err;
-      }
-    }
-
-    return grouped;
-  }
-
-  async function rebuild(reason: string) {
-    groupedCache = await readAndGroup();
-    jsonTextCache = JSON.stringify(canonicalize(groupedCache));
-    log(serverRef, debug, `Rebuilt (${reason}). Locales: ${Object.keys(groupedCache).join(", ")}`, VIRTUAL_ID);
-
-    // Generate TypeScript definition files
-    if (typesPath && constsPath) {
-      await generateFile(groupedCache, root);
-    }
-
-    if (serverRef) {
-      const mod = serverRef.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
-      if (mod) {
-        await serverRef.moduleGraph.invalidateModule(mod);
-        serverRef.ws.send({
-          type: "full-reload",
-          path: "*"
-        });
-      }
+    try {
+      await fs.access(typesOutPath, fs.constants.W_OK);
+      logger.info(`Types file is accessible at: ${typesOutPath}`);
+    } catch (e: unknown) {
+      const err = e as Error;
+      logger.warn(
+        `Types file does not exist at: ${typesOutPath}. Will be created during buildStart. ${err.message}`
+      );
     }
   }
 
+  /**
+   * Check if a file change should trigger a rebuild
+   */
   function isWatchedFile(file: string): boolean {
     const abs = normalizePath(file);
 
     if (!abs.endsWith(".json")) return false;
+
     const rel = normalizePath(path.relative(root, abs));
     if (rel.startsWith("..")) return false;
-    log(serverRef, debug, `Checking file change: ${abs}|${file}`);
+
+    if (config.debug) {
+      logger.info(`Checking file change: ${abs}`);
+    }
+
     return true;
   }
-
-  function extractBase(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, languages: string[]) {
-    return (value[baseLocale] ?? value?.[languages?.[0] ?? baseLocale] ?? {[baseLocale]: {}}) as JSONObject;
-  }
-
-  async function generateFileContent(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
-    // 2) Gather languages & select base locale
-    const languages = Object.keys(value);
-
-    const baseLanguagePart = extractBase(value, languages);
-    const base = baseLanguagePart as JSONObject;
-    if (!base || typeof base !== 'object' || Array.isArray(base)) {
-      log(serverRef, debug,
-        `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
-      );
-    }
-
-    // Check for conflicting keys across locales
-    const conflicts = detectKeyConflicts(value);
-    if (conflicts.length > 0) {
-      log(serverRef, debug, '⚠️  Conflicting translation keys detected:', {timestamp: true});
-      for (const conflict of conflicts) {
-        log(serverRef, debug, `   ${conflict}`, {timestamp: true});
-      }
-    }
-
-    // 3) Deterministic inputs for DTS
-    const sortedLanguages = Array.from(new Set(languages.filter(a => a != ' js-reserved'))).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-    const canonicalBase = canonicalize(value as JSONValue) as Record<string, JSONValue>;
-    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
-    const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
-
-    const relativePathToTypes = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
-    // 4) Generate dual files
-    const typesContent = toTypesContent({
-      messages: canonicalBase,
-      baseLocale: baseLocale,
-      supportedLanguages: sortedLanguages,
-      banner,
-    });
-
-    const constsContent = toConstsContent({
-      messages: canonicalBase,
-      typeFilePath: './' + relativePathToTypes,
-      baseLocale: baseLocale,
-      supportedLanguages: sortedLanguages,
-      banner,
-      exportMessages,
-      sourceId: sourceId
-    });
-    // Update import path in consts file to point to types file
-    const relativePath = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
-    const adjustedConstsContent = constsContent.replace(
-      `from './i18n.types'`,
-      `from './${relativePath}'`
-    );
-    return {constsContent: adjustedConstsContent, typesContent};
-  }
-
-  async function generateFile(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
-    const start = (globalThis.performance?.now?.() ?? Date.now());
-    const languages = Object.keys(value);
-
-    const base = extractBase(value, languages);
-    if (!base || typeof base !== 'object' || Array.isArray(base)) {
-      log(serverRef, debug,
-        `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
-      );
-    }
-
-    // Check for conflicting keys across locales
-    const conflicts = detectKeyConflicts(value);
-    if (conflicts.length > 0) {
-      log(serverRef, debug, '⚠️  Conflicting translation keys detected:', {timestamp: true});
-      for (const conflict of conflicts) {
-        log(serverRef, debug, `   ${conflict}`, {timestamp: true});
-      }
-    }
-
-    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
-    const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
-
-    const {
-      constsContent: adjustedConstsContent,
-      typesContent
-    } = await generateFileContent(value, rootDir);
-
-    // Write types file
-    await ensureDir(typesOutPath);
-
-    let shouldWriteTypes: boolean;
-    try {
-      const existing = await fs.readFile(typesOutPath, 'utf8');
-      shouldWriteTypes = existing !== typesContent;
-    } catch {
-      shouldWriteTypes = true;
-    }
-
-    if (shouldWriteTypes) {
-      await writeFileAtomic(typesOutPath, typesContent);
-    }
-
-    // Write consts file
-    await ensureDir(constsOutPath);
-
-    let shouldWriteConsts: boolean;
-    try {
-      const existing = await fs.readFile(constsOutPath, 'utf8');
-      shouldWriteConsts = existing !== adjustedConstsContent;
-    } catch {
-      shouldWriteConsts = true;
-    }
-
-    if (shouldWriteConsts) {
-      await writeFileAtomic(constsOutPath, adjustedConstsContent);
-    }
-    log(serverRef, debug,
-      `Generated ${path.relative(rootDir, typesOutPath)} and ${path.relative(rootDir, constsOutPath)} in ${Math.round((globalThis.performance?.now?.() ?? Date.now()) - start)}ms`,
-    );
-    return {constsContent: adjustedConstsContent, typesContent};
-  }
-
 
   return {
     name: "vite-plugin-locale-json",
     enforce: "pre",
 
-    configResolved(cfg) {
+    async configResolved(cfg) {
       root = cfg.root;
       isBuild = cfg.command === "build";
+      logger = cfg.logger;
+
+      logger.info(`Config resolved. Root: ${root}, isBuild: ${isBuild}`);
+
+      // Initialize core managers
+      fileManager = new FileManager({
+        include: config.include,
+        exclude: config.exclude,
+        root,
+        getLocaleFromPath: config.getLocaleFromPath,
+        transformJson: config.transformJson,
+        merge: config.mergeFunction,
+        logger,
+        debug: config.debug,
+      });
+
+      generationCoordinator = new GenerationCoordinator({
+        typesPath: config.typesPath,
+        virtualFilePath: config.virtualFilePath,
+        baseLocale: config.baseLocale,
+        banner: config.banner,
+        sourceId: config.sourceId,
+        logger,
+      });
+
+      rebuildManager = new RebuildManager({
+        fileManager,
+        generationCoordinator,
+        root,
+        logger,
+        onRebuildComplete: (cache) => {
+          groupedCache = cache.grouped;
+          jsonTextCache = cache.jsonText;
+          lastFiles = fileManager.getLastFiles();
+        },
+      });
+
+      await checkTypesFileExists();
     },
 
     async buildStart() {
-      groupedCache = await readAndGroup();
-      jsonTextCache = JSON.stringify(canonicalize(groupedCache));
-      await generateFileContent(groupedCache, root);
+      // Perform initial rebuild
+      const result = await rebuildManager.rebuild("buildStart");
+      groupedCache = result.grouped;
+      jsonTextCache = result.jsonText;
+
+      // Emit asset file in build mode
       if (isBuild) {
         emittedRefId = this.emitFile({
           type: "asset",
-          name: emit.fileName,
+          name: config.emit.fileName,
           source: jsonTextCache,
         });
-        await generateFile(groupedCache, root);
       }
     },
 
     resolveId(id) {
-      if (id === VIRTUAL_ID) return RESOLVED_VIRTUAL_ID;
+      if (id === config.virtualId) return config.resolvedVirtualId;
       return null;
     },
 
     load(id) {
-      if (id !== RESOLVED_VIRTUAL_ID) return null;
+      if (id !== config.resolvedVirtualId) return null;
 
       if (isBuild) {
         return createVirtualModuleCode({
+          sourceId: config.sourceId,
           jsonText: jsonTextCache,
-          exportData: !!emit.inlineDataInBuild,
+          exportData: config.emit.inlineDataInBuild,
           buildAssetRefId: emittedRefId,
+          baseLocale: config.baseLocale,
         });
       }
 
       return createVirtualModuleCode({
+        sourceId: config.sourceId,
         jsonText: jsonTextCache,
         exportData: true,
-        devUrlPath: devUrlPath,
+        devUrlPath: config.devUrlPath,
+        baseLocale: config.baseLocale,
       });
     },
 
     configureServer(server) {
-      serverRef = server;
+      // Set server reference for hot updates
+      rebuildManager.setServer(server, config.resolvedVirtualId);
 
-      // Initial build + middleware
-      rebuild("initial").catch((e) => server.config.logger.error(String(e)));
+      // Initial rebuild
+      rebuildManager.rebuild("initial").catch((e) => {
+        server.config.logger.error(`Initial rebuild failed: ${String(e)}`);
+      });
 
-      const servePath = devUrlPath;
+      // Serve locales JSON endpoint
       server.middlewares.use((req, res, next) => {
         if (!req.url) return next();
-        if (req.url === servePath) {
+        if (req.url === config.devUrlPath) {
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.end(jsonTextCache);
@@ -368,7 +185,8 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
         next();
       });
 
-      if (debug) {
+      // Debug endpoint
+      if (config.debug) {
         server.middlewares.use((req, res, next) => {
           if (req.url === "/__locales_debug__") {
             res.setHeader("Content-Type", "application/json");
@@ -379,25 +197,26 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
         });
       }
     },
-    async hotUpdate({
-                      server,
-                      modules,
-                      ...ctx
-                    }: HotUpdateOptions): Promise<Array<EnvironmentModuleNode> | void> {//Array<EnvironmentModuleNode> | void | Promise<Array<EnvironmentModuleNode> | void>{
+
+    async hotUpdate({server, modules, ...ctx}: HotUpdateOptions): Promise<
+      Array<EnvironmentModuleNode> | void
+    > {
       if (!isWatchedFile(ctx.file)) return;
-      await rebuild("change");
-      // const mod = ctx.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
-      const mod = modules.filter(m => m.id === RESOLVED_VIRTUAL_ID);
+
+      await rebuildManager.debouncedRebuild("change");
+
+      const mod = modules.filter((m) => m.id === config.resolvedVirtualId);
       if (modules.length > 0 && mod.length === 0) {
-        server.config.logger.info(`No module to hot update found for ${RESOLVED_VIRTUAL_ID}`);
-        if (debug) {
-          server.config.logger.info(`Known modules: ${[...server.moduleGraph.idToModuleMap.keys()].join(", ")}`);
+        server.config.logger.info(`No module to hot update found for ${config.resolvedVirtualId}`);
+        if (config.debug) {
+          server.config.logger.info(
+            `Known modules: ${[...server.moduleGraph.idToModuleMap.keys()].join(", ")}`
+          );
         }
         return;
       }
 
-      return mod ? mod : [];
+      return mod.length > 0 ? mod : [];
     },
-    // handleHotUpdate,
   };
 }

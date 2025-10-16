@@ -1,7 +1,7 @@
 import {describe, it, expect} from 'vitest'
 import {extractJson, getJsonLeafPaths, canonicalize, detectKeyConflicts} from './json'
 import complexInput from './json.test.json'
-import { baseCompile} from '@intlify/message-compiler';
+
 describe('extractJson', () => {
   it('should return correct for complex example', () => {
 

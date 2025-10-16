@@ -2,8 +2,6 @@
 export { extractJson, getJsonLeafPaths } from './utils/json'
 export type { VirtualKeysDtsOptions } from './types'
 export type { JSONValue, JSONObject, JSONArray } from './types'
-export { toTypesContent, toConstsContent } from './generator'
+export {toTypesContent} from './generator'
 export { default } from './plugin'
 // import plugin from './plugin'
-
-// export const unpluginVueI18nDtsGenerationPlugin = plugin

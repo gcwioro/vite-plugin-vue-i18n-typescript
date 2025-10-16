@@ -1,9 +1,11 @@
-
+/// <reference types="./vite-env-override" />
+/// <reference types="vite/client" />
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import viteTsChecker from 'vite-plugin-checker';
 import {join} from "path";
 import {fileURLToPath, URL} from "url";
+
 
 import unpluginVueI18nDtsGeneration from "../src";
 // import unpluginVueI18nDtsGeneration, {
@@ -29,8 +31,7 @@ export default defineConfig({
       baseLocale: 'en',
       debug: true,
       devUrlPath: "/_virtual_locales.json",
-
-
+      // virtualFilePath: "src/i18n/virtual.gen.ts",
       emit: {
         fileName: "assets/locales.json", // hint; final path will be handled by Rollup
         inlineDataInBuild: true,         // also export `data` during build

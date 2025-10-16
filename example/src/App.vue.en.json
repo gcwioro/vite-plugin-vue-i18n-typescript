@@ -1,7 +1,7 @@
 {
   "App": {
     "fruitsLabel": "There are {amount} {fruit}",
-    "testd": "asdf"
+    "test": "asdf"
 
   }
 }

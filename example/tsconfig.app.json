@@ -3,6 +3,7 @@
   "include": [
     "env.d.ts",
     "src/**/*.ts",
+    "./vite-env-override.d.ts",
     "src/**/*.json",
     //    "../src/**/*.ts",
     //    "../src/**/*.ts",
@@ -15,7 +16,6 @@
     //    "../node_modules",
     //    "../*.config.ts",
   ],
-
   "compilerOptions": {
     "rootDir": "./src",
     "useDefineForClassFields": true,
@@ -25,6 +25,9 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "types": [
+      "vite/client"
+    ],
     "esModuleInterop": true,
     "lib": [
       "esnext",

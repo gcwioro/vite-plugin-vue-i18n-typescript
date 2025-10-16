@@ -1,11 +1,10 @@
 {
   "name": "unplugin-vue-i18n-dts-generation",
-  "version": "1.1.9",
-  "description": "Vite plugin for generating TypeScript definitions from unplugin-vue-i18n virtual modules",
+  "version": "1.2.0",
+  "description": "Alternative to @intlify/unplugin-vue-i18n - Catch unknown i18n key errors at compile time with TypeScript. Supports flat file structures. High-performance standalone Vite plugin.",
   "keywords": [
     "vite",
     "vite-plugin",
-    "unplugin-vue-i18n",
     "vue-i18n",
     "typescript",
     "i18n",
@@ -15,7 +14,12 @@
     "localization",
     "code-generation",
     "translation-keys",
-    "internationalization"
+    "internationalization",
+    "type-safe",
+    "compile-time-validation",
+    "autocomplete",
+    "flat-structure",
+    "unplugin-vue-i18n-alternative"
   ],
   "homepage": "https://github.com/gcwioro/unplugin-vue-i18n-dts-generation#readme",
   "bugs": {
@@ -33,6 +37,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json",
+    "./i18n-types": {
+      "types": "./src/virtual.d.ts"
     }
   },
   "main": "./dist/index.cjs",
@@ -58,7 +66,6 @@
   "peerDependenciesMeta": {},
   "devDependencies": {
     "@eslint/js": "^9.37.0",
-    "@intlify/unplugin-vue-i18n": "6.0.8",
     "@types/node": "^24.7.2",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",

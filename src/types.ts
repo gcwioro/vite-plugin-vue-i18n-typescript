@@ -1,7 +1,7 @@
 /**
  * Options for the unplugin-vue-i18n-dts-generation Vite plugin.
  *
- * This plugin generates TypeScript definitions from unplugin-vue-i18n virtual modules,
+ * This plugin generates TypeScript definitions from JSON locale files,
  * providing type-safe i18n keys for your Vue application.
  */
 export type VirtualKeysDtsOptions = {
@@ -18,28 +18,19 @@ export type VirtualKeysDtsOptions = {
   debug?: boolean;
 
   /**
-   * The virtual module ID from unplugin-vue-i18n.
-   * Default: "@intlify/unplugin-vue-i18n/messages"
+   * The virtual module ID for the generated locale module.
    * Usually you don't need to change this.
+   * @default "virtual:unplug-i18n-dts-generation"
    */
   sourceId?: string
 
   /**
    * Path for the TypeScript type definitions file (.d.ts).
    *
-   * @default "src/i18n/i18n.types.d.ts"
+   * @default "./vite-env-override.d.ts"
    * @example "src/types/i18n.types.d.ts"
    */
   typesPath?: string
-
-  /**
-   * Path for the constants file (.ts) with runtime values.
-   *
-   * @default "src/i18n/i18n.consts.ts"
-   * @example "src/types/i18n.consts.ts"
-   */
-  constsPath?: string
-
 
   /**
    * Optional banner comment at the top of the generated file.
@@ -47,28 +38,22 @@ export type VirtualKeysDtsOptions = {
   banner?: string
 
   /**
-   * Whether to watch for changes and regenerate types automatically in development mode.
-   *
-   * @default true
-   */
-  watchInDev?: boolean
-
-  /**
    * Base locale to use for generating TypeScript key paths.
    * The plugin will introspect this locale's messages to generate the type definitions.
    *
-   * @default "en"
+   * @default "de"
    */
   baseLocale?: string
 
-
   /**
-   * Whether to export the messages object from the generated constants file.
-   * This can be useful if you want to access the raw messages at runtime.
+   * Path for the virtual module file (.ts).
+   * If specified, the virtual module will be generated as a physical file.
+   * This can be useful for debugging or when you want to see the actual locale data.
    *
-   * @default false
+   * @default undefined (virtual module only served dynamically)
+   * @example "src/i18n/i18n.virtual.gen.ts"
    */
-  exportMessages?: boolean
+  virtualFilePath?: string
 }
 
 /**
@@ -85,9 +70,7 @@ export type JSONArray = JSONValue[]
 export interface DtsContentParams<TMessages extends JSONValue = JSONValue> {
   messages: Record<string, TMessages>
   baseLocale: string
-  typeFilePath: string
   supportedLanguages: string[]
-  banner?: string,
-  sourceId?: string,
-  exportMessages?: boolean
+  banner?: string
+  sourceId?: string
 }
