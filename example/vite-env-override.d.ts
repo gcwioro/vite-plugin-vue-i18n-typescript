@@ -32,9 +32,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
     (key: AllTranslationKeys, named: NamedValue, plural?: number): string
 
     (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions): string
-
     (key: AllTranslationKeys, plural: number, named: NamedValue): string
-
     (key: AllTranslationKeys, plural: number, defaultMsg: string): string
   }
   // I18n config options (excludes messages as they're provided by the plugin)
