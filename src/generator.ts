@@ -42,7 +42,7 @@ export function toTypesContent(params: Omit<DtsContentParams<JSONObject>, 'typeF
   // Type definitions only - build with array for better performance
   const bodyLines = [
     `declare module '${sourceId}' {`,
-    getModuleFunction(baseLocale).split(NL).map(l => '  ' + l).join(NL),
+    getModuleFunction().split(NL).map(l => '  ' + l).join(NL),
     getMessageTypeDefinitions(baseLocale, messages, supportedLanguages).split(NL).map(l => '  ' + l).join(NL),
 
     '}',
@@ -54,7 +54,7 @@ export function toTypesContent(params: Omit<DtsContentParams<JSONObject>, 'typeF
 export function getModuleFunction(): string {
   return [
     'import {type Plugin, type WritableComputedRef} from \'vue\'',
-    'import type {I18nOptions,Composer, ComposerOptions, ComposerOption as Option, I18n, Locale} from "vue-i18n"',
+    'import type {  Composer,  ComposerOptions as Options,  ComposerOptions,  I18n,  I18nOptions,  Locale, NamedValue, TranslateOptions, UseI18nOptions} from "vue-i18n"',
 
     'export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>',
     'export interface I18nCustom {',
@@ -77,7 +77,7 @@ export function getModuleFunction(): string {
     '// I18n config options (excludes messages as they\'re provided by the plugin)',
     'export type I18nConfigOptions = Omit<I18nOptions<MessageSchemaGen, {}, {}, SupportedLanguageUnionGen, false>, \'messages\'>;',
     "export type UseI18nTypesafeReturn = Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>,'t'> & { t: I18nCustom};",
-    '  function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<typeof messages, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>',
+    '  function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>',
     '  function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )',
 
     '',

@@ -1,9 +1,17 @@
 declare module 'virtual:unplug-i18n-dts-generation' {
   import {type Plugin} from 'vue'
-  import type {I18nOptions, NamedValue, TranslateOptions, UseI18nOptions} from 'vue-i18n'
-  import {Composer, ComposerOptions, I18n, Locale} from "vue-i18n"
+  import type {
+    Composer,
+    ComposerOptions as Options,
+    ComposerOptions,
+    I18n,
+    I18nOptions,
+    Locale,
+    NamedValue,
+    TranslateOptions,
+    UseI18nOptions
+  } from "vue-i18n"
 
-  function createI18nInstance<T extends Partial<ComposerOptions>>(options?: T): I18n<typeof messages, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false>
 
   function createI18nInstancePlugin<T extends Partial<ComposerOptions> & I18nOptions>(options?: T): Plugin<unknown[]> & (I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false>)
 
@@ -53,6 +61,9 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   export type AllLocaleGen = Readonly<Record<SupportedLanguageUnionGen, MessageSchemaGen>>
   export type AllTranslationsGen = AllLocaleGen
   export type MessagesType = AllLocaleGen
+
+  function createI18nInstance<T extends Partial<ComposerOptions>>(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false>
+
   const messages: MessagesType;
   export default messages;
 
