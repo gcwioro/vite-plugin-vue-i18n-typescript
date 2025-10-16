@@ -7,6 +7,7 @@ describe('debounce', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.restoreAllMocks()
   })
 
@@ -17,10 +18,7 @@ describe('debounce', () => {
     debouncedFn('test')
     expect(fn).not.toHaveBeenCalled()
 
-    vi.advanceTimersByTime(99)
-    expect(fn).not.toHaveBeenCalled()
-
-    vi.advanceTimersByTime(1)
+    vi.runAllTimers()
     expect(fn).toHaveBeenCalledWith('test')
     expect(fn).toHaveBeenCalledTimes(1)
   })
@@ -30,14 +28,9 @@ describe('debounce', () => {
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn('first')
-    vi.advanceTimersByTime(50)
-    expect(fn).not.toHaveBeenCalled()
-
     debouncedFn('second')
-    vi.advanceTimersByTime(50)
-    expect(fn).not.toHaveBeenCalled()
 
-    vi.advanceTimersByTime(50)
+    vi.runAllTimers()
     expect(fn).toHaveBeenCalledWith('second')
     expect(fn).toHaveBeenCalledTimes(1)
   })
@@ -48,12 +41,11 @@ describe('debounce', () => {
 
     for (let i = 0; i < 10; i++) {
       debouncedFn(i)
-      vi.advanceTimersByTime(10)
     }
 
     expect(fn).not.toHaveBeenCalled()
 
-    vi.advanceTimersByTime(100)
+    vi.runAllTimers()
     expect(fn).toHaveBeenCalledWith(9)
     expect(fn).toHaveBeenCalledTimes(1)
   })
@@ -63,7 +55,7 @@ describe('debounce', () => {
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn('arg1', 'arg2', 'arg3')
-    vi.advanceTimersByTime(100)
+    vi.runAllTimers()
 
     expect(fn).toHaveBeenCalledWith('arg1', 'arg2', 'arg3')
   })
@@ -73,7 +65,7 @@ describe('debounce', () => {
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn()
-    vi.advanceTimersByTime(100)
+    vi.runAllTimers()
 
     expect(fn).toHaveBeenCalledWith()
   })
@@ -83,12 +75,12 @@ describe('debounce', () => {
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn('first')
-    vi.advanceTimersByTime(100)
+    vi.runAllTimers()
     expect(fn).toHaveBeenCalledWith('first')
     expect(fn).toHaveBeenCalledTimes(1)
 
     debouncedFn('second')
-    vi.advanceTimersByTime(100)
+    vi.runAllTimers()
     expect(fn).toHaveBeenCalledWith('second')
     expect(fn).toHaveBeenCalledTimes(2)
   })

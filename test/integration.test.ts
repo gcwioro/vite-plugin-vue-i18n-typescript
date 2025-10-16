@@ -14,7 +14,6 @@ const dtsPath = path.resolve(root, 'src/i18n/i18n.gen.ts')
 describe('i18n type generation', () => {
   it('generates types for array keys', async () => {
     await fs.rm(dtsPath, {force: true, recursive: true})
-    console.log(root)
     const server = await createServer({
       root,
       configFile: false,
@@ -22,6 +21,19 @@ describe('i18n type generation', () => {
     })
     try {
       await server.listen()
+
+      // Wait for file to be generated (with timeout)
+      const maxWaitTime = 5000 // 5 seconds
+      const startTime = Date.now()
+      while (Date.now() - startTime < maxWaitTime) {
+        try {
+          await fs.access(dtsPath)
+          break
+        } catch {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
+
       const content = await fs.readFile(dtsPath, 'utf-8')
       expect(content).toContain("'App.greetings'")
       expect(content).toContain("'App.fruits")

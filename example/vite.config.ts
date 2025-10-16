@@ -42,11 +42,11 @@ export default defineConfig({
 
     }),
     // unpluginVueI18nDtsGeneration(),
-    // viteTsChecker({
-    //   overlay: {initialIsOpen: true},
-    //   typescript: true,
-    //   vueTsc: {root: __dirname, tsconfigPath: join(__dirname, './tsconfig.app.json')}
-    // }),
+    viteTsChecker({
+      overlay: {initialIsOpen: true},
+      typescript: true,
+      vueTsc: {root: __dirname, tsconfigPath: join(__dirname, './tsconfig.app.json')}
+    }),
 
   ],
 })

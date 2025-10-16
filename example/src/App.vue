@@ -35,7 +35,8 @@
       <details>
         <summary>Debug view</summary>
         <ul>
-          <li>apple → {{ t('App.fruits.apple', {amount}) }}</li>
+
+        <li>apple → {{ t('App.fruits.apple', {amount}) }}</li>
           <li>banana → {{ t('App.fruits.banana', amount, {amount}) }}</li>
           <li>tm('App') → {{ tm('App') }}</li>
         </ul>

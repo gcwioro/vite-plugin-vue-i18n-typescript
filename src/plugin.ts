@@ -227,7 +227,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: LocaleJsonPlug
     }
 
     if (serverRef) {
-
       const mod = serverRef.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
       if (mod) {
         await serverRef.moduleGraph.invalidateModule(mod);
@@ -235,31 +234,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: LocaleJsonPlug
           type: "full-reload",
           path: "*"
         });
-        //
-        // serverRef.ws.send({
-        //   type: "update",
-        //   updates: [{
-        //     type: "js-update",
-        //     data: result.constsContent,
-        //     path: 'xxx',
-        //     acceptedPath: 'xxx',
-        //     timestamp: Date.now()
-        //   }],
-        // });
-
-
-        // if(options.constsPath)
-        // emitConstRefId = serverRef.emitFile({
-        //   type: "asset",
-        //   name: options.constsPath,
-        //   source: result.constsContent,
-        // });
-        //   if(options.typesPath)
-        //   emitTypesRefId = this.emitFile({
-        //   type: "asset",
-        //   name: options.typesPath,
-        //   source: result.constsContent,
-        // });
       }
     }
   }
@@ -330,7 +304,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: LocaleJsonPlug
   async function generateFile(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
     // 2) Gather languages & select base locale
     const start = (globalThis.performance?.now?.() ?? Date.now())
-    console.log(value)
     const languages = Object.keys(value)
 
 
@@ -373,13 +346,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: LocaleJsonPlug
 
     if (shouldWriteTypes) {
       await writeFileAtomic(typesOutPath, typesContent)
-      try {
-        // server.watcher.add(typesOutPath)
-        // server.watcher.emit('change', typesOutPath)
-      } catch {
-        // watcher may not be ready in build mode
-        // logger.warn('Watcher not ready to track types file changes.', {timestamp: true})
-      }
     }
 
     // Write consts file
@@ -396,12 +362,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: LocaleJsonPlug
 
     if (shouldWriteConsts) {
       await writeFileAtomic(constsOutPath, adjustedConstsContent)
-      try {
-        // server.watcher.add(constsOutPath)
-        // server.watcher.emit('change', constsOutPath)
-      } catch {
-        // watcher may not be ready in build mode
-      }
     }
     log(serverRef, options.debug,
       `Generated ${path.relative(rootDir, typesOutPath)} and ${path.relative(rootDir, constsOutPath)} in ${Math.round((globalThis.performance?.now?.() ?? Date.now()) - start)}ms`,
@@ -428,7 +388,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: LocaleJsonPlug
           name: options.emit.fileName,
           source: jsonTextCache,
         });
-        console.log(emittedRefId)
         await generateFile(groupedCache, root)
       }
 
