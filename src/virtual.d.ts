@@ -13,7 +13,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   } from "vue-i18n"
 
 
-  // @ts-expect-error
+  // @ts-expect-error - Virtual module provided by vite-plugin-locale-json
   function createI18nInstancePlugin<T extends Partial<ComposerOptions> & I18nOptions>(options?: T): Plugin<unknown[]> & (I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false>)
 
   export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>
@@ -63,7 +63,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   export type AllTranslationsGen = AllLocaleGen
   export type MessagesType = AllLocaleGen
 
-  // @ts-expect-error
+  // @ts-expect-error - Virtual module provided by vite-plugin-locale-json
   function createI18nInstance<T extends Partial<ComposerOptions>>(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false>
 
   const messages: MessagesType;
