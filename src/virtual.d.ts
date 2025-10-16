@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 declare module 'virtual:unplug-i18n-dts-generation' {
   import {type Plugin} from 'vue'
   import type {
@@ -39,6 +40,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   }
 
 // I18n config options (excludes messages as they're provided by the plugin)
+  // @ts-expect-error - Virtual module provided by vite-plugin-locale-json
   export type I18nConfigOptions = Omit<ComposerOptions<MessageSchemaGen, {}, SupportedLanguageUnionGen, false>, 'messages'>;
   export type UseI18nTypesafeReturn =
     Omit<Composer<NonNullable<ComposerOptions['messages']>, NonNullable<ComposerOptions['datetimeFormats']>, NonNullable<ComposerOptions['numberFormats']>, ComposerOptions['locale'] extends unknown ? string : Options['locale']>, 't'>
