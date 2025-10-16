@@ -33,7 +33,6 @@ export function toTypesContent(params: Omit<DtsContentParams<JSONObject>, 'typeF
       `/* eslint-disable */
        /* prettier-ignore */
       // biome-ignore lint: disable
-      // noinspection JSUnusedGlobalSymbols'
       // AUTO-GENERATED FILE. DO NOT EDIT.
       // Content-Hash: ${contentId}
 `.split('\n').map(l => l.trim()).filter(l => l).join('\n') + '\n\n')
@@ -43,8 +42,8 @@ export function toTypesContent(params: Omit<DtsContentParams<JSONObject>, 'typeF
   // Type definitions only - build with array for better performance
   const bodyLines = [
     `declare module '${sourceId}' {`,
-    getModuleFunction(baseLocale, messages),
-    getMessageTypeDefinitions(baseLocale, messages),
+    getModuleFunction(baseLocale, messages).split(NL).map(l => '  ' + l).join(NL),
+    getMessageTypeDefinitions(baseLocale, messages, supportedLanguages).split(NL).map(l => '  ' + l).join(NL),
 
     '}',
   ];
@@ -55,14 +54,10 @@ export function toTypesContent(params: Omit<DtsContentParams<JSONObject>, 'typeF
 export function getModuleFunction(baseLocale: string, messages: Record<string, JSONObject>): string {
   return [
     'import {type Plugin, type WritableComputedRef} from \'vue\'',
-    "import type { I18nOptions } from 'vue-i18n'",
-    '  import {Composer, ComposerOptions, I18n, Locale} from "vue-i18n"',
+    'import type {I18nOptions,Composer, ComposerOptions, ComposerOption as Option, I18n, Locale} from "vue-i18n"',
 
-    '  function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<typeof messages, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : {}, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : {}, T["locale"] extends string ? T["locale"] : Locale, false>',
-    '  function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : {}, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : {}, T["locale"] extends string ? T["locale"] : Locale, false> )',
-    '',
     'export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>',
-    'export declare interface I18nCustom {',
+    'export interface I18nCustom {',
     '  (key: AllTranslationKeysGen, plural: number, options?: TranslateOptions): string',
     '',
     '  (key: AllTranslationKeysGen, options?: TranslateOptions): string',
@@ -82,6 +77,8 @@ export function getModuleFunction(baseLocale: string, messages: Record<string, J
     '// I18n config options (excludes messages as they\'re provided by the plugin)',
     'export type I18nConfigOptions = Omit<I18nOptions<MessageSchemaGen, {}, {}, SupportedLanguageUnionGen, false>, \'messages\'>;',
     "export type UseI18nTypesafeReturn = Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>,'t'> & { t: I18nCustom};",
+    '  function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<typeof messages, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>',
+    '  function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )',
 
     '',
     'function useI18nTypeSafe(options?: Omit<UseI18nOptions, \'messages\'>):UseI18nTypesafeReturn;',
@@ -90,31 +87,27 @@ export function getModuleFunction(baseLocale: string, messages: Record<string, J
 
 }
 
-export function getMessageTypeDefinitions(baseLocale: string, messages: Record<string, JSONObject>): string {
-  const supportedLanguages = Object.keys(messages);
+export function getMessageTypeDefinitions(baseLocale: string, messages: Record<string, JSONObject>, supportedLanguages: string[]): string {
   const canonicalBase = messages
   const baseLocaleMessages = canonicalBase[baseLocale] ?? Object.values(canonicalBase)[0]
   const finalKeys = getFinalKeys(messages, baseLocale);
 
   return [
-    'import {type Plugin, type WritableComputedRef} from \'vue\'',
-    "import type { I18nOptions } from 'vue-i18n'",
-    'import {Composer, ComposerOptions, I18n, Locale} from "vue-i18n"',
     '',
-    'const supportedLanguages: readonly[string]',
-    'const messages: Readonly<Record<string, Record<string, unknown>>>',
-    'export default messages;',
-    '',
-    '',
+    'const supportedLanguages: readonly[string] = ' + `['${supportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}'] as const`,
     `export type AllTranslationKeysGen = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
     `export type SupportedLanguagesGen = readonly [${supportedLanguages.filter(l => l != 'js-reserved').map(l => `'${l}'`).join(', ')}]`,
     'export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]',
 
     '',
     '// Message structure types',
-    `export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages, null, 2)}`,
+    `export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages, null, 1)}`,
     'export type AllLocaleGen = Readonly<Record<SupportedLanguageUnionGen, MessageSchemaGen>>',
     'export type AllTranslationsGen = AllLocaleGen',
+
+    `export type MessagesType = AllLocaleGen`,
+    'const messages: MessagesType;',
+    'export default messages;',
     '',
     '// Type-safe translate function parameters',
     '',
@@ -154,7 +147,10 @@ export function toVirtualModuleContent(params: {
     '  return messages;',
     '}',
     'export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>',
-    'export declare interface I18nCustom {',
+    `  export type AllTranslationKeysGen = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
+    `  export type SupportedLanguagesGen = readonly [${supportedLanguages.filter(l => l != 'js-reserved').map(l => `'${l}'`).join(', ')}]`,
+    'export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]',
+    'export interface I18nCustom {',
     '  (key: AllTranslationKeysGen, plural: number, options?: TranslateOptions): string',
     '',
     '  (key: AllTranslationKeysGen, options?: TranslateOptions): string',
@@ -177,9 +173,7 @@ export function toVirtualModuleContent(params: {
 
     '',
     'export default messages;',
-    `  export type AllTranslationKeysGen = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
-    `  export type SupportedLanguagesGen = readonly [${supportedLanguages.filter(l => l != 'js-reserved').map(l => `'${l}'`).join(', ')}]`,
-    'export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]',
+
     ''
   ];
   bodyLines.push(...helperMethodsDefinition(baseLocale, finalKeys));

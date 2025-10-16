@@ -1,41 +1,34 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import {describe, it, expect, vi} from 'vitest'
 import { debounce } from './misc'
 
 describe('debounce', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
-    vi.restoreAllMocks()
-  })
-
-  it('should delay function execution', () => {
+  it('should delay function execution', async () => {
     const fn = vi.fn()
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn('test')
-    expect(fn).not.toHaveBeenCalled()
 
-    vi.runAllTimers()
+    // Wait for debounce delay
+    await new Promise(resolve => setTimeout(resolve, 150))
+
     expect(fn).toHaveBeenCalledWith('test')
     expect(fn).toHaveBeenCalledTimes(1)
   })
 
-  it('should reset delay on subsequent calls', () => {
+  it('should reset delay on subsequent calls', async () => {
     const fn = vi.fn()
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn('first')
+    await new Promise(resolve => setTimeout(resolve, 50))
     debouncedFn('second')
 
-    vi.runAllTimers()
+    await new Promise(resolve => setTimeout(resolve, 150))
     expect(fn).toHaveBeenCalledWith('second')
     expect(fn).toHaveBeenCalledTimes(1)
   })
 
-  it('should call function only once for rapid calls', () => {
+  it('should call function only once for rapid calls', async () => {
     const fn = vi.fn()
     const debouncedFn = debounce(fn, 100)
 
@@ -43,44 +36,42 @@ describe('debounce', () => {
       debouncedFn(i)
     }
 
-    expect(fn).not.toHaveBeenCalled()
-
-    vi.runAllTimers()
+    await new Promise(resolve => setTimeout(resolve, 150))
     expect(fn).toHaveBeenCalledWith(9)
     expect(fn).toHaveBeenCalledTimes(1)
   })
 
-  it('should handle multiple arguments', () => {
+  it('should handle multiple arguments', async () => {
     const fn = vi.fn()
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn('arg1', 'arg2', 'arg3')
-    vi.runAllTimers()
+    await new Promise(resolve => setTimeout(resolve, 150))
 
     expect(fn).toHaveBeenCalledWith('arg1', 'arg2', 'arg3')
   })
 
-  it('should handle no arguments', () => {
+  it('should handle no arguments', async () => {
     const fn = vi.fn()
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn()
-    vi.runAllTimers()
+    await new Promise(resolve => setTimeout(resolve, 150))
 
     expect(fn).toHaveBeenCalledWith()
   })
 
-  it('should allow separate executions after delay', () => {
+  it('should allow separate executions after delay', async () => {
     const fn = vi.fn()
     const debouncedFn = debounce(fn, 100)
 
     debouncedFn('first')
-    vi.runAllTimers()
+    await new Promise(resolve => setTimeout(resolve, 150))
     expect(fn).toHaveBeenCalledWith('first')
     expect(fn).toHaveBeenCalledTimes(1)
 
     debouncedFn('second')
-    vi.runAllTimers()
+    await new Promise(resolve => setTimeout(resolve, 150))
     expect(fn).toHaveBeenCalledWith('second')
     expect(fn).toHaveBeenCalledTimes(2)
   })

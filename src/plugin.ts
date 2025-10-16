@@ -383,21 +383,12 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
   async function checkIfModuleDefinitionFileExists() {
     const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(root, typesPath);
 
-    // Check if file exists and if not create it and let the build fail with a clear message that the path is not writable
+    // Check if file exists
     try {
       await fs.access(typesOutPath, fs.constants.W_OK);
       logger.info(`Types file is accessible at: ${typesOutPath}.`);
     } catch (e: unknown) {
-      logger.error(`Types file is not accessible at: ${typesOutPath}. Attempting to create it...`);
-      await generateFile(groupedCache, root);
-      logger.error(`Types file created at: ${typesOutPath}. Please RESTART the build.`, {
-        error: {
-          name: "VITE_PLUGIN_LOCALE_JSON_TYPES_FILE_CREATED",
-          message: "Types file created. Please restart the build."
-        }
-      });
-      throw e;
-
+      logger.warn(`Types file does not exist at: ${typesOutPath}. Will be created during buildStart.`);
     }
   }
 
@@ -421,7 +412,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       }
     },
 
-    async buildStart(cfg) {
+    async buildStart() {
       // Load files async for runtime
 
       const rawGrouped = await readAndGroup();
@@ -440,8 +431,9 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
           name: emit.fileName,
           source: jsonTextCache,
         });
-        await generateFile(groupedCache, root);
+
       }
+      await generateFile(groupedCache, root);
     },
 
     resolveId(id) {
