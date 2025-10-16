@@ -86,9 +86,11 @@ bun add -D unplugin-vue-i18n-dts-generation
 
 ### 2. Configure Vite Plugin
 
-Add the plugin to your `vite.config.ts`:
+Add the plugin to your `vite.config.ts` with the TypeScript reference directive:
 
 ```typescript
+/// <reference types="./vite-env-override" />
+
 // vite.config.ts
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -103,6 +105,9 @@ export default defineConfig({
   ],
 })
 ```
+
+**Important:** The `/// <reference types="./vite-env-override" />` directive at the top ensures TypeScript recognizes
+the generated type definitions.
 
 ### 3. Create Locale Files
 
@@ -320,6 +325,8 @@ bun add vue-i18n
 Add the plugin in your Vite configuration (e.g. vite.config.ts):
 
 ```typescript
+/// <reference types="./vite-env-override" />
+
 // vite.config.ts
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -335,6 +342,9 @@ export default defineConfig({
     ]
 })
 ```
+
+> **Note:** Add `/// <reference types="./vite-env-override" />` at the top of your `vite.config.ts` to ensure TypeScript
+> recognizes the generated type definitions.
 
 By default, the plugin will automatically discover your locale JSON files in `src/locales/**/*.json`. The locale code is
 extracted from the filename - for example:
@@ -382,6 +392,8 @@ base locale, etc.
 ### Custom Options Example
 
 ```typescript
+/// <reference types="./vite-env-override" />
+
 // vite.config.ts
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -548,6 +560,8 @@ npm install -D unplugin-vue-i18n-dts-generation
 **3. Update your `vite.config.ts`:**
 
 ```diff
++ /// <reference types="./vite-env-override" />
++
 - import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 + import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
 
@@ -563,6 +577,8 @@ export default defineConfig({
   ],
 })
 ```
+
+> **Note:** Add the `/// <reference types="./vite-env-override" />` directive at the top of `vite.config.ts`
 
 **4. Update your locale imports:**
 
@@ -657,6 +673,9 @@ Composition API • Options API
 
 ## Important Notes
 
+- **TypeScript Reference Directive**: Add `/// <reference types="./vite-env-override" />` at the top of your
+  `vite.config.ts` to ensure TypeScript recognizes the generated type definitions. This is **required** for proper type
+  safety.
 - **JSON-only support**: This plugin currently only supports JSON locale files. Support for YAML and JSON5 may be added
   in the future.
 - **Works out-of-the-box**: The default configuration will find locale JSON files in `src/locales/**/*.json` without any

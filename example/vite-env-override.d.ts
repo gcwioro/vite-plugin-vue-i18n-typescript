@@ -36,7 +36,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
     (key: AllTranslationKeys, plural: number, defaultMsg: string): string
   }
   // I18n config options (excludes messages as they're provided by the plugin)
-  export type I18nConfigOptions = Omit<I18nOptions<MessageSchemaGen, {}, {}, SupportedLanguageUnion, false>, 'messages'>;
+  export type I18nConfigOptions = Omit<I18nOptions<MessageSchemaGen, {}, {}, SupportedLanguage, false>, 'messages'>;
   export type UseI18nTypesafeReturn =
     Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>, 't'>
     & { t: I18nCustom };
@@ -49,7 +49,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
   export {createI18nInstance, createI18nInstancePlugin, useI18nTypeSafe};
 
-  const supportedLanguages: readonly[string] = ['de', 'en'] as const
+  const AllSupportedLanguages: readonly[string] = ['de', 'en'] as const
   export type AllTranslationKeys =
     'App.fruits.apple'
     | 'App.fruits.banana'
@@ -59,8 +59,8 @@ declare module 'virtual:unplug-i18n-dts-generation' {
     | 'App.menu.0'
     | 'App.menu.1'
     | 'App.test'
-  export type SupportedLanguages = readonly ['de', 'en']
-  export type SupportedLanguageUnion = SupportedLanguages[number]
+  export type AllSupportedLanguages = readonly ['de', 'en']
+  export type SupportedLanguage = AllSupportedLanguages[number]
 
   // Message structure types
   export type MessageSchemaGen = {
@@ -78,7 +78,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
       "test": "asdf"
     }
   }
-  export type I18nMessages = Readonly<Record<SupportedLanguageUnion, MessageSchemaGen>>
+  export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>
   export type AllTranslations = I18nMessages
   export type MessagesType = I18nMessages
   const messages: MessagesType;
@@ -86,5 +86,5 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
   // Type-safe translate function parameters
 
-  export {supportedLanguages, messages}
+  export {AllSupportedLanguages, messages}
 }

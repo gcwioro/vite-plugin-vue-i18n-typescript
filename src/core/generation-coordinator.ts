@@ -113,7 +113,7 @@ export class GenerationCoordinator {
     const typesContent = toTypesContent({
       messages: messages as Record<string, JSONObject>,
       baseLocale: this.options.baseLocale,
-      supportedLanguages: sortedLanguages,
+      AllSupportedLanguages: sortedLanguages,
       banner: this.options.banner,
       sourceId: this.options.sourceId,
     });

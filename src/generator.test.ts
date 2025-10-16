@@ -11,12 +11,12 @@ describe('toTypesContent', () => {
         },
       },
       baseLocale: 'en',
-      supportedLanguages: ['en', 'de'],
+      AllSupportedLanguages: ['en', 'de'],
     })
 
     expect(result).toContain("export type AllTranslationKeys = 'hello' | 'world'")
-    expect(result).toContain('export type SupportedLanguages = readonly')
-    expect(result).toContain('export type SupportedLanguageUnion = SupportedLanguages[number]')
+    expect(result).toContain('export type AllSupportedLanguages = readonly')
+    expect(result).toContain('export type SupportedLanguage = AllSupportedLanguages[number]')
     expect(result).toContain('export type I18nMessages =')
   })
 
@@ -34,7 +34,7 @@ describe('toTypesContent', () => {
         },
       },
       baseLocale: 'en',
-      supportedLanguages: ['en'],
+      AllSupportedLanguages: ['en'],
     })
 
     expect(result).toContain("'forms.submit'")
@@ -47,7 +47,7 @@ describe('toTypesContent', () => {
     const result = toTypesContent({
       messages: { en: { test: 'test' } },
       baseLocale: 'en',
-      supportedLanguages: ['en'],
+      AllSupportedLanguages: ['en'],
       banner: customBanner,
     })
 
@@ -59,7 +59,7 @@ describe('toTypesContent', () => {
     const result = toTypesContent({
       messages: { en: { test: 'test' } },
       baseLocale: 'en',
-      supportedLanguages: ['en'],
+      AllSupportedLanguages: ['en'],
     })
 
     expect(result).toContain('AUTO-GENERATED FILE. DO NOT EDIT.')
@@ -77,7 +77,7 @@ describe('toTypesContent', () => {
         },
       },
       baseLocale: 'en',
-      supportedLanguages: ['en'],
+      AllSupportedLanguages: ['en'],
     })
 
     expect(result).toContain("'adminDashboard'")
@@ -89,7 +89,7 @@ describe('toTypesContent', () => {
     const result = toTypesContent({
       messages: { en: {} },
       baseLocale: 'en',
-      supportedLanguages: ['en'],
+      AllSupportedLanguages: ['en'],
     })
 
     expect(result).toContain('export type AllTranslationKeys = never')
@@ -99,11 +99,11 @@ describe('toTypesContent', () => {
     const result = toTypesContent({
       messages: { en: { test: 'test' } },
       baseLocale: 'en',
-      supportedLanguages: ['zh', 'en', 'de', 'fr'],
+      AllSupportedLanguages: ['zh', 'en', 'de', 'fr'],
     })
 
     // Languages should be in the same order as provided
-    expect(result).toContain("SupportedLanguages = readonly ['zh', 'en', 'de', 'fr']")
+    expect(result).toContain("AllSupportedLanguages = readonly ['zh', 'en', 'de', 'fr']")
   })
 
   it('should handle arrays in messages', () => {
@@ -117,7 +117,7 @@ describe('toTypesContent', () => {
         },
       },
       baseLocale: 'en',
-      supportedLanguages: ['en'],
+      AllSupportedLanguages: ['en'],
     })
 
     expect(result).toContain("'items'")
@@ -128,7 +128,7 @@ describe('toTypesContent', () => {
     const result = toTypesContent({
       messages: { en: { test: 'test' } },
       baseLocale: 'en',
-      supportedLanguages: ['en'],
+      AllSupportedLanguages: ['en'],
     })
 
     expect(result).not.toContain('\r\n')
@@ -150,7 +150,7 @@ describe('toTypesContent', () => {
         },
       },
       baseLocale: 'en',
-      supportedLanguages: ['en', 'de'],
+      AllSupportedLanguages: ['en', 'de'],
     }
 
     const result1 = toTypesContent(params)
@@ -169,7 +169,7 @@ describe('toTypesContent', () => {
         },
       },
       baseLocale: 'en',
-      supportedLanguages: ['en'],
+      AllSupportedLanguages: ['en'],
     })
 
     expect(result).toContain('"He said \\"Hello\\""')

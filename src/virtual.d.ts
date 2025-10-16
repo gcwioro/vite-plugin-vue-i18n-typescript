@@ -41,7 +41,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
 // I18n config options (excludes messages as they're provided by the plugin)
   // @ts-expect-error - Virtual module provided by vite-plugin-locale-json
-  export type I18nConfigOptions = Omit<ComposerOptions<MessageSchemaGen, {}, SupportedLanguageUnion, false>, 'messages'>;
+  export type I18nConfigOptions = Omit<ComposerOptions<MessageSchemaGen, {}, SupportedLanguage, false>, 'messages'>;
   export type UseI18nTypesafeReturn =
     Omit<Composer<NonNullable<ComposerOptions['messages']>, NonNullable<ComposerOptions['datetimeFormats']>, NonNullable<ComposerOptions['numberFormats']>, ComposerOptions['locale'] extends unknown ? string : Options['locale']>, 't'>
     & { t: I18nCustom };
@@ -50,18 +50,18 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
   export {createI18nInstance, createI18nInstancePlugin, useI18nTypeSafe};
 
-  const supportedLanguages: readonly[string]
+  const AllSupportedLanguages: readonly[string]
 
 
   export type AllTranslationKeys =
     'no-key'
 
-  export type SupportedLanguages = readonly ['de', 'en']
-  export type SupportedLanguageUnion = SupportedLanguages[number]
+  export type AllSupportedLanguages = readonly ['de', 'en']
+  export type SupportedLanguage = AllSupportedLanguages[number] | string
 
 // Message structure types
   export type MessageSchemaGen = Record<string, unknown>
-  export type I18nMessages = Readonly<Record<SupportedLanguageUnion, MessageSchemaGen>>
+  export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>
   export type AllTranslations = I18nMessages
   export type MessagesType = I18nMessages
 
@@ -73,5 +73,5 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
 // Type-safe translate function parameters
 
-  export {supportedLanguages, messages}
+  export {AllSupportedLanguages, messages}
 }
