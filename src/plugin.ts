@@ -22,14 +22,7 @@ import {
 import type {JSONObject, JSONValue, VirtualKeysDtsOptions} from "./types";
 import {createVirtualModuleCode, toConstsContent, toTypesContent} from "./generator";
 
-/* ------------------------ helpers ------------------------ */
 
-export function log(server: ViteDevServer | undefined, enabled: boolean | undefined, ...args: any[]) {
-  if (!enabled) return;
-  const prefix = "[vite-plugin-locale-json]";
-  if (server) server.config.logger.info(prefix + " " + args.join(" "));
-  else console.log(prefix, ...args);
-}
 
 /* ------------------------ plugin ------------------------ */
 
@@ -129,10 +122,12 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     for (const abs of files) {
       const localeKey = getLocaleFromPath(abs, root);
       if (!localeKey) {
-        console.warn(`Skipping file with invalid locale: ${abs}`);
+        serverRef?.config.logger.warn(`Skipping file with invalid locale: ${abs}`);
         continue;
       }
-      console.warn(`${abs} -> ${localeKey}`);
+      if (localeKey.length !== 2 && localeKey.length !== 5) {
+        serverRef?.config.logger.warn(`Uncommon locale: ${abs} -> ${localeKey}`);
+      }
       try {
         const raw = await fs.readFile(abs, "utf8");
         const parsed = JSON.parse(raw);
@@ -153,7 +148,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
   async function rebuild(reason: string) {
     groupedCache = await readAndGroup();
     jsonTextCache = JSON.stringify(canonicalize(groupedCache));
-    log(serverRef, debug, `Rebuilt (${reason}). Locales: ${Object.keys(groupedCache).join(", ")}`, VIRTUAL_ID);
+    serverRef?.config.logger.info(`Rebuilt (${reason}). VirtualId: ${VIRTUAL_ID} Locales: ${Object.keys(groupedCache).join(", ")}`);
 
     // Generate TypeScript definition files
     if (typesPath && constsPath) {
@@ -178,7 +173,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     if (!abs.endsWith(".json")) return false;
     const rel = normalizePath(path.relative(root, abs));
     if (rel.startsWith("..")) return false;
-    log(serverRef, debug, `Checking file change: ${abs}|${file}`);
+    serverRef?.config.logger.info(`Checking file change: ${abs}|${file}`);
     return true;
   }
 
@@ -193,7 +188,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     const baseLanguagePart = extractBase(value, languages);
     const base = baseLanguagePart as JSONObject;
     if (!base || typeof base !== 'object' || Array.isArray(base)) {
-      log(serverRef, debug,
+      serverRef?.config.logger.warn(
         `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
       );
     }
@@ -201,9 +196,9 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     // Check for conflicting keys across locales
     const conflicts = detectKeyConflicts(value);
     if (conflicts.length > 0) {
-      log(serverRef, debug, '⚠️  Conflicting translation keys detected:', {timestamp: true});
+      serverRef?.config.logger.warn('⚠️  Conflicting translation keys detected:', {timestamp: true});
       for (const conflict of conflicts) {
-        log(serverRef, debug, `   ${conflict}`, {timestamp: true});
+        serverRef?.config.logger.warn(`   ${conflict}`, {timestamp: true});
       }
     }
 
@@ -246,7 +241,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
 
     const base = extractBase(value, languages);
     if (!base || typeof base !== 'object' || Array.isArray(base)) {
-      log(serverRef, debug,
+      serverRef?.config.logger.warn(
         `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
       );
     }
@@ -254,9 +249,9 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     // Check for conflicting keys across locales
     const conflicts = detectKeyConflicts(value);
     if (conflicts.length > 0) {
-      log(serverRef, debug, '⚠️  Conflicting translation keys detected:', {timestamp: true});
+      serverRef?.config.logger.warn('⚠️  Conflicting translation keys detected:', {timestamp: true});
       for (const conflict of conflicts) {
-        log(serverRef, debug, `   ${conflict}`, {timestamp: true});
+        serverRef?.config.logger.warn(`   ${conflict}`, {timestamp: true});
       }
     }
 
@@ -297,7 +292,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     if (shouldWriteConsts) {
       await writeFileAtomic(constsOutPath, adjustedConstsContent);
     }
-    log(serverRef, debug,
+    serverRef?.config.logger.info(
       `Generated ${path.relative(rootDir, typesOutPath)} and ${path.relative(rootDir, constsOutPath)} in ${Math.round((globalThis.performance?.now?.() ?? Date.now()) - start)}ms`,
     );
     return {constsContent: adjustedConstsContent, typesContent};
