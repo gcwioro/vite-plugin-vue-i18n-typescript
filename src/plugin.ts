@@ -1,8 +1,14 @@
 import path from "node:path";
 import {promises as fs} from "node:fs";
-import type {ModuleNode, Plugin, ViteDevServer} from "vite";
-import {normalizePath} from "vite";
-import fg from "fast-glob";
+import {
+  EnvironmentModuleNode,
+  HotUpdateOptions,
+  normalizePath,
+  PluginOption,
+  ViteDevServer
+} from "vite";
+// NOTE: fast-glob is no longer eagerly imported.
+// It will be lazy-loaded ONLY as a fallback on older Node versions.
 import {
   canonicalize,
   deepMerge,
@@ -12,10 +18,9 @@ import {
   shallowMerge,
   toArray,
   writeFileAtomic
-} from "I18Plugin/utils";
-import type {JSONObject, JSONValue, VirtualKeysDtsOptions} from "I18Plugin/types";
-import {createVirtualModuleCode, toConstsContent, toTypesContent} from "I18Plugin/generator";
-
+} from "./utils";
+import type {JSONObject, JSONValue, VirtualKeysDtsOptions} from "./types";
+import {createVirtualModuleCode, toConstsContent, toTypesContent} from "./generator";
 
 /* ------------------------ helpers ------------------------ */
 
@@ -28,8 +33,7 @@ export function log(server: ViteDevServer | undefined, enabled: boolean | undefi
 
 /* ------------------------ plugin ------------------------ */
 
-export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDtsOptions = {}): Plugin<VirtualKeysDtsOptions | any> {
-
+export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDtsOptions = {}): PluginOption {
   const {
     sourceId = '@unplug-i18n-types-locales',
     typesPath = 'src/i18n/i18n.types.gen.d.ts',
@@ -59,7 +63,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     transformJson,
     exportMessages = false
 
-  } = userOptions || {}
+  } = userOptions || {};
   const VIRTUAL_ID = sourceId;
   const RESOLVED_VIRTUAL_ID = "\0" + VIRTUAL_ID;
 
@@ -75,18 +79,46 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
   let isBuild = false;
   let emittedRefId: string | undefined;
 
+  /**
+   * Prefer Node's native glob (Node >= 22).
+   * Fallback to fast-glob only when native glob isn't available.
+   */
   async function collectJsonFiles(): Promise<string[]> {
     const patterns = toArray(include);
     const ignore = toArray(exclude);
-    const entries = await fg(patterns, {
-      cwd: root,
-      ignore,
-      absolute: true,
-      onlyFiles: true,
-      dot: false
-    });
-    entries.sort((a, b) => a.localeCompare(b));
-    return entries;
+    const entries = new Set<string>();
+    const cwd = root;
+
+    // Node 22+: fs.promises.glob exists
+    const fsAny = fs as unknown as {
+      glob?: (pattern: string | readonly string[], options?: any) => AsyncIterable<string>;
+    };
+
+    if (typeof fsAny.glob === "function") {
+      // Use native glob; iterate patterns to avoid relying on array support differences.
+      for (const pattern of patterns) {
+        // Pass cwd and exclude. Native glob yields paths relative to cwd by default.
+        for await (const rel of fsAny.glob(pattern, {cwd, exclude: ignore})) {
+          const abs = path.isAbsolute(rel) ? rel : path.join(cwd, rel);
+          entries.add(path.normalize(abs));
+        }
+      }
+    } else {
+      // Fallback: fast-glob (lazy-loaded so projects on Node 22+ don't need it installed)
+      const {default: fg} = await import("fast-glob");
+      const list: string[] = await fg(patterns, {
+        cwd,
+        ignore,
+        absolute: true,
+        onlyFiles: true,
+        dot: false
+      });
+      for (const p of list) entries.add(path.normalize(p));
+    }
+
+    const out = Array.from(entries);
+    out.sort((a, b) => a.localeCompare(b));
+    return out;
   }
 
   async function readAndGroup(): Promise<Record<string, any>> {
@@ -115,7 +147,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       }
     }
 
-
     return grouped;
   }
 
@@ -143,10 +174,11 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
 
   function isWatchedFile(file: string): boolean {
     const abs = normalizePath(file);
-    log(serverRef, debug, `Checking file change: ${abs}|${file}`);
+
     if (!abs.endsWith(".json")) return false;
     const rel = normalizePath(path.relative(root, abs));
     if (rel.startsWith("..")) return false;
+    log(serverRef, debug, `Checking file change: ${abs}|${file}`);
     return true;
   }
 
@@ -156,41 +188,39 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
 
   async function generateFileContent(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
     // 2) Gather languages & select base locale
-    const languages = Object.keys(value)
-
+    const languages = Object.keys(value);
 
     const baseLanguagePart = extractBase(value, languages);
-    const base = baseLanguagePart as JSONObject
+    const base = baseLanguagePart as JSONObject;
     if (!base || typeof base !== 'object' || Array.isArray(base)) {
       log(serverRef, debug,
         `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
-      )
+      );
     }
 
     // Check for conflicting keys across locales
-    const conflicts = detectKeyConflicts(value)
+    const conflicts = detectKeyConflicts(value);
     if (conflicts.length > 0) {
-      log(serverRef, debug, '⚠️  Conflicting translation keys detected:', {timestamp: true})
+      log(serverRef, debug, '⚠️  Conflicting translation keys detected:', {timestamp: true});
       for (const conflict of conflicts) {
-        log(serverRef, debug, `   ${conflict}`, {timestamp: true})
+        log(serverRef, debug, `   ${conflict}`, {timestamp: true});
       }
     }
 
     // 3) Deterministic inputs for DTS
-    const sortedLanguages = Array.from(new Set(languages.filter(a => a != ' js-reserved'))).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
-    const canonicalBase = canonicalize(value as JSONValue) as Record<string, JSONValue>
-    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath)
-    const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath)
+    const sortedLanguages = Array.from(new Set(languages.filter(a => a != ' js-reserved'))).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+    const canonicalBase = canonicalize(value as JSONValue) as Record<string, JSONValue>;
+    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
+    const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
 
-    const relativePathToTypes = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\\.d\\.ts$/, '')
+    const relativePathToTypes = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
     // 4) Generate dual files
-    // Generate two separate files
     const typesContent = toTypesContent({
       messages: canonicalBase,
       baseLocale: baseLocale,
       supportedLanguages: sortedLanguages,
       banner,
-    })
+    });
 
     const constsContent = toConstsContent({
       messages: canonicalBase,
@@ -200,83 +230,79 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       banner,
       exportMessages,
       sourceId: sourceId
-    })
+    });
     // Update import path in consts file to point to types file
-    const relativePath = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\\.d\\.ts$/, '')
+    const relativePath = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
     const adjustedConstsContent = constsContent.replace(
       `from './i18n.types'`,
       `from './${relativePath}'`
-    )
-    return {constsContent: adjustedConstsContent, typesContent}
+    );
+    return {constsContent: adjustedConstsContent, typesContent};
   }
 
   async function generateFile(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
-    // 2) Gather languages & select base locale
-    const start = (globalThis.performance?.now?.() ?? Date.now())
-    const languages = Object.keys(value)
+    const start = (globalThis.performance?.now?.() ?? Date.now());
+    const languages = Object.keys(value);
 
-
-    const base = extractBase(value, languages)
+    const base = extractBase(value, languages);
     if (!base || typeof base !== 'object' || Array.isArray(base)) {
       log(serverRef, debug,
         `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
-      )
+      );
     }
 
     // Check for conflicting keys across locales
-    const conflicts = detectKeyConflicts(value)
+    const conflicts = detectKeyConflicts(value);
     if (conflicts.length > 0) {
-      log(serverRef, debug, '⚠️  Conflicting translation keys detected:', {timestamp: true})
+      log(serverRef, debug, '⚠️  Conflicting translation keys detected:', {timestamp: true});
       for (const conflict of conflicts) {
-        log(serverRef, debug, `   ${conflict}`, {timestamp: true})
+        log(serverRef, debug, `   ${conflict}`, {timestamp: true});
       }
     }
 
-    // 3) Deterministic inputs for DTS
-    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath)
-    const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath)
+    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
+    const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
 
-    // 4) Generate dual files
-    // Generate two separate files
     const {
       constsContent: adjustedConstsContent,
       typesContent
-    } = await generateFileContent(value, rootDir)
-    // Write types file
-    await ensureDir(typesOutPath)
+    } = await generateFileContent(value, rootDir);
 
-    let shouldWriteTypes: boolean
+    // Write types file
+    await ensureDir(typesOutPath);
+
+    let shouldWriteTypes: boolean;
     try {
-      const existing = await fs.readFile(typesOutPath, 'utf8')
-      shouldWriteTypes = existing !== typesContent
+      const existing = await fs.readFile(typesOutPath, 'utf8');
+      shouldWriteTypes = existing !== typesContent;
     } catch {
-      shouldWriteTypes = true
+      shouldWriteTypes = true;
     }
 
     if (shouldWriteTypes) {
-      await writeFileAtomic(typesOutPath, typesContent)
+      await writeFileAtomic(typesOutPath, typesContent);
     }
 
     // Write consts file
-    await ensureDir(constsOutPath)
+    await ensureDir(constsOutPath);
 
-
-    let shouldWriteConsts: boolean
+    let shouldWriteConsts: boolean;
     try {
-      const existing = await fs.readFile(constsOutPath, 'utf8')
-      shouldWriteConsts = existing !== adjustedConstsContent
+      const existing = await fs.readFile(constsOutPath, 'utf8');
+      shouldWriteConsts = existing !== adjustedConstsContent;
     } catch {
-      shouldWriteConsts = true
+      shouldWriteConsts = true;
     }
 
     if (shouldWriteConsts) {
-      await writeFileAtomic(constsOutPath, adjustedConstsContent)
+      await writeFileAtomic(constsOutPath, adjustedConstsContent);
     }
     log(serverRef, debug,
       `Generated ${path.relative(rootDir, typesOutPath)} and ${path.relative(rootDir, constsOutPath)} in ${Math.round((globalThis.performance?.now?.() ?? Date.now()) - start)}ms`,
-    )
-    return {constsContent: adjustedConstsContent, typesContent}
+    );
+    return {constsContent: adjustedConstsContent, typesContent};
   }
+
 
   return {
     name: "vite-plugin-locale-json",
@@ -290,16 +316,15 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     async buildStart() {
       groupedCache = await readAndGroup();
       jsonTextCache = JSON.stringify(canonicalize(groupedCache));
-      await generateFileContent(groupedCache, root)
+      await generateFileContent(groupedCache, root);
       if (isBuild) {
         emittedRefId = this.emitFile({
           type: "asset",
           name: emit.fileName,
           source: jsonTextCache,
         });
-        await generateFile(groupedCache, root)
+        await generateFile(groupedCache, root);
       }
-
     },
 
     resolveId(id) {
@@ -354,12 +379,25 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
         });
       }
     },
-
-    async handleHotUpdate(ctx): Promise<Array<ModuleNode>> {
-      if (!isWatchedFile(ctx.file)) return [];
+    async hotUpdate({
+                      server,
+                      modules,
+                      ...ctx
+                    }: HotUpdateOptions): Promise<Array<EnvironmentModuleNode> | void> {//Array<EnvironmentModuleNode> | void | Promise<Array<EnvironmentModuleNode> | void>{
+      if (!isWatchedFile(ctx.file)) return;
       await rebuild("change");
-      const mod = ctx.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
-      return mod ? [mod] : [];
+      // const mod = ctx.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
+      const mod = modules.filter(m => m.id === RESOLVED_VIRTUAL_ID);
+      if (modules.length > 0 && mod.length === 0) {
+        server.config.logger.info(`No module to hot update found for ${RESOLVED_VIRTUAL_ID}`);
+        if (debug) {
+          server.config.logger.info(`Known modules: ${[...server.moduleGraph.idToModuleMap.keys()].join(", ")}`);
+        }
+        return;
+      }
+
+      return mod ? mod : [];
     },
+    // handleHotUpdate,
   };
 }

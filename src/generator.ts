@@ -107,7 +107,8 @@ export function toConstsContent(params: DtsContentParams): string {
 
   // Runtime const values
   const body = `
-import type {I18n} from 'vue-i18n'
+import type {I18n, I18nOptions} from 'vue-i18n'
+import { type Plugin} from 'vue'
 import {
   type ComposerOptions,
   createI18n,
@@ -157,7 +158,10 @@ export function createI18nInstance<T extends Partial<ComposerOptions> >(options?
   const i18n = createI18n<false, typeof i18Options, AllTranslationsGen>(i18Options);
   return i18n;
 }
-
+export function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : {}, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : {}, T["locale"] extends string ? T["locale"] : Locale, false> ){
+  const i18n = createI18nInstance(options);
+  return i18n as any;
+}
 export declare interface I18nCustom {
   (key: AllTranslationKeysGen, plural: number, options?: TranslateOptions): string
 

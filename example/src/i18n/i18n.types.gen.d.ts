@@ -3,7 +3,7 @@
 // biome-ignore lint: disable
 // noinspection JSUnusedGlobalSymbols'
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Content-Hash: d5a4d5ac
+// Content-Hash: 7541cc3d
 
 
 declare module '@unplug-i18n-types-locales' {
@@ -13,16 +13,9 @@ declare module '@unplug-i18n-types-locales' {
   export default messages
 }
 
-import type {I18nOptions} from 'vue-i18n'
+import type { I18nOptions } from 'vue-i18n'
 
-export type AllTranslationKeysGen =
-  'App.fruits.apple'
-  | 'App.fruits.banana'
-  | 'App.fruitsLabel'
-  | 'App.greetings'
-  | 'App.menu'
-  | 'App.menu.0'
-  | 'App.menu.1'
+export type AllTranslationKeysGen = 'App.fruits.apple' | 'App.fruits.banana' | 'App.greetings' | 'App.menu' | 'App.menu.0' | 'App.menu.1'
 export type SupportedLanguagesGen = readonly ['en']
 export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]
 
@@ -33,7 +26,6 @@ export type MessageSchemaGen = {
       "apple": "Apple | Apples",
       "banana": "Banana | Bananas"
     },
-    "fruitsLabel": "There are {amount} {fruit}",
     "greetings": "Hello Typescript friends!",
     "menu": [
       "home",

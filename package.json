@@ -1,6 +1,6 @@
 {
   "name": "unplugin-vue-i18n-dts-generation",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "Vite plugin for generating TypeScript definitions from unplugin-vue-i18n virtual modules",
   "keywords": [
     "vite",
@@ -53,25 +53,24 @@
     "test": "vitest"
   },
   "peerDependencies": {
+    "vite": ">=4.0.0 || ^7.0.0"
   },
-  "peerDependenciesMeta": {
-
-  },
+  "peerDependenciesMeta": {},
   "devDependencies": {
-    "@eslint/js": "^9.34.0",
+    "@eslint/js": "^9.37.0",
     "@intlify/unplugin-vue-i18n": "6.0.8",
-    "@types/node": "^24.3.1",
-    "@typescript-eslint/eslint-plugin": "^8.42.0",
-    "@typescript-eslint/parser": "^8.42.0",
+    "@types/node": "^24.7.2",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
     "@vitejs/plugin-vue": "^6.0.1",
-    "eslint": "^9.34.0",
-    "globals": "^16.3.0",
+    "eslint": "^9.37.0",
+    "globals": "^16.4.0",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2",
+    "typescript": "^5.9.3",
     "vite": "^7.1.10",
     "vitest": "^3.2.4",
     "vue-i18n": "^11.1.12",
-    "vue-tsc": "^3.0.6"
+    "vue-tsc": "^3.1.1"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
