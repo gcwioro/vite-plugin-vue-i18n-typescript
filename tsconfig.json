@@ -1,16 +1,18 @@
 {
-
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "esModuleInterop": true,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "inlineSourceMap": true,
-
     "strict": true,
+    "baseUrl": ".",
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
@@ -23,10 +25,17 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "types": [
-      "node",
-      "vite/client"
+      "node"
     ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "example","**/*.test.ts", "**/*.spec.ts"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "example",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
 }

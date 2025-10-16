@@ -1,16 +1,20 @@
 # unplugin-vue-i18n-dts-generation
 
-**A lightweight Vite plugin that generates TypeScript declaration files from JSON locale files, enabling
+**A standalone Vite plugin that generates TypeScript declaration files from JSON locale files, enabling
 type-safe internationalization keys for Vue 3 applications**
 
-This plugin automatically scans your locale JSON files, generates TypeScript type definitions, and provides a virtual
-module for loading translations at runtime.
+This is an **alternative to @intlify/unplugin-vue-i18n** with an improved approach focusing on type safety, performance,
+and simplicity. The plugin automatically scans your locale JSON files (supporting both **flat and nested structures**),
+generates TypeScript type definitions that **catch unknown translation key errors at compile time**, and provides a
+virtual module for loading translations at runtime. It works independently as a standalone implementation.
 
 ## Features
 
 - 🚀 **Seamless integration** with Vue 3 + Vite
 - 🔄 **Automatic generation** of TypeScript definitions from JSON locale files
-- 🎯 **Type-safe i18n keys** and message structure across your app
+- 🎯 **Compile-time type safety**: Catch unknown translation key errors before runtime
+- 📁 **Flexible file structure**: Works with both flat (`en.json`, `de.json`) and nested (`locales/en/messages.json`)
+  structures
 - 🔧 **Hot-reload support**: watches locale files in development for instant updates
 - 📦 **Deterministic output** with content hashing for consistent builds
 - ⚡ **High-performance**:
@@ -22,11 +26,182 @@ module for loading translations at runtime.
 - 🔒 **Virtual module system** for runtime locale loading
 - 🐛 **Optional virtual file generation** for debugging and inspection
 
+## Getting Started
+
+This guide shows the minimal steps to set up type-safe i18n in your Vue 3 + Vite project.
+
+### 1. Install Dependencies
+
+```bash
+# Using npm
+npm install vue-i18n
+npm install -D unplugin-vue-i18n-dts-generation
+
+# Using bun
+bun add vue-i18n
+bun add -D unplugin-vue-i18n-dts-generation
+```
+
+### 2. Configure Vite Plugin
+
+Add the plugin to your `vite.config.ts`:
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    unpluginVueI18nDtsGeneration({
+      baseLocale: 'en', // Set your base locale
+    }),
+  ],
+})
+```
+
+### 3. Create Locale Files
+
+Create JSON locale files in `src/locales/`:
+
+```json
+// src/locales/en.json
+{
+  "welcome": "Welcome to Vue I18n!",
+  "greeting": "Hello, {name}!",
+  "nav": {
+    "home": "Home",
+    "about": "About"
+  }
+}
+```
+
+```json
+// src/locales/de.json
+{
+  "welcome": "Willkommen bei Vue I18n!",
+  "greeting": "Hallo, {name}!",
+  "nav": {
+    "home": "Startseite",
+    "about": "Über uns"
+  }
+}
+```
+
+### 4. Initialize Vue I18n
+
+Set up Vue I18n in your `main.ts`:
+
+```typescript
+// src/main.ts
+import { createApp } from 'vue'
+import { createI18n } from 'vue-i18n'
+import App from './App.vue'
+
+// Import the generated locale messages
+import messages from 'virtual:unplug-i18n-dts-generation'
+
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en',
+  fallbackLocale: 'en',
+  messages,
+})
+
+const app = createApp(App)
+app.use(i18n)
+app.mount('#app')
+```
+
+### 5. Use in Components with Type Safety
+
+Use the generated type-safe helper in your Vue components:
+
+```vue
+<script setup lang="ts">
+import { useI18nTypeSafe } from '@/i18n/i18n.gen'
+
+const { t, locale } = useI18nTypeSafe()
+
+// TypeScript will autocomplete and validate these keys!
+const welcomeMsg = t('welcome')
+const homeLink = t('nav.home')
+const greeting = t('greeting', { name: 'Alice' })
+</script>
+
+<template>
+  <div>
+    <h1>{{ welcomeMsg }}</h1>
+    <p>{{ greeting }}</p>
+    <nav>
+      <a href="/">{{ homeLink }}</a>
+    </nav>
+
+    <!-- Switch language -->
+    <button @click="locale = 'en'">English</button>
+    <button @click="locale = 'de'">Deutsch</button>
+  </div>
+</template>
+```
+
+### 6. Run Your App
+
+```bash
+npm run dev
+# or
+bun dev
+```
+
+The plugin will automatically:
+
+- Detect your locale files
+- Generate TypeScript definitions at `src/i18n/i18n.types.gen.d.ts`
+- Generate type-safe helper functions at `src/i18n/i18n.gen.ts`
+- Provide autocomplete for all translation keys in your IDE
+- Watch for changes and regenerate types automatically
+
+**That's it!** You now have fully type-safe internationalization. TypeScript will catch any typos in translation keys at
+compile time.
+
+## Why Choose This Plugin?
+
+This plugin is an alternative to `@intlify/unplugin-vue-i18n` with several improvements:
+
+**Performance**
+
+- **Incremental updates**: Only re-reads changed locale files, not all files on every change
+- **Debounced generation**: Prevents rebuild storms during rapid file edits (300ms with 2s max wait)
+- **Cached processing**: Translation data is normalized once and reused
+- **Parallel operations**: File operations run in parallel for faster processing
+
+**Type Safety**
+
+- **Compile-time validation**: TypeScript will show errors for unknown/mistyped translation keys
+- **Zero runtime errors**: Catch typos like `t('welcme')` instead of `t('welcome')` at build time
+- **Type-safe helper functions** (`useI18nTypeSafe()`) with full IDE autocomplete
+- **Autocomplete support**: Your IDE will suggest all available translation keys as you type
+
+**Developer Experience**
+
+- **Zero configuration**: Works out-of-the-box with sensible defaults
+- **Detailed logging**: Performance breakdowns show exactly where time is spent
+- **Virtual file debugging**: Optional generation of virtual module as physical file for inspection
+- **Hot reload**: Automatic type regeneration on locale file changes
+
+**Simplicity**
+
+- **Standalone implementation**: No dependency on `@intlify/unplugin-vue-i18n`
+- **Direct JSON processing**: Reads locale files directly without transform pipelines
+- **Flexible file organization**: Supports flat file structure (`src/locales/*.json`) for simpler projects
+- **Cleaner architecture**: Modular design with clear separation of concerns
+
 ## Prerequisites
 
 - Node.js >= 20.19.0 or >= 22.12.0
 - Vite >= 4.0.0 or >= 7.0.0
-- Vue I18n: @intlify/unplugin-vue-i18n <= 6.0.8 (peer dependency)
+- Vue I18n ^11.0.0 (for runtime i18n support)
 
 Ensure you have the above requirements in your project before using this plugin.
 
@@ -36,10 +211,12 @@ Install the plugin **as a development dependency** using your package manager:
 
 ```bash
 # Using npm
-npm install -D unplugin-vue-i18n-dts-generation @intlify/unplugin-vue-i18n vue-i18n
+npm install -D unplugin-vue-i18n-dts-generation
+npm install vue-i18n
 
 # Using bun
-bun add -D unplugin-vue-i18n-dts-generation @intlify/unplugin-vue-i18n vue-i18n
+bun add -D unplugin-vue-i18n-dts-generation
+bun add vue-i18n
 ```
 
 ## Usage

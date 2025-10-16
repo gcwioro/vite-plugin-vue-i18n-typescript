@@ -1,11 +1,10 @@
 {
   "name": "unplugin-vue-i18n-dts-generation",
   "version": "1.2.0",
-  "description": "Vite plugin for generating TypeScript definitions from unplugin-vue-i18n virtual modules",
+  "description": "Alternative to @intlify/unplugin-vue-i18n with improved performance - Standalone Vite plugin that generates TypeScript definitions from JSON locale files for type-safe Vue i18n",
   "keywords": [
     "vite",
     "vite-plugin",
-    "unplugin-vue-i18n",
     "vue-i18n",
     "typescript",
     "i18n",
@@ -62,7 +61,6 @@
   "peerDependenciesMeta": {},
   "devDependencies": {
     "@eslint/js": "^9.37.0",
-    "@intlify/unplugin-vue-i18n": "6.0.8",
     "@types/node": "^24.7.2",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",

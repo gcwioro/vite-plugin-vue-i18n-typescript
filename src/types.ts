@@ -1,7 +1,7 @@
 /**
  * Options for the unplugin-vue-i18n-dts-generation Vite plugin.
  *
- * This plugin generates TypeScript definitions from unplugin-vue-i18n virtual modules,
+ * This plugin generates TypeScript definitions from JSON locale files,
  * providing type-safe i18n keys for your Vue application.
  */
 export type VirtualKeysDtsOptions = {
@@ -18,9 +18,9 @@ export type VirtualKeysDtsOptions = {
   debug?: boolean;
 
   /**
-   * The virtual module ID from unplugin-vue-i18n.
-   * Default: "@intlify/unplugin-vue-i18n/messages"
+   * The virtual module ID for the generated locale module.
    * Usually you don't need to change this.
+   * @default "virtual:unplug-i18n-dts-generation"
    */
   sourceId?: string
 
