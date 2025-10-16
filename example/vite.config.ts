@@ -6,8 +6,7 @@ import {join} from "path";
 import {fileURLToPath, URL} from "url";
 import unpluginVueI18nDtsGeneration from "../src";
 // import unpluginVueI18nDtsGeneration from "../src/plugin";
-import {localeJsonPlugin} from "../src";
-import path from "node:path";
+
 
 export default defineConfig({
   cacheDir: '.cache',
