@@ -4,7 +4,7 @@
 
     <section class="card">
       <h2>Pluralization demo</h2>
-
+      {{ messages }}
       <div class="row">
         <label>
           Count:
@@ -58,10 +58,12 @@
 <script setup lang="ts" >
 
 
-import {useI18nTypeSafe} from "./i18n/i18n.gen.ts";
-import type {MessageSchemaGen} from "./i18n/i18n.types.gen";
+import {messages, useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";
+import * as x from "virtual:unplug-i18n-dts-generation";
 
+// const messages= Object.keys(x)
 import {computed, ref} from "vue";
+import type {MessageSchemaGen} from "virtual:unplug-i18n-dts-generation";
 
 
 const {t, tm, rt} = useI18nTypeSafe()

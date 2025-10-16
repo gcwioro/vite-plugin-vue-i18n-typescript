@@ -69,6 +69,16 @@ export type VirtualKeysDtsOptions = {
    * @default false
    */
   exportMessages?: boolean
+
+  /**
+   * Path for the virtual module file (.ts).
+   * If specified, the virtual module will be generated as a physical file.
+   * This can be useful for debugging or when you want to see the actual locale data.
+   *
+   * @default undefined (virtual module only served dynamically)
+   * @example "src/i18n/i18n.virtual.gen.ts"
+   */
+  virtualFilePath?: string
 }
 
 /**
