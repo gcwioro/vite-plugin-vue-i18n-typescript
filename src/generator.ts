@@ -94,10 +94,10 @@ export function getMessageTypeDefinitions(baseLocale: string, messages: Record<s
 
   return [
     '',
-    'const AllSupportedLanguages: readonly[string] = ' + `['${AllSupportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}'] as const`,
+    'export type SupportedLanguage = AllSupportedLanguages[number] | string',
+    'const supportedLanguages: SupportedLanguage = ' + `['${AllSupportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}'] as const`,
     `export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
     `export type AllSupportedLanguages = readonly [${AllSupportedLanguages.filter(l => l != 'js-reserved').map(l => `'${l}'`).join(', ')}]`,
-    'export type SupportedLanguage = AllSupportedLanguages[number] | string',
 
     '',
     '// Message structure types',
@@ -111,7 +111,7 @@ export function getMessageTypeDefinitions(baseLocale: string, messages: Record<s
     '',
     '// Type-safe translate function parameters',
     '',
-    'export { AllSupportedLanguages, messages }'
+    'export { supportedLanguages, messages }'
   ].join("\n")
 }
 
@@ -132,8 +132,8 @@ export function toVirtualModuleContent(params: {
     .map((p) => p.replace(/\.body\.cases$/g, ''))
 
   const finalKeys = transformKeys(allKeysRaw)
-  const AllSupportedLanguages = Object.keys(messages);
-  const languagesTuple = `['${AllSupportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}']`
+  const supportedLanguages = Object.keys(messages);
+  const languagesTuple = `['${supportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}']`
 
   const bodyLines = [
     '',
@@ -141,14 +141,14 @@ export function toVirtualModuleContent(params: {
     '// This file is auto-generated from your locale JSON files',
     '',
     `const messages = ${messagesJson} as const;`,
-    `export const AllSupportedLanguages = ${languagesTuple} as const`,
+    `export const supportedLanguages = ${languagesTuple} as const`,
     '',
     'export async function load() {',
     '  return messages;',
     '}',
     'export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>',
     `  export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
-    `  export type AllSupportedLanguages = readonly [${AllSupportedLanguages.filter(l => l != 'js-reserved').map(l => `'${l}'`).join(', ')}]`,
+    `  export type AllSupportedLanguages = readonly [${supportedLanguages.filter(l => l != 'js-reserved').map(l => `'${l}'`).join(', ')}]`,
     'export type SupportedLanguage = AllSupportedLanguages[number] | string',
     'export interface I18nCustom {',
     '  (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string',
@@ -213,9 +213,9 @@ export function createVirtualModuleCode(opts: {
     ? `import.meta.ROLLUP_FILE_URL_${buildAssetRefId}`
     : JSON.stringify(devUrlPath || "/_virtual_locales.json");
   const messages = JSON.parse(jsonText);
-  const AllSupportedLanguages = Object.keys(messages);
+  const supportedLanguages = Object.keys(messages);
 
-  const languagesTuple = `['${AllSupportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}']`
+  const languagesTuple = `['${supportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}']`
 
   return `
 const url = ${urlExpr};
@@ -226,7 +226,7 @@ export async function load() {
   return await res.json();
 }
 
- export const AllSupportedLanguages = ${languagesTuple}
+ export const supportedLanguages = ${languagesTuple}
 
 export default messages;
 

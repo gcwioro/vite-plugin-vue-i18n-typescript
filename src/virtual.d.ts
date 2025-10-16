@@ -49,14 +49,15 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>): UseI18nTypesafeReturn;
 
   export {createI18nInstance, createI18nInstancePlugin, useI18nTypeSafe};
-
-  const AllSupportedLanguages: readonly[string]
+  export type AllSupportedLanguages = readonly ['de', 'en']
+  export type SupportedLanguage = AllSupportedLanguages[number] | string
+  const supportedLanguages: readonly[string]
 
 
   export type AllTranslationKeys =
     'no-key'
 
-  export type AllSupportedLanguages = readonly ['de', 'en']
+
   export type SupportedLanguage = AllSupportedLanguages[number] | string
 
 // Message structure types
@@ -73,5 +74,5 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
 // Type-safe translate function parameters
 
-  export {AllSupportedLanguages, messages}
+  export {supportedLanguages, messages}
 }
