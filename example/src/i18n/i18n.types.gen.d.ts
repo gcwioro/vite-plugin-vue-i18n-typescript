@@ -33,7 +33,7 @@ export type MessageSchemaGen = {
     ]
   }
 }
-export type AllLocaleGen = Record<SupportedLanguageUnionGen, MessageSchemaGen>
+export type AllLocaleGen = Readonly<Record<SupportedLanguageUnionGen, MessageSchemaGen>>
 export type AllTranslationsGen = AllLocaleGen
 
 // Type-safe translate function parameters

@@ -61,7 +61,7 @@ export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]
 
 // Message structure types
 export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages, null, 2)}
-export type AllLocaleGen = Record<SupportedLanguageUnionGen, MessageSchemaGen>
+export type AllLocaleGen = Readonly<Record<SupportedLanguageUnionGen, MessageSchemaGen>>
 export type AllTranslationsGen = AllLocaleGen
 
 // Type-safe translate function parameters
