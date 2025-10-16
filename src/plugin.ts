@@ -20,20 +20,25 @@ import {
   writeFileAtomic
 } from "./utils";
 import type {JSONObject, JSONValue, VirtualKeysDtsOptions} from "./types";
-import {createVirtualModuleCode, toConstsContent, toTypesContent} from "./generator";
-
+import {
+  createVirtualModuleCode,
+  toConstsContent,
+  toTypesContent,
+  toVirtualModuleContent
+} from "./generator";
 
 
 /* ------------------------ plugin ------------------------ */
 
 export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDtsOptions = {}): PluginOption {
   const {
-    sourceId = '@unplug-i18n-types-locales',
-    typesPath = 'src/i18n/i18n.types.gen.d.ts',
-    constsPath = 'src/i18n/i18n.gen.ts',
+    sourceId = 'virtual:unplug-i18n-dts-generation',
+    typesPath = './vite-env-override.d.ts',
+    constsPath = '',//'src/i18n/i18n.gen.ts',
+    virtualFilePath,
     getLocaleFromPath = defaultGetLocaleFromPath,
     baseLocale = 'de',
-    include = ["src/**/locales/*.json", "src/**/locales/*.vue.*.json", `src/**/*${baseLocale}.json`],
+    include = ["src/**/locales/*.json", "src/**/*.vue.*.json", `src/**/*${baseLocale}.json`],
 
     exclude = [
       '**/node_modules/**',
@@ -299,50 +304,68 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     // 3) Deterministic inputs for DTS
     const sortedLanguages = Array.from(new Set(languages.filter(a => a != ' js-reserved'))).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     // Data is already canonical, no need to canonicalize again
-    const canonicalBase = value as Record<string, JSONValue>;
-    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
-    const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
+    const canonicalBase = value as Record<string, JSONObject>;
 
-    const relativePathToTypes = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
-    // 4) Generate dual files
+    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
     const typesContent = toTypesContent({
       messages: canonicalBase,
       baseLocale: baseLocale,
       supportedLanguages: sortedLanguages,
-      banner,
+      banner, sourceId
     });
+    if (constsPath) {
+      const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
 
-    const constsContent = toConstsContent({
-      messages: canonicalBase,
-      typeFilePath: './' + relativePathToTypes,
-      baseLocale: baseLocale,
-      supportedLanguages: sortedLanguages,
-      banner,
-      exportMessages,
-      sourceId: sourceId
-    });
-    // Update import path in consts file to point to types file
-    const relativePath = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
-    const adjustedConstsContent = constsContent.replace(
-      `from './i18n.types'`,
-      `from './${relativePath}'`
-    );
-    return {constsContent: adjustedConstsContent, typesContent};
+      const relativePathToTypes = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
+      // 4) Generate dual files
+
+      // Update import path in consts file to point to types file
+      const relativePath = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
+
+      const constsContent = toConstsContent({
+        messages: canonicalBase,
+        typeFilePath: './' + relativePathToTypes,
+        baseLocale: baseLocale,
+        supportedLanguages: sortedLanguages,
+        banner,
+        exportMessages,
+        sourceId: sourceId
+      });
+      const adjustedConstsContent = constsContent.replace(
+        `from './i18n.types'`,
+        `from './${relativePath}'`
+      );
+      return {constsContent: adjustedConstsContent, typesContent};
+    }
+
+    return {constsContent: null, typesContent};
   }
 
   async function generateFile(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
-    const start = (globalThis.performance?.now?.() ?? Date.now());
+    const start = performance.now();
 
     // Generate content (includes all validation and conflict detection)
     const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
     const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
+    const virtualOutPath = virtualFilePath ? (path.isAbsolute(virtualFilePath) ? virtualFilePath : path.join(rootDir, virtualFilePath)) : undefined;
 
+    const startContentGen = performance.now();
     const {
       constsContent: adjustedConstsContent,
       typesContent
     } = await generateFileContent(value, rootDir);
 
+    // Generate virtual module content if path is specified
+    const virtualContent = virtualOutPath ? toVirtualModuleContent({
+      messages: value as Record<string, JSONObject>,
+      baseLocale,
+      banner, sourceId
+    }) : undefined;
+
+    const contentGenDuration = Math.round(performance.now() - startContentGen);
+
     // Write types file
+    const startWrite = performance.now();
     await ensureDir(typesOutPath);
 
     let shouldWriteTypes: boolean;
@@ -368,11 +391,41 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       shouldWriteConsts = true;
     }
 
-    if (shouldWriteConsts) {
+    if (shouldWriteConsts && adjustedConstsContent) {
       await writeFileAtomic(constsOutPath, adjustedConstsContent);
     }
+
+    // Write virtual module file if specified
+    let shouldWriteVirtual = false;
+    if (virtualOutPath && virtualContent) {
+      await ensureDir(virtualOutPath);
+      try {
+        const existing = await fs.readFile(virtualOutPath, 'utf8');
+        shouldWriteVirtual = existing !== virtualContent;
+      } catch {
+        shouldWriteVirtual = true;
+      }
+
+      if (shouldWriteVirtual) {
+        await writeFileAtomic(virtualOutPath, virtualContent);
+      }
+    }
+    const writeDuration = Math.round(performance.now() - startWrite);
+
+    const totalDuration = Math.round(performance.now() - start);
+    const totalFiles = virtualOutPath ? 3 : 2;
+    const filesWritten = (shouldWriteTypes ? 1 : 0) + (shouldWriteConsts ? 1 : 0) + (shouldWriteVirtual ? 1 : 0);
+
+    const filesList = [
+      path.relative(rootDir, typesOutPath),
+      path.relative(rootDir, constsOutPath)
+    ];
+    if (virtualOutPath) {
+      filesList.push(path.relative(rootDir, virtualOutPath));
+    }
+
     serverRef?.config.logger.info(
-      `Generated ${path.relative(rootDir, typesOutPath)} and ${path.relative(rootDir, constsOutPath)} in ${Math.round((globalThis.performance?.now?.() ?? Date.now()) - start)}ms`,
+      `📝 Generated files in ${totalDuration}ms (content: ${contentGenDuration}ms, write ${filesWritten}/${totalFiles} files: ${writeDuration}ms) | ${filesList.join(', ')}`,
     );
     return {constsContent: adjustedConstsContent, typesContent};
   }
@@ -413,16 +466,21 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
 
       if (isBuild) {
         return createVirtualModuleCode({
+          sourceId,
           jsonText: jsonTextCache,
-          exportData: !!emit.inlineDataInBuild,
-          buildAssetRefId: emittedRefId,
+          // exportData: !!emit.inlineDataInBuild,
+          exportData: true,
+          buildAssetRefId: emittedRefId, baseLocale,
+
         });
       }
 
       return createVirtualModuleCode({
+        sourceId,
         jsonText: jsonTextCache,
         exportData: true,
         devUrlPath: devUrlPath,
+        baseLocale,
       });
     },
 
