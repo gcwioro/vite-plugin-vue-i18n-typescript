@@ -27,19 +27,10 @@ export type VirtualKeysDtsOptions = {
   /**
    * Path for the TypeScript type definitions file (.d.ts).
    *
-   * @default "src/i18n/i18n.types.d.ts"
+   * @default "./vite-env-override.d.ts"
    * @example "src/types/i18n.types.d.ts"
    */
   typesPath?: string
-
-  /**
-   * Path for the constants file (.ts) with runtime values.
-   *
-   * @default "src/i18n/i18n.consts.ts"
-   * @example "src/types/i18n.consts.ts"
-   */
-  constsPath?: string
-
 
   /**
    * Optional banner comment at the top of the generated file.
@@ -47,28 +38,12 @@ export type VirtualKeysDtsOptions = {
   banner?: string
 
   /**
-   * Whether to watch for changes and regenerate types automatically in development mode.
-   *
-   * @default true
-   */
-  watchInDev?: boolean
-
-  /**
    * Base locale to use for generating TypeScript key paths.
    * The plugin will introspect this locale's messages to generate the type definitions.
    *
-   * @default "en"
+   * @default "de"
    */
   baseLocale?: string
-
-
-  /**
-   * Whether to export the messages object from the generated constants file.
-   * This can be useful if you want to access the raw messages at runtime.
-   *
-   * @default false
-   */
-  exportMessages?: boolean
 
   /**
    * Path for the virtual module file (.ts).
@@ -95,9 +70,7 @@ export type JSONArray = JSONValue[]
 export interface DtsContentParams<TMessages extends JSONValue = JSONValue> {
   messages: Record<string, TMessages>
   baseLocale: string
-  typeFilePath: string
   supportedLanguages: string[]
-  banner?: string,
-  sourceId?: string,
-  exportMessages?: boolean
+  banner?: string
+  sourceId?: string
 }

@@ -35,7 +35,6 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
     (key: AllTranslationKeysGen, plural: number, defaultMsg: string): string
   }
-
 // I18n config options (excludes messages as they're provided by the plugin)
   export type I18nConfigOptions = Omit<I18nOptions<MessageSchemaGen, {}, {}, SupportedLanguageUnionGen, false>, 'messages'>;
   export type UseI18nTypesafeReturn =

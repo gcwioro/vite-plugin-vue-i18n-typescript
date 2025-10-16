@@ -22,7 +22,6 @@ import {
 import type {JSONObject, JSONValue, VirtualKeysDtsOptions} from "./types";
 import {
   createVirtualModuleCode,
-  toConstsContent,
   toTypesContent,
   toVirtualModuleContent
 } from "./generator";
@@ -34,12 +33,10 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
   const {
     sourceId = 'virtual:unplug-i18n-dts-generation',
     typesPath = './vite-env-override.d.ts',
-    constsPath = '',//'src/i18n/i18n.gen.ts',
     virtualFilePath,
     getLocaleFromPath = defaultGetLocaleFromPath,
     baseLocale = 'de',
     include = ["src/**/locales/*.json", "src/**/*.vue.*.json", `src/**/*${baseLocale}.json`],
-
     exclude = [
       '**/node_modules/**',
       '**/.git/**',
@@ -58,9 +55,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
         fileName: (userOptions || {}).emit?.fileName ?? "assets/locales.json",
         inlineDataInBuild: (userOptions || {}).emit?.inlineDataInBuild ?? true,
       },
-    transformJson,
-    exportMessages = false
-
+    transformJson
   } = userOptions || {};
   const VIRTUAL_ID = sourceId;
   const RESOLVED_VIRTUAL_ID = "\0" + VIRTUAL_ID;
@@ -244,7 +239,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     const canonicalDuration = Math.round(performance.now() - startCanonical);
 
     // Generate TypeScript definition files
-    if (typesPath && constsPath) {
+    if (typesPath) {
       await generateFile(groupedCache, root);
     }
 
@@ -279,9 +274,8 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     return (value[baseLocale] ?? value?.[languages?.[0] ?? baseLocale] ?? {[baseLocale]: {}}) as JSONObject;
   }
 
-  async function generateFileContent(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
+  async function generateFileContent(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>) {
     // Note: value is already canonicalized from rebuild/buildStart
-    // 2) Gather languages & select base locale
     const languages = Object.keys(value);
 
     const baseLanguagePart = extractBase(value, languages);
@@ -301,44 +295,20 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       }
     }
 
-    // 3) Deterministic inputs for DTS
+    // Deterministic inputs for DTS
     const sortedLanguages = Array.from(new Set(languages.filter(a => a != ' js-reserved'))).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     // Data is already canonical, no need to canonicalize again
     const canonicalBase = value as Record<string, JSONObject>;
 
-    const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
     const typesContent = toTypesContent({
       messages: canonicalBase,
       baseLocale: baseLocale,
       supportedLanguages: sortedLanguages,
-      banner, sourceId
+      banner,
+      sourceId
     });
-    if (constsPath) {
-      const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
 
-      const relativePathToTypes = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
-      // 4) Generate dual files
-
-      // Update import path in consts file to point to types file
-      const relativePath = path.relative(path.dirname(constsOutPath), typesOutPath).replace(/\.d\.ts$/, '');
-
-      const constsContent = toConstsContent({
-        messages: canonicalBase,
-        typeFilePath: './' + relativePathToTypes,
-        baseLocale: baseLocale,
-        supportedLanguages: sortedLanguages,
-        banner,
-        exportMessages,
-        sourceId: sourceId
-      });
-      const adjustedConstsContent = constsContent.replace(
-        `from './i18n.types'`,
-        `from './${relativePath}'`
-      );
-      return {constsContent: adjustedConstsContent, typesContent};
-    }
-
-    return {constsContent: null, typesContent};
+    return typesContent;
   }
 
   async function generateFile(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
@@ -346,20 +316,17 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
 
     // Generate content (includes all validation and conflict detection)
     const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
-    const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
     const virtualOutPath = virtualFilePath ? (path.isAbsolute(virtualFilePath) ? virtualFilePath : path.join(rootDir, virtualFilePath)) : undefined;
 
     const startContentGen = performance.now();
-    const {
-      constsContent: adjustedConstsContent,
-      typesContent
-    } = await generateFileContent(value, rootDir);
+    const typesContent = await generateFileContent(value);
 
     // Generate virtual module content if path is specified
     const virtualContent = virtualOutPath ? toVirtualModuleContent({
       messages: value as Record<string, JSONObject>,
       baseLocale,
-      banner, sourceId
+      banner,
+      sourceId
     }) : undefined;
 
     const contentGenDuration = Math.round(performance.now() - startContentGen);
@@ -380,21 +347,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       await writeFileAtomic(typesOutPath, typesContent);
     }
 
-    // Write consts file
-    await ensureDir(constsOutPath);
-
-    let shouldWriteConsts: boolean;
-    try {
-      const existing = await fs.readFile(constsOutPath, 'utf8');
-      shouldWriteConsts = existing !== adjustedConstsContent;
-    } catch {
-      shouldWriteConsts = true;
-    }
-
-    if (shouldWriteConsts && adjustedConstsContent) {
-      await writeFileAtomic(constsOutPath, adjustedConstsContent);
-    }
-
     // Write virtual module file if specified
     let shouldWriteVirtual = false;
     if (virtualOutPath && virtualContent) {
@@ -413,13 +365,10 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     const writeDuration = Math.round(performance.now() - startWrite);
 
     const totalDuration = Math.round(performance.now() - start);
-    const totalFiles = virtualOutPath ? 3 : 2;
-    const filesWritten = (shouldWriteTypes ? 1 : 0) + (shouldWriteConsts ? 1 : 0) + (shouldWriteVirtual ? 1 : 0);
+    const totalFiles = virtualOutPath ? 2 : 1;
+    const filesWritten = (shouldWriteTypes ? 1 : 0) + (shouldWriteVirtual ? 1 : 0);
 
-    const filesList = [
-      path.relative(rootDir, typesOutPath),
-      path.relative(rootDir, constsOutPath)
-    ];
+    const filesList = [path.relative(rootDir, typesOutPath)];
     if (virtualOutPath) {
       filesList.push(path.relative(rootDir, virtualOutPath));
     }
@@ -427,7 +376,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     serverRef?.config.logger.info(
       `📝 Generated files in ${totalDuration}ms (content: ${contentGenDuration}ms, write ${filesWritten}/${totalFiles} files: ${writeDuration}ms) | ${filesList.join(', ')}`,
     );
-    return {constsContent: adjustedConstsContent, typesContent};
+    return typesContent;
   }
 
 
@@ -445,7 +394,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       // Canonicalize once and cache it to avoid repeated canonicalization
       groupedCache = canonicalize(rawGrouped as JSONValue) as Record<string, any>;
       jsonTextCache = JSON.stringify(groupedCache);
-      await generateFileContent(groupedCache, root);
       if (isBuild) {
         emittedRefId = this.emitFile({
           type: "asset",
@@ -468,10 +416,9 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
         return createVirtualModuleCode({
           sourceId,
           jsonText: jsonTextCache,
-          // exportData: !!emit.inlineDataInBuild,
           exportData: true,
-          buildAssetRefId: emittedRefId, baseLocale,
-
+          buildAssetRefId: emittedRefId,
+          baseLocale
         });
       }
 
@@ -517,10 +464,9 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
                       server,
                       modules,
                       ...ctx
-                    }: HotUpdateOptions): Promise<Array<EnvironmentModuleNode> | void> {//Array<EnvironmentModuleNode> | void | Promise<Array<EnvironmentModuleNode> | void>{
+                    }: HotUpdateOptions): Promise<Array<EnvironmentModuleNode> | void> {
       if (!isWatchedFile(ctx.file)) return;
       await debouncedRebuild("change");
-      // const mod = ctx.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
       const mod = modules.filter(m => m.id === RESOLVED_VIRTUAL_ID);
       if (modules.length > 0 && mod.length === 0) {
         server.config.logger.info(`No module to hot update found for ${RESOLVED_VIRTUAL_ID}`);
@@ -531,7 +477,6 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
       }
 
       return mod ? mod : [];
-    },
-    // handleHotUpdate,
+    }
   };
 }

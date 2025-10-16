@@ -4,7 +4,6 @@
 
     <section class="card">
       <h2>Pluralization demo</h2>
-      {{ messages }}
       <div class="row">
         <label>
           Count:
@@ -57,11 +56,7 @@
 
 <script setup lang="ts" >
 
-
-import {messages, useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";
-import * as x from "virtual:unplug-i18n-dts-generation";
-
-// const messages= Object.keys(x)
+import {useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";
 import {computed, ref} from "vue";
 import type {MessageSchemaGen} from "virtual:unplug-i18n-dts-generation";
 
@@ -74,8 +69,5 @@ const fruit = ref<FruitType>('apple')
 const fruitName = computed(() => {
   return t(`App.fruits.${fruit.value}`, amount.value, {amount: amount.value})
 })
-// onMounted(()=>{
-//   toDtsContent({messagesRaw:messagesI18n,messages:extractJson(messagesI18n)})
-// })
 
 </script >
