@@ -15,25 +15,23 @@
   },
   "dependencies": {
     "@babel/code-frame": "^7.27.1",
-    "vue": "^3.5.21"
+    "vue": "^3.5.22"
   },
   "devDependencies": {
-    "@intlify/unplugin-vue-i18n": "^11.0.0",
     "@tsconfig/node22": "^22.0.2",
-    "@types/node": "^24.3.1",
+    "@types/node": "^24.7.2",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/tsconfig": "^0.8.1",
-    "eslint": "^9.34.0",
+    "eslint": "^9.37.0",
     "eslint-plugin-vue": "~10.4.0",
-    "jiti": "^2.5.1",
+    "jiti": "^2.6.1",
     "npm-run-all2": "^8.0.4",
-    "typescript": "~5.9.2",
-    "vite": "^7.1.4",
-    "unplugin-vue-i18n-dts-generation": "latest",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.10",
     "vite-plugin-checker": "^0.10.3",
-    "vite-plugin-vue-devtools": "^8.0.1",
+    "vite-plugin-vue-devtools": "^8.0.2",
     "vitest": "^3.2.4",
-    "vue-tsc": "^3.0.6"
+    "vue-tsc": "^3.1.1"
   }
 }

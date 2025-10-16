@@ -1,17 +1,21 @@
-import {PluginOptions} from "@intlify/unplugin-vue-i18n";
-
 /**
  * Options for the unplugin-vue-i18n-dts-generation Vite plugin.
  *
  * This plugin generates TypeScript definitions from unplugin-vue-i18n virtual modules,
  * providing type-safe i18n keys for your Vue application.
  */
-export interface VirtualKeysDtsOptions {
-  /**
-   * Options to pass to the underlying unplugin-vue-i18n plugin.
-   * @see https://github.com/intlify/bundle-tools/tree/main/packages/unplugin-vue-i18n#-options
-   */
-  i18nPluginOptions?: PluginOptions,
+export type VirtualKeysDtsOptions = {
+  include?: string | string[];
+  exclude?: string | string[];
+  getLocaleFromPath?: (absFilePath: string, root: string) => string | null;
+  merge?: "deep" | "shallow";
+  transformJson?: (json: unknown, absFilePath: string) => unknown;
+  devUrlPath?: string;
+  emit?: {
+    fileName?: string;
+    inlineDataInBuild?: boolean;
+  };
+  debug?: boolean;
 
   /**
    * The virtual module ID from unplugin-vue-i18n.
@@ -57,30 +61,6 @@ export interface VirtualKeysDtsOptions {
    */
   baseLocale?: string
 
-  /**
-   * Delay in milliseconds before the initial type generation.
-   * Useful if you need to wait for other plugins to finish processing.
-   *
-   * @default 500
-   */
-  initialDelayMs?: number
-
-  /**
-   * Debounce time in milliseconds for regenerating types on file changes.
-   * Prevents excessive regeneration during rapid file changes.
-   *
-   * @default 5_000
-   */
-  debounceMs?: number
-
-
-  /**
-   * Maximum wait time in milliseconds before forcing type regeneration.
-   * Ensures that types are regenerated even if changes are frequent.
-   *
-   * @default 30_000
-   */
-  debounceMaxWaitMs?: number
 
   /**
    * Whether to export the messages object from the generated constants file.

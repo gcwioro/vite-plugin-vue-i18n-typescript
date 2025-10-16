@@ -1,4 +1,5 @@
 {
+
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -7,11 +8,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
+    "inlineSourceMap": true,
+
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "resolveJsonModule": true,
@@ -20,7 +22,10 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["node", "vite/client"]
+    "types": [
+      "node",
+      "vite/client"
+    ]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "example","**/*.test.ts", "**/*.spec.ts"]
