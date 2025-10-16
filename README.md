@@ -8,13 +8,19 @@ module for loading translations at runtime.
 
 ## Features
 
-- 🚀 Seamless integration with Vue 3 + Vite
-- 🔄 Automatic generation of TypeScript definitions from JSON locale files
-- 🎯 Type-safe i18n keys and message structure across your app
-- 🔧 Hot-reload support: watches locale files in development for instant updates
-- 📦 Deterministic output with content hashing for consistent builds
-- ⚡ Fast generation with debouncing and caching to minimize overhead
-- 🔒 Virtual module system for runtime locale loading
+- 🚀 **Seamless integration** with Vue 3 + Vite
+- 🔄 **Automatic generation** of TypeScript definitions from JSON locale files
+- 🎯 **Type-safe i18n keys** and message structure across your app
+- 🔧 **Hot-reload support**: watches locale files in development for instant updates
+- 📦 **Deterministic output** with content hashing for consistent builds
+- ⚡ **High-performance**:
+  - Debounced generation (300ms with 2000ms max wait) prevents rebuild storms
+  - Incremental updates: only re-reads changed files
+  - Cached canonicalization: data normalized once and reused
+  - Parallel file operations for faster processing
+- 📊 **Performance logging**: detailed timing breakdowns for debugging
+- 🔒 **Virtual module system** for runtime locale loading
+- 🐛 **Optional virtual file generation** for debugging and inspection
 
 ## Prerequisites
 
@@ -64,10 +70,11 @@ extracted from the filename - for example:
 - `de.json` → locale: `de`
 - `messages.en.json` → locale: `en`
 
-The plugin generates two files:
+The plugin generates two required files (and optionally a third):
 
 - `src/i18n/i18n.types.gen.d.ts` - TypeScript type definitions
 - `src/i18n/i18n.gen.ts` - Runtime constants and helper functions
+- `src/i18n/i18n.virtual.gen.ts` - Virtual module content (optional, for debugging)
 
 ### Example: Using in a Vue Component
 
@@ -118,6 +125,7 @@ export default defineConfig({
             // Output paths
             typesPath: 'src/i18n/i18n.types.gen.d.ts',  // default
             constsPath: 'src/i18n/i18n.gen.ts',         // default
+            virtualFilePath: 'src/i18n/i18n.virtual.gen.ts', // optional - for debugging
 
             // Base locale for type generation
             baseLocale: 'en',                            // default: 'de'
@@ -152,6 +160,7 @@ All options are optional – the plugin comes with sensible defaults. Here are t
 
 - `typesPath?: string` - Path for TypeScript definitions file (default: `'src/i18n/i18n.types.gen.d.ts'`)
 - `constsPath?: string` - Path for constants/runtime file (default: `'src/i18n/i18n.gen.ts'`)
+- `virtualFilePath?: string` - Path for virtual module file (optional, useful for debugging locale data)
 - `banner?: string` - Custom header comment for generated files
 
 #### Locale Configuration
@@ -178,6 +187,65 @@ All options are optional – the plugin comes with sensible defaults. Here are t
 Most users will only need to adjust `include`, `baseLocale`, `typesPath`, and `constsPath` for their specific project
 structure.
 
+## Performance & Debugging
+
+### Performance Optimizations
+
+The plugin is designed for optimal performance, especially in large projects:
+
+- **Debounced Generation**: Changes are debounced (300ms) with a max wait of 2000ms to prevent rebuild storms during rapid file edits
+- **Incremental Updates**: Only files that have changed (based on modification time) are re-read and re-parsed
+- **Cached Canonicalization**: Translation data is normalized once and cached, avoiding repeated processing
+- **Parallel File Operations**: File stats and reads are performed in parallel for faster processing
+- **Smart File Writing**: Generated files are only written when their content actually changes
+
+### Performance Logging
+
+The plugin provides detailed performance logs to help you understand where time is spent:
+
+```
+📖 Read & Group: 17ms (stat: 4ms, read 1/1 files: 1ms, merge: 0ms)
+📝 Generated files in 165ms (content: 2ms, write 2/2 files: 163ms) | src/i18n/i18n.types.gen.d.ts, src/i18n/i18n.gen.ts
+✅ Rebuild complete (initial) in 184ms (canonicalize: 0ms) | VirtualId: @unplug-i18n-types-locales | Locales: en
+```
+
+These logs show:
+- File reading and grouping time (with breakdown)
+- Content generation and file writing time
+- Total rebuild time with canonicalization overhead
+- Which files were actually written (e.g., "write 2/2 files" means both files were updated)
+
+### Virtual File Generation
+
+For debugging purposes, you can generate the virtual module as a physical file:
+
+```typescript
+unpluginVueI18nDtsGeneration({
+    virtualFilePath: 'src/i18n/i18n.virtual.gen.ts', // Generate virtual module as file
+})
+```
+
+This creates a third file containing all your locale data in a TypeScript format:
+
+```typescript
+// src/i18n/i18n.virtual.gen.ts
+const messages = {
+  "en": {
+    "App": {
+      "greetings": "Hello!",
+      // ... all your translations
+    }
+  }
+} as const;
+
+export default messages;
+```
+
+Benefits:
+- **Debug**: See exactly what locale data is being used
+- **Version Control**: Track changes to translations over time
+- **Inspection**: Easily inspect the full translation structure
+
 ## Important Notes
 
 - **JSON-only support**: This plugin currently only supports JSON locale files. Support for YAML and JSON5 may be added
@@ -191,6 +259,9 @@ structure.
 - **Type-safe helpers**: Use the generated `useI18nTypeSafe()` function for type-safe translations in your Vue
   components.
 - **Hot reload**: In development mode, changes to locale files automatically trigger type regeneration and hot module
-  replacement.
+  replacement. Changes are debounced to prevent rebuild storms.
 - **Content hashing**: Generated files include a content hash to ensure they are only rewritten when translations
   actually change.
+- **Performance**: The plugin uses incremental updates, caching, and parallel processing for optimal performance, even with
+  large translation files.
+- **Debugging**: Use `virtualFilePath` option to generate the virtual module as a physical file for inspection and debugging.
