@@ -1,7 +1,7 @@
 {
   "name": "unplugin-vue-i18n-dts-generation",
   "version": "1.2.0",
-  "description": "Alternative to @intlify/unplugin-vue-i18n with improved performance - Standalone Vite plugin that generates TypeScript definitions from JSON locale files for type-safe Vue i18n",
+  "description": "Alternative to @intlify/unplugin-vue-i18n - Catch unknown i18n key errors at compile time with TypeScript. Supports flat file structures. High-performance standalone Vite plugin.",
   "keywords": [
     "vite",
     "vite-plugin",

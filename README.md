@@ -165,6 +165,59 @@ The plugin will automatically:
 **That's it!** You now have fully type-safe internationalization. TypeScript will catch any typos in translation keys at
 compile time.
 
+### Type Safety in Action
+
+Once set up, TypeScript will validate all your translation keys:
+
+```typescript
+// ✅ Valid - TypeScript knows this key exists
+const msg = t('welcome')
+
+// ❌ TypeScript Error: Argument of type '"welcme"' is not assignable to parameter of type 'AllTranslationKeysGen'
+const msg = t('welcme')  // Typo caught at compile time!
+
+// ✅ Valid - Nested keys work too
+const home = t('nav.home')
+
+// ❌ TypeScript Error: Unknown key
+const invalid = t('nav.unknown')  // Caught before runtime!
+```
+
+Your IDE will also provide autocomplete suggestions for all available translation keys, making development faster and
+preventing errors.
+
+### Flexible File Structure
+
+The plugin supports both flat and nested locale file structures:
+
+**Flat Structure** (simpler for small projects):
+
+```
+src/
+  locales/
+    en.json
+    de.json
+    fr.json
+```
+
+**Nested Structure** (better for organizing large translation sets):
+
+```
+src/
+  locales/
+    en/
+      common.json
+      errors.json
+      navigation.json
+    de/
+      common.json
+      errors.json
+      navigation.json
+```
+
+Both structures work automatically - the plugin detects your locale code from filenames and merges multiple files per
+locale when needed.
+
 ## Why Choose This Plugin?
 
 This plugin is an alternative to `@intlify/unplugin-vue-i18n` with several improvements:
