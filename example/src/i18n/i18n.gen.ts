@@ -35,7 +35,7 @@ export const allTranslationKeys: AllTranslationKeysGen[] = [
   'App.greetings',
   'App.menu',
   'App.menu.0',
-  'App.menu.1'
+  'App.menu.1',
 ]
 
 

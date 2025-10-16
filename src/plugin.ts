@@ -69,8 +69,40 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
   let jsonTextCache = "{}";
   let lastFiles: string[] = [];
 
+  // Track file modification times for incremental updates
+  const fileModTimes = new Map<string, number>();
+  const parsedFilesCache = new Map<string, any>();
+
   let isBuild = false;
   let emittedRefId: string | undefined;
+
+  // Debounced rebuild to prevent rebuild storms during rapid file changes
+  let rebuildTimer: ReturnType<typeof setTimeout> | undefined;
+  let lastRebuildCall = 0;
+  const DEBOUNCE_MS = 300;
+  const MAX_WAIT_MS = 2000;
+
+  const debouncedRebuild = (reason: string) => {
+    const now = Date.now();
+    if (!lastRebuildCall) lastRebuildCall = now;
+
+    if (rebuildTimer) clearTimeout(rebuildTimer);
+
+    // If we've been waiting too long, rebuild immediately
+    if (now - lastRebuildCall >= MAX_WAIT_MS) {
+      lastRebuildCall = 0;
+      return rebuild(reason);
+    }
+
+    // Otherwise, schedule a debounced rebuild
+    return new Promise<void>((resolve) => {
+      rebuildTimer = setTimeout(async () => {
+        lastRebuildCall = 0;
+        await rebuild(reason);
+        resolve();
+      }, DEBOUNCE_MS);
+    });
+  };
 
   /**
    * Prefer Node's native glob (Node >= 22).
@@ -115,11 +147,46 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
   }
 
   async function readAndGroup(): Promise<Record<string, any>> {
+    const startReadGroup = performance.now();
     const files = await collectJsonFiles();
     lastFiles = files;
     const grouped: Record<string, any> = {};
 
-    for (const abs of files) {
+    // Check which files need to be re-read (new or modified)
+    const filesToRead: string[] = [];
+    const startStatCheck = performance.now();
+    const fileStats = await Promise.all(
+      files.map(async (f) => {
+        try {
+          const stat = await fs.stat(f);
+          return {path: f, mtime: stat.mtimeMs};
+        } catch {
+          return {path: f, mtime: 0};
+        }
+      })
+    );
+    const statCheckDuration = Math.round(performance.now() - startStatCheck);
+
+    for (const {path: abs, mtime} of fileStats) {
+      const cachedMtime = fileModTimes.get(abs);
+      if (cachedMtime === undefined || mtime !== cachedMtime) {
+        filesToRead.push(abs);
+        fileModTimes.set(abs, mtime);
+      }
+    }
+
+    // Remove entries for files that no longer exist
+    const currentFiles = new Set(files);
+    for (const [cachedPath] of fileModTimes) {
+      if (!currentFiles.has(cachedPath)) {
+        fileModTimes.delete(cachedPath);
+        parsedFilesCache.delete(cachedPath);
+      }
+    }
+
+    // Read only changed/new files
+    const startFileRead = performance.now();
+    for (const abs of filesToRead) {
       const localeKey = getLocaleFromPath(abs, root);
       if (!localeKey) {
         serverRef?.config.logger.warn(`Skipping file with invalid locale: ${abs}`);
@@ -132,8 +199,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
         const raw = await fs.readFile(abs, "utf8");
         const parsed = JSON.parse(raw);
         const prepared = transformJson ? transformJson(parsed, abs) : parsed;
-        if (!(localeKey in grouped)) grouped[localeKey] = {};
-        grouped[localeKey] = doMerge(grouped[localeKey], prepared);
+        parsedFilesCache.set(abs, {localeKey, prepared});
       } catch (err: any) {
         const message = `Failed to parse/merge JSON: ${abs}\n${err?.message ?? err}`;
         if (serverRef) serverRef.config.logger.error(message);
@@ -141,19 +207,46 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
         if (!serverRef) throw err;
       }
     }
+    const fileReadDuration = Math.round(performance.now() - startFileRead);
+
+    // Merge all cached files (including unchanged ones)
+    const startMerge = performance.now();
+    for (const [_, {localeKey, prepared}] of parsedFilesCache) {
+      if (!(localeKey in grouped)) grouped[localeKey] = {};
+      grouped[localeKey] = doMerge(grouped[localeKey], prepared);
+    }
+    const mergeDuration = Math.round(performance.now() - startMerge);
+
+    const totalDuration = Math.round(performance.now() - startReadGroup);
+    if (debug || filesToRead.length > 0) {
+      serverRef?.config.logger.info(
+        `📖 Read & Group: ${totalDuration}ms (stat: ${statCheckDuration}ms, read ${filesToRead.length}/${files.length} files: ${fileReadDuration}ms, merge: ${mergeDuration}ms)`
+      );
+    }
 
     return grouped;
   }
 
   async function rebuild(reason: string) {
-    groupedCache = await readAndGroup();
-    jsonTextCache = JSON.stringify(canonicalize(groupedCache));
-    serverRef?.config.logger.info(`Rebuilt (${reason}). VirtualId: ${VIRTUAL_ID} Locales: ${Object.keys(groupedCache).join(", ")}`);
+    const startRebuild = performance.now();
+
+    const rawGrouped = await readAndGroup();
+
+    // Canonicalize once and cache it to avoid repeated canonicalization
+    const startCanonical = performance.now();
+    groupedCache = canonicalize(rawGrouped as JSONValue) as Record<string, any>;
+    jsonTextCache = JSON.stringify(groupedCache);
+    const canonicalDuration = Math.round(performance.now() - startCanonical);
 
     // Generate TypeScript definition files
     if (typesPath && constsPath) {
       await generateFile(groupedCache, root);
     }
+
+    const totalRebuildDuration = Math.round(performance.now() - startRebuild);
+    serverRef?.config.logger.info(
+      `✅ Rebuild complete (${reason}) in ${totalRebuildDuration}ms (canonicalize: ${canonicalDuration}ms) | VirtualId: ${VIRTUAL_ID} | Locales: ${Object.keys(groupedCache).join(", ")}`
+    );
 
     if (serverRef) {
       const mod = serverRef.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
@@ -182,6 +275,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
   }
 
   async function generateFileContent(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
+    // Note: value is already canonicalized from rebuild/buildStart
     // 2) Gather languages & select base locale
     const languages = Object.keys(value);
 
@@ -204,7 +298,8 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
 
     // 3) Deterministic inputs for DTS
     const sortedLanguages = Array.from(new Set(languages.filter(a => a != ' js-reserved'))).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-    const canonicalBase = canonicalize(value as JSONValue) as Record<string, JSONValue>;
+    // Data is already canonical, no need to canonicalize again
+    const canonicalBase = value as Record<string, JSONValue>;
     const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
     const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
 
@@ -237,24 +332,8 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
 
   async function generateFile(value: Record<string, string | number | boolean | JSONObject | JSONValue[] | null>, rootDir: string) {
     const start = (globalThis.performance?.now?.() ?? Date.now());
-    const languages = Object.keys(value);
 
-    const base = extractBase(value, languages);
-    if (!base || typeof base !== 'object' || Array.isArray(base)) {
-      serverRef?.config.logger.warn(
-        `Could not resolve base locale "${baseLocale}". Available: ${Object.keys(value).join(", ")} .`
-      );
-    }
-
-    // Check for conflicting keys across locales
-    const conflicts = detectKeyConflicts(value);
-    if (conflicts.length > 0) {
-      serverRef?.config.logger.warn('⚠️  Conflicting translation keys detected:', {timestamp: true});
-      for (const conflict of conflicts) {
-        serverRef?.config.logger.warn(`   ${conflict}`, {timestamp: true});
-      }
-    }
-
+    // Generate content (includes all validation and conflict detection)
     const typesOutPath = path.isAbsolute(typesPath) ? typesPath : path.join(rootDir, typesPath);
     const constsOutPath = path.isAbsolute(constsPath) ? constsPath : path.join(rootDir, constsPath);
 
@@ -309,8 +388,10 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
     },
 
     async buildStart() {
-      groupedCache = await readAndGroup();
-      jsonTextCache = JSON.stringify(canonicalize(groupedCache));
+      const rawGrouped = await readAndGroup();
+      // Canonicalize once and cache it to avoid repeated canonicalization
+      groupedCache = canonicalize(rawGrouped as JSONValue) as Record<string, any>;
+      jsonTextCache = JSON.stringify(groupedCache);
       await generateFileContent(groupedCache, root);
       if (isBuild) {
         emittedRefId = this.emitFile({
@@ -380,7 +461,7 @@ export default function unpluginVueI18nDtsGeneration(userOptions: VirtualKeysDts
                       ...ctx
                     }: HotUpdateOptions): Promise<Array<EnvironmentModuleNode> | void> {//Array<EnvironmentModuleNode> | void | Promise<Array<EnvironmentModuleNode> | void>{
       if (!isWatchedFile(ctx.file)) return;
-      await rebuild("change");
+      await debouncedRebuild("change");
       // const mod = ctx.server.moduleGraph.getModuleById(RESOLVED_VIRTUAL_ID);
       const mod = modules.filter(m => m.id === RESOLVED_VIRTUAL_ID);
       if (modules.length > 0 && mod.length === 0) {
