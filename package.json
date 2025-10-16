@@ -14,7 +14,12 @@
     "localization",
     "code-generation",
     "translation-keys",
-    "internationalization"
+    "internationalization",
+    "type-safe",
+    "compile-time-validation",
+    "autocomplete",
+    "flat-structure",
+    "unplugin-vue-i18n-alternative"
   ],
   "homepage": "https://github.com/gcwioro/unplugin-vue-i18n-dts-generation#readme",
   "bugs": {
