@@ -1,10 +1,10 @@
 # unplugin-vue-i18n-dts-generation
 
-**A lightweight Vite plugin that generates TypeScript declaration files from JSON locale files, enabling
+**A standalone Vite plugin that generates TypeScript declaration files from JSON locale files, enabling
 type-safe internationalization keys for Vue 3 applications**
 
 This plugin automatically scans your locale JSON files, generates TypeScript type definitions, and provides a virtual
-module for loading translations at runtime.
+module for loading translations at runtime. It works independently without requiring @intlify/unplugin-vue-i18n.
 
 ## Features
 
@@ -26,7 +26,7 @@ module for loading translations at runtime.
 
 - Node.js >= 20.19.0 or >= 22.12.0
 - Vite >= 4.0.0 or >= 7.0.0
-- Vue I18n: @intlify/unplugin-vue-i18n <= 6.0.8 (peer dependency)
+- Vue I18n ^11.0.0 (for runtime i18n support)
 
 Ensure you have the above requirements in your project before using this plugin.
 
@@ -36,10 +36,12 @@ Install the plugin **as a development dependency** using your package manager:
 
 ```bash
 # Using npm
-npm install -D unplugin-vue-i18n-dts-generation @intlify/unplugin-vue-i18n vue-i18n
+npm install -D unplugin-vue-i18n-dts-generation
+npm install vue-i18n
 
 # Using bun
-bun add -D unplugin-vue-i18n-dts-generation @intlify/unplugin-vue-i18n vue-i18n
+bun add -D unplugin-vue-i18n-dts-generation
+bun add vue-i18n
 ```
 
 ## Usage
