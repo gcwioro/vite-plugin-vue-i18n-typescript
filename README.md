@@ -519,6 +519,142 @@ Benefits:
 - **Version Control**: Track changes to translations over time
 - **Inspection**: Easily inspect the full translation structure
 
+## 🔄 Migration Guide - Switching from @intlify/unplugin-vue-i18n
+
+Migrating from `@intlify/unplugin-vue-i18n` to this plugin is straightforward and takes less than 5 minutes.
+
+### Why Migrate?
+
+- ✅ **Better Type Safety**: Get compile-time errors for invalid translation keys
+- ✅ **Better Performance**: Incremental updates and caching make it faster for large projects
+- ✅ **Better DX**: IDE autocomplete for all translation keys
+- ✅ **Simpler Setup**: Zero configuration required for most projects
+- ✅ **Flat File Support**: Use simple flat file structure if you prefer
+
+### Migration Steps
+
+**1. Remove old plugin:**
+
+```bash
+npm uninstall @intlify/unplugin-vue-i18n
+```
+
+**2. Install this plugin:**
+
+```bash
+npm install -D unplugin-vue-i18n-dts-generation
+```
+
+**3. Update your `vite.config.ts`:**
+
+```diff
+- import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
++ import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
+
+export default defineConfig({
+  plugins: [
+    vue(),
+-   VueI18nPlugin({
+-     include: [resolve(__dirname, './src/locales/**')],
+-   }),
++   unpluginVueI18nDtsGeneration({
++     baseLocale: 'en', // Set your base locale
++   }),
+  ],
+})
+```
+
+**4. Update your locale imports:**
+
+```diff
+- import messages from '@intlify/unplugin-vue-i18n/messages'
++ import messages from 'virtual:unplug-i18n-dts-generation'
+
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en',
+  messages,
+})
+```
+
+**5. Start using type-safe translations:**
+
+```typescript
+import { useI18nTypeSafe } from '@/i18n/i18n.gen'
+
+const { t } = useI18nTypeSafe()
+// TypeScript now autocompletes and validates all keys!
+```
+
+**That's it!** Your existing JSON locale files work without any changes. The plugin will automatically detect them and
+generate TypeScript types.
+
+### Compatibility Notes
+
+- ✅ All JSON locale files work without modification
+- ✅ Nested translation keys are fully supported
+- ✅ Parameters in translations (`{name}`, `{count}`, etc.) work as before
+- ✅ Pluralization and formatting work with vue-i18n runtime
+- ⚠️ YAML locale files need to be converted to JSON
+
+## 📚 Related Technologies & Resources
+
+This plugin works seamlessly with the Vue 3 ecosystem:
+
+- **[Vue 3](https://vuejs.org/)** - The Progressive JavaScript Framework
+- **[Vite](https://vitejs.dev/)** - Next Generation Frontend Tooling
+- **[Vue I18n](https://vue-i18n.intlify.dev/)** - Internationalization plugin for Vue.js
+- **[TypeScript](https://www.typescriptlang.org/)** - JavaScript with syntax for types
+
+### Helpful Resources
+
+- [Vue I18n Documentation](https://vue-i18n.intlify.dev/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Vite Plugin Development](https://vitejs.dev/guide/api-plugin.html)
+- [Internationalization Best Practices](https://vue-i18n.intlify.dev/guide/essentials/syntax.html)
+
+## 💡 Use Cases & Examples
+
+### When to Use This Plugin
+
+**Perfect for:**
+
+- ✅ Vue 3 projects with TypeScript wanting type-safe i18n
+- ✅ Large-scale applications with hundreds of translation keys
+- ✅ Teams that want to catch i18n errors during development
+- ✅ Projects needing IDE autocomplete for translation keys
+- ✅ Applications with flat file structure for locale management
+
+**Also great for:**
+
+- Migrating from @intlify/unplugin-vue-i18n to better type safety
+- New Vue 3 projects starting with internationalization
+- Existing vue-i18n projects wanting to add TypeScript support
+- Projects with complex nested translation structures
+
+### Real-World Example
+
+```typescript
+// Without this plugin - No type safety
+const message = t('welcom.messge') // Typo! Runtime error
+
+// With this plugin - Compile-time error
+const message = t('welcom.messge')
+//                 ^^^^^^^^^^^^^^
+// Error: Argument of type '"welcom.messge"' is not assignable
+// to parameter of type 'AllTranslationKeysGen'
+
+// Correct usage with autocomplete
+const message = t('welcome.message') // ✅ IDE suggests all keys
+```
+
+## 🏷️ Keywords & Topics
+
+Vue 3 • Vite • TypeScript • i18n • Internationalization • Localization • Type Safety • Compile-time Validation •
+IntelliSense • Autocomplete • Vue I18n • Translation Keys • Multilingual • JSON Locales • DTS Generation • Type
+Definitions • Vite Plugin • Vue Plugin • unplugin-vue-i18n alternative • Type-safe translations • Frontend i18n •
+Composition API • Options API
+
 ## Important Notes
 
 - **JSON-only support**: This plugin currently only supports JSON locale files. Support for YAML and JSON5 may be added
@@ -538,3 +674,28 @@ Benefits:
 - **Performance**: The plugin uses incremental updates, caching, and parallel processing for optimal performance, even with
   large translation files.
 - **Debugging**: Use `virtualFilePath` option to generate the virtual module as a physical file for inspection and debugging.
+
+## 📜 License
+
+MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+
+- Report bugs and request features
+  in [GitHub Issues](https://github.com/gcwioro/unplugin-vue-i18n-dts-generation/issues)
+- Submit pull requests to improve the plugin
+- Share your use cases and feedback
+
+## 💖 Support
+
+If this plugin helped your project, consider:
+
+- ⭐ Starring the repository on [GitHub](https://github.com/gcwioro/unplugin-vue-i18n-dts-generation)
+- 📢 Sharing it with other Vue developers
+- 🐛 Reporting bugs to help improve the plugin
+
+---
+
+**Made with ❤️ for the Vue.js community**
