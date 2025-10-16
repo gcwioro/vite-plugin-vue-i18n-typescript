@@ -117,8 +117,8 @@ export function getJsonLeafPaths(obj: Record<string, unknown>): string[] {
  * Canonicalize JSON by sorting object keys recursively.
  * Arrays are preserved in-place to keep their intended order.
  */
-export function canonicalize<T extends JSONValue>(value: T): T {
-  if (value === null || typeof value !== 'object') return value
+export function canonicalize<T extends JSONValue>(value: T | undefined): T {
+  if (value === null || typeof value !== 'object') return value as T
   if (Array.isArray(value)) {
     const arr = value as JSONArray
     const out: JSONArray = new Array(arr.length)

@@ -1,10 +1,9 @@
 /* eslint-disable */
 /* prettier-ignore */
-// @ts-nocheck
 // biome-ignore lint: disable
 // noinspection JSUnusedGlobalSymbols'
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Content-Hash: 7541cc3d
+// Content-Hash: d5a4d5ac
 
 
 declare module '@unplug-i18n-types-locales' {
@@ -19,6 +18,7 @@ import type {I18nOptions} from 'vue-i18n'
 export type AllTranslationKeysGen =
   'App.fruits.apple'
   | 'App.fruits.banana'
+  | 'App.fruitsLabel'
   | 'App.greetings'
   | 'App.menu'
   | 'App.menu.0'
@@ -33,6 +33,7 @@ export type MessageSchemaGen = {
       "apple": "Apple | Apples",
       "banana": "Banana | Bananas"
     },
+    "fruitsLabel": "There are {amount} {fruit}",
     "greetings": "Hello Typescript friends!",
     "menu": [
       "home",
