@@ -14,10 +14,10 @@ describe('toTypesContent', () => {
       supportedLanguages: ['en', 'de'],
     })
 
-    expect(result).toContain("export type AllTranslationKeysGen = 'hello' | 'world'")
-    expect(result).toContain('export type SupportedLanguagesGen = readonly')
-    expect(result).toContain('export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]')
-    expect(result).toContain('export type AllLocaleGen =')
+    expect(result).toContain("export type AllTranslationKeys = 'hello' | 'world'")
+    expect(result).toContain('export type SupportedLanguages = readonly')
+    expect(result).toContain('export type SupportedLanguageUnion = SupportedLanguages[number]')
+    expect(result).toContain('export type I18nMessages =')
   })
 
   it('should handle nested message structure', () => {
@@ -92,7 +92,7 @@ describe('toTypesContent', () => {
       supportedLanguages: ['en'],
     })
 
-    expect(result).toContain('export type AllTranslationKeysGen = never')
+    expect(result).toContain('export type AllTranslationKeys = never')
   })
 
   it('should maintain language order as provided', () => {
@@ -103,7 +103,7 @@ describe('toTypesContent', () => {
     })
 
     // Languages should be in the same order as provided
-    expect(result).toContain("SupportedLanguagesGen = readonly ['zh', 'en', 'de', 'fr']")
+    expect(result).toContain("SupportedLanguages = readonly ['zh', 'en', 'de', 'fr']")
   })
 
   it('should handle arrays in messages', () => {

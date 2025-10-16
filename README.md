@@ -215,7 +215,7 @@ Once set up, TypeScript will validate all your translation keys and show errors 
 // ✅ Valid - TypeScript knows this key exists
 const msg = t('welcome')
 
-// ❌ TypeScript Error: Argument of type '"welcme"' is not assignable to parameter of type 'AllTranslationKeysGen'
+// ❌ TypeScript Error: Argument of type '"welcme"' is not assignable to parameter of type 'AllTranslationKeys'
 const msg = t('welcme')  // Typo caught at compile time!
 
 // ✅ Valid - Nested keys work too
@@ -359,17 +359,17 @@ For example:
 
 <script setup lang="ts" >
     import {useI18nTypeSafe} from "@/i18n/i18n.gen.ts";
-    import type {AllTranslationKeysGen} from "@/i18n/i18n.types.gen";
+    import type {AllTranslationKeys} from "@/i18n/i18n.types.gen";
 
     const {t} = useI18nTypeSafe()
 
 // Use a type-safe translation key
-const title: AllTranslationKeysGen = 'home.title'
+    const title: AllTranslationKeys = 'home.title'
 const translatedTitle = t(title)  // `t` is now aware of available keys
 </script >
 ```
 
-In the above example, the `AllTranslationKeysGen` type (automatically generated) ensures that `'home.title'` is a valid
+In the above example, the `AllTranslationKeys` type (automatically generated) ensures that `'home.title'` is a valid
 key according to your locale messages. If you mistype a key, TypeScript will error, preventing runtime translation
 errors.
 
@@ -642,7 +642,7 @@ const message = t('welcom.messge') // Typo! Runtime error
 const message = t('welcom.messge')
 //                 ^^^^^^^^^^^^^^
 // Error: Argument of type '"welcom.messge"' is not assignable
-// to parameter of type 'AllTranslationKeysGen'
+// to parameter of type 'AllTranslationKeys'
 
 // Correct usage with autocomplete
 const message = t('welcome.message') // ✅ IDE suggests all keys

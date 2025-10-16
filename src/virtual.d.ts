@@ -15,33 +15,33 @@ declare module 'virtual:unplug-i18n-dts-generation' {
 
 
   // @ts-expect-error - Virtual module provided by vite-plugin-locale-json
-  function createI18nInstancePlugin<T extends Partial<ComposerOptions> & I18nOptions>(options?: T): Plugin<unknown[]> & (I18n<AllTranslationsGen, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false>)
+  function createI18nInstancePlugin<T extends Partial<ComposerOptions> & I18nOptions>(options?: T): Plugin<unknown[]> & (I18n<AllTranslations, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false>)
 
   export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>
 
   export interface I18nCustom {
-    (key: AllTranslationKeysGen, plural: number, options?: TranslateOptions): string
+    (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string
 
-    (key: AllTranslationKeysGen, options?: TranslateOptions): string
+    (key: AllTranslationKeys, options?: TranslateOptions): string
 
-    (key: AllTranslationKeysGen, defaultMsg?: string): string
+    (key: AllTranslationKeys, defaultMsg?: string): string
 
-    (key: AllTranslationKeysGen, defaultMsg: string, options?: TranslateOptions): string
+    (key: AllTranslationKeys, defaultMsg: string, options?: TranslateOptions): string
 
-    (key: AllTranslationKeysGen, named: NamedValue, defaultMsg?: string): string
+    (key: AllTranslationKeys, named: NamedValue, defaultMsg?: string): string
 
-    (key: AllTranslationKeysGen, named: NamedValue, plural?: number): string
+    (key: AllTranslationKeys, named: NamedValue, plural?: number): string
 
-    (key: AllTranslationKeysGen, named: NamedValue, options?: TranslateOptions): string
+    (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions): string
 
-    (key: AllTranslationKeysGen, plural: number, named: NamedValue): string
+    (key: AllTranslationKeys, plural: number, named: NamedValue): string
 
-    (key: AllTranslationKeysGen, plural: number, defaultMsg: string): string
+    (key: AllTranslationKeys, plural: number, defaultMsg: string): string
   }
 
 // I18n config options (excludes messages as they're provided by the plugin)
   // @ts-expect-error - Virtual module provided by vite-plugin-locale-json
-  export type I18nConfigOptions = Omit<ComposerOptions<MessageSchemaGen, {}, SupportedLanguageUnionGen, false>, 'messages'>;
+  export type I18nConfigOptions = Omit<ComposerOptions<MessageSchemaGen, {}, SupportedLanguageUnion, false>, 'messages'>;
   export type UseI18nTypesafeReturn =
     Omit<Composer<NonNullable<ComposerOptions['messages']>, NonNullable<ComposerOptions['datetimeFormats']>, NonNullable<ComposerOptions['numberFormats']>, ComposerOptions['locale'] extends unknown ? string : Options['locale']>, 't'>
     & { t: I18nCustom };
@@ -53,17 +53,17 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   const supportedLanguages: readonly[string]
 
 
-  export type AllTranslationKeysGen =
+  export type AllTranslationKeys =
     'no-key'
 
-  export type SupportedLanguagesGen = readonly ['de', 'en']
-  export type SupportedLanguageUnionGen = SupportedLanguagesGen[number]
+  export type SupportedLanguages = readonly ['de', 'en']
+  export type SupportedLanguageUnion = SupportedLanguages[number]
 
 // Message structure types
   export type MessageSchemaGen = Record<string, unknown>
-  export type AllLocaleGen = Readonly<Record<SupportedLanguageUnionGen, MessageSchemaGen>>
-  export type AllTranslationsGen = AllLocaleGen
-  export type MessagesType = AllLocaleGen
+  export type I18nMessages = Readonly<Record<SupportedLanguageUnion, MessageSchemaGen>>
+  export type AllTranslations = I18nMessages
+  export type MessagesType = I18nMessages
 
   // @ts-expect-error - Virtual module provided by vite-plugin-locale-json
   function createI18nInstance<T extends Partial<ComposerOptions>>(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false>
