@@ -1,0 +1,14 @@
+{
+  "App": {
+    "fruits": {
+      "label": "You have {amount} {fruit}",
+      "apple": "apple | apples",
+      "banana": "banana | bananas"
+    },
+    "menu": [
+      "Home",
+      "About",
+      "Contact"
+    ]
+  }
+}

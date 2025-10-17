@@ -86,7 +86,7 @@ export function getMessageTypeDefinitions(combinedMessages: CombinedMessages<str
 
   return [
     '',
-    'export type SupportedLanguage = AllSupportedLanguages[number] | string',
+    'export type SupportedLanguage = AllSupportedLanguages[number]',
     'export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages = ' + combinedMessages.languagesTuple() + ' as const',
     `export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
     `export type AllSupportedLanguages = readonly [${AllSupportedLanguages.map(l => `'${l}'`).join(', ')}]`,

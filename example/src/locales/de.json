@@ -1,13 +1,22 @@
 {
+
   "App": {
-    "greetings": "Hallo Typescript Freunde!",
+    "fruitsLabel": "Es gibt {amount} {fruit}",
     "fruits": {
+      "label": "Du hast {amount} {fruit}",
       "apple": "Apfel | Äpfel",
       "banana": "Banane | Bananen"
     },
     "menu": [
-      "startseite",
-      "über"
+      "Startseite",
+      "Über uns",
+      "Kontakt"
     ]
+  },
+  "LanguageDropdown": {
+    "label": "Sprache:"
+  },
+  "Greeting": {
+    "message": "Hallo TypeScript Freunde!"
   }
 }

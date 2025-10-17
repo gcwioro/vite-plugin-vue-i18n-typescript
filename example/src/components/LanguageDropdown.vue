@@ -6,7 +6,6 @@
     <select
       id="language-select"
       v-model="selectedLanguage"
-      @change="changeLanguage"
       class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
     >
       <option v-for="lang in i18n.availableLocales" :key="lang" :value="lang">
@@ -18,19 +17,25 @@
 
 <script setup lang="ts">
 
-import {ref, toValue} from "vue";
-import {useI18nApp, useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";
+import {ref, watch} from "vue";
+import {
+  type SupportedLanguage,
+  supportedLanguages,
+  useI18nApp,
+  useI18nTypeSafe
+} from "virtual:unplug-i18n-dts-generation";
 
 const i18n = useI18nApp()
 const {t} = useI18nTypeSafe()
 
-const selectedLanguage = ref(toValue(i18n.locale))
+const supportedLanguage = supportedLanguages[0];
+const selectedLanguage = ref<SupportedLanguage>(supportedLanguage)
 
-function changeLanguage() {
-  if (selectedLanguage.value) {
-    i18n.locale.value = selectedLanguage.value;
+watch(selectedLanguage, locale => {
+  if (locale) {
+    i18n.locale.value = locale;
   }
+}, {immediate: true})
 
-}
 
 </script>
