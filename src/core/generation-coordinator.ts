@@ -4,6 +4,7 @@ import type {Logger} from "vite";
 import {detectKeyConflicts, ensureDir, writeFileAtomic} from "../utils";
 import {toTypesContent, toVirtualModuleContent} from "../generator";
 import type {JSONObject, JSONValue} from "../types";
+import {CombinedMessages} from "./combined-messages";
 
 export interface GenerationOptions {
   typesPath: string;
@@ -41,6 +42,12 @@ export class GenerationCoordinator {
   ): Promise<GenerationResult> {
     const start = performance.now();
 
+    // Create CombinedMessages instance
+    const combinedMessages = new CombinedMessages(
+      messages as Record<string, JSONObject>,
+      this.options.baseLocale
+    );
+
     // Resolve output paths
     const typesOutPath = path.isAbsolute(this.options.typesPath)
       ? this.options.typesPath
@@ -55,7 +62,7 @@ export class GenerationCoordinator {
     // Validate and generate content
     const startContentGen = performance.now();
     this.validateMessages(messages);
-    const {typesContent, virtualContent} = await this.generateContent(messages);
+    const {typesContent, virtualContent} = await this.generateContent(combinedMessages);
     const contentGenDuration = Math.round(performance.now() - startContentGen);
 
     // Write files
@@ -101,29 +108,20 @@ export class GenerationCoordinator {
   /**
    * Generate file content
    */
-  private async generateContent(messages: Record<string, JSONValue>): Promise<{
+  private async generateContent(combinedMessages: CombinedMessages<string, JSONObject>): Promise<{
     typesContent: string;
     virtualContent?: string;
   }> {
-    const languages = Object.keys(messages).filter(l => l !== 'js-reserved');
-    const sortedLanguages = Array.from(new Set(languages)).sort((a, b) =>
-      a < b ? -1 : a > b ? 1 : 0
-    );
-
     const typesContent = toTypesContent({
-      messages: messages as Record<string, JSONObject>,
-      baseLocale: this.options.baseLocale,
-      AllSupportedLanguages: sortedLanguages,
+      combinedMessages,
       banner: this.options.banner,
       sourceId: this.options.sourceId,
     });
 
     const virtualContent = this.options.virtualFilePath
       ? toVirtualModuleContent({
-        messages: messages as Record<string, JSONObject>,
-        baseLocale: this.options.baseLocale,
+        combinedMessages,
         banner: this.options.banner,
-
       })
       : undefined;
 

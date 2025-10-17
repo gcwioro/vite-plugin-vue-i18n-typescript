@@ -1,17 +1,23 @@
 import { describe, it, expect } from 'vitest'
 import {toTypesContent} from './generator'
+import {CombinedMessages} from './core/combined-messages'
 
 describe('toTypesContent', () => {
   it('should generate basic type definitions', () => {
-    const result = toTypesContent({
-      messages: {
-        en: {
-          hello: 'Hello',
-          world: 'World',
-        },
+    const messages = {
+      en: {
+        hello: 'Hello',
+        world: 'World',
       },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en', 'de'],
+      de: {
+        hello: 'Hallo',
+        world: 'Welt',
+      }
+    };
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
+    const result = toTypesContent({
+      combinedMessages,
     })
 
     expect(result).toContain("export type AllTranslationKeys = 'hello' | 'world'")
@@ -21,20 +27,21 @@ describe('toTypesContent', () => {
   })
 
   it('should handle nested message structure', () => {
-    const result = toTypesContent({
-      messages: {
-        en: {
-          nav: {
-            home: 'Home',
-            about: 'About',
-          },
-          forms: {
-            submit: 'Submit',
-          },
+    const messages = {
+      en: {
+        nav: {
+          home: 'Home',
+          about: 'About',
+        },
+        forms: {
+          submit: 'Submit',
         },
       },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en'],
+    };
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
+    const result = toTypesContent({
+      combinedMessages,
     })
 
     expect(result).toContain("'forms.submit'")
@@ -44,10 +51,11 @@ describe('toTypesContent', () => {
 
   it('should use custom banner when provided', () => {
     const customBanner = '// Custom banner\n// Do not edit\n'
+    const messages = {en: {test: 'test'}};
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
     const result = toTypesContent({
-      messages: { en: { test: 'test' } },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en'],
+      combinedMessages,
       banner: customBanner,
     })
 
@@ -56,10 +64,11 @@ describe('toTypesContent', () => {
   })
 
   it('should use default banner when not provided', () => {
+    const messages = {en: {test: 'test'}};
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
     const result = toTypesContent({
-      messages: { en: { test: 'test' } },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en'],
+      combinedMessages,
     })
 
     expect(result).toContain('AUTO-GENERATED FILE. DO NOT EDIT.')
@@ -68,16 +77,17 @@ describe('toTypesContent', () => {
   })
 
   it('should apply default key transformation', () => {
-    const result = toTypesContent({
-      messages: {
-        en: {
-          userProfile: 'Profile',
-          userSettings: 'Settings',
-          adminDashboard: 'Dashboard',
-        },
+    const messages = {
+      en: {
+        userProfile: 'Profile',
+        userSettings: 'Settings',
+        adminDashboard: 'Dashboard',
       },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en'],
+    };
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
+    const result = toTypesContent({
+      combinedMessages,
     })
 
     expect(result).toContain("'adminDashboard'")
@@ -86,38 +96,46 @@ describe('toTypesContent', () => {
   })
 
   it('should handle empty messages', () => {
+    const messages = {en: {}};
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
     const result = toTypesContent({
-      messages: { en: {} },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en'],
+      combinedMessages,
     })
 
     expect(result).toContain('export type AllTranslationKeys = never')
   })
 
   it('should maintain language order as provided', () => {
+    const messages = {
+      zh: {test: 'test'},
+      en: {test: 'test'},
+      de: {test: 'test'},
+      fr: {test: 'test'}
+    };
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
     const result = toTypesContent({
-      messages: { en: { test: 'test' } },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['zh', 'en', 'de', 'fr'],
+      combinedMessages,
     })
 
-    // Languages should be in the same order as provided
-    expect(result).toContain("AllSupportedLanguages = readonly ['zh', 'en', 'de', 'fr']")
+    // Languages should be in the same order as provided (sorted alphabetically by CombinedMessages)
+    expect(result).toContain("AllSupportedLanguages = readonly ['de', 'en', 'fr', 'zh']")
   })
 
   it('should handle arrays in messages', () => {
-    const result = toTypesContent({
-      messages: {
-        en: {
-          items: ['item1', 'item2'],
-          nested: {
-            list: ['a', 'b'],
-          },
+    const messages = {
+      en: {
+        items: ['item1', 'item2'],
+        nested: {
+          list: ['a', 'b'],
         },
       },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en'],
+    };
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
+    const result = toTypesContent({
+      combinedMessages,
     })
 
     expect(result).toContain("'items'")
@@ -125,10 +143,11 @@ describe('toTypesContent', () => {
   })
 
   it('should normalize line endings', () => {
+    const messages = {en: {test: 'test'}};
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
     const result = toTypesContent({
-      messages: { en: { test: 'test' } },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en'],
+      combinedMessages,
     })
 
     expect(result).not.toContain('\r\n')
@@ -138,38 +157,45 @@ describe('toTypesContent', () => {
   })
 
   it('should generate deterministic output', () => {
-    const params = {
-      messages: {
-        en: {
-          z: 'Z value',
-          a: 'A value',
-          m: {
-            y: 'Y value',
-            b: 'B value',
-          },
+    const messages = {
+      en: {
+        z: 'Z value',
+        a: 'A value',
+        m: {
+          y: 'Y value',
+          b: 'B value',
         },
       },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en', 'de'],
-    }
+      de: {
+        z: 'Z Wert',
+        a: 'A Wert',
+        m: {
+          y: 'Y Wert',
+          b: 'B Wert',
+        },
+      },
+    };
+    const combinedMessages1 = new CombinedMessages(messages, 'en');
+    const combinedMessages2 = new CombinedMessages(messages, 'en');
 
-    const result1 = toTypesContent(params)
-    const result2 = toTypesContent(params)
+    const result1 = toTypesContent({combinedMessages: combinedMessages1})
+    const result2 = toTypesContent({combinedMessages: combinedMessages2})
 
     expect(result1).toBe(result2)
   })
 
   it('should properly escape special characters in JSON', () => {
-    const result = toTypesContent({
-      messages: {
-        en: {
-          quote: 'He said "Hello"',
-          backslash: 'Path\\to\\file',
-          newline: 'Line 1\nLine 2',
-        },
+    const messages = {
+      en: {
+        quote: 'He said "Hello"',
+        backslash: 'Path\\to\\file',
+        newline: 'Line 1\nLine 2',
       },
-      baseLocale: 'en',
-      AllSupportedLanguages: ['en'],
+    };
+    const combinedMessages = new CombinedMessages(messages, 'en');
+
+    const result = toTypesContent({
+      combinedMessages,
     })
 
     expect(result).toContain('"He said \\"Hello\\""')

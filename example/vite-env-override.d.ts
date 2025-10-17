@@ -2,7 +2,7 @@
 /* prettier-ignore */
 // biome-ignore lint: disable
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Content-Hash: 893309fd
+// Content-Hash: c4529359
 
 declare module 'virtual:unplug-i18n-dts-generation' {
   import {type Plugin, type WritableComputedRef} from 'vue'
@@ -35,7 +35,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
     export {  createI18nInstance,  createI18nInstancePlugin, useI18nTypeSafe };
 
   export type SupportedLanguage = AllSupportedLanguages[number] | string
-  const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages = ['de', 'en'] as const
+  export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages = ['de', 'en'] as const
   export type AllTranslationKeys =
     'App.fruits.apple'
     | 'App.fruits.banana'
@@ -66,10 +66,6 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>
   export type AllTranslations = I18nMessages
   export type MessagesType = I18nMessages
-  const messages: MessagesType;
+  export const messages: MessagesType;
   export default messages;
-
-  // Type-safe translate function parameters
-
-  export { supportedLanguages, messages }
 }
