@@ -10,7 +10,7 @@ unplugin-vue-i18n-dts-generation CLI
 Generate TypeScript definitions from Vue i18n locale files
 
 Usage:
-  npx vue-i18n-dts generate [options]
+  npx unplugin-vue-i18n-dts-generation generate [options]
 
 Options:
   --root <path>              Root directory (default: current directory)
@@ -29,19 +29,19 @@ Options:
 
 Examples:
   # Basic usage with default settings
-  npx vue-i18n-dts generate
+  npx unplugin-vue-i18n-dts-generation generate
 
   # Specify custom paths and base locale
-  npx vue-i18n-dts generate --base-locale en --types-path src/types/i18n.d.ts
+  npx unplugin-vue-i18n-dts-generation generate --base-locale en --types-path src/types/i18n.d.ts
 
   # Multiple include patterns
-  npx vue-i18n-dts generate --include "src/locales/**/*.json" --include "src/i18n/**/*.json"
+  npx unplugin-vue-i18n-dts-generation generate --include "src/locales/**/*.json" --include "src/i18n/**/*.json"
 
   # Generate virtual file for debugging
-  npx vue-i18n-dts generate --virtual-file-path src/i18n/virtual.gen.ts --verbose
+  npx unplugin-vue-i18n-dts-generation generate --virtual-file-path src/i18n/virtual.gen.ts --verbose
 
   # Custom root directory
-  npx vue-i18n-dts generate --root ./packages/frontend --base-locale en
+  npx unplugin-vue-i18n-dts-generation generate --root ./packages/frontend --base-locale en
 `;
 
 async function main() {

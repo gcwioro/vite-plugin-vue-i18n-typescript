@@ -453,23 +453,23 @@ No configuration needed! The CLI accepts all options as parameters.
 
 ```bash
 # Basic usage (uses defaults)
-npx vue-i18n-dts generate
+npx unplugin-vue-i18n-dts-generation generate
 
 # With custom options
-npx vue-i18n-dts generate \
+npx unplugin-vue-i18n-dts-generation generate \
   --base-locale en \
   --types-path src/types/i18n.d.ts \
   --include "src/locales/**/*.json" \
   --verbose
 
 # Multiple include patterns
-npx vue-i18n-dts generate \
+npx unplugin-vue-i18n-dts-generation generate \
   --include "src/locales/**/*.json" \
   --include "src/i18n/**/*.json" \
   --base-locale en
 
 # Generate virtual file for debugging
-npx vue-i18n-dts generate \
+npx unplugin-vue-i18n-dts-generation generate \
   --virtual-file-path src/i18n/virtual.gen.ts \
   --verbose
 ```
@@ -497,9 +497,9 @@ npx vue-i18n-dts generate \
 ```json
 {
   "scripts": {
-    "generate:types": "vue-i18n-dts generate --base-locale en",
-    "precommit": "vue-i18n-dts generate && git add .",
-    "ci:types": "vue-i18n-dts generate --verbose"
+    "generate:types": "npx unplugin-vue-i18n-dts-generation generate --base-locale en",
+    "precommit": "npx unplugin-vue-i18n-dts-generation generate && git add .",
+    "ci:types": "npx unplugin-vue-i18n-dts-generation generate --verbose"
   }
 }
 ```
@@ -635,8 +635,10 @@ tsc scripts/generate-i18n.ts && node scripts/generate-i18n.js
   "scripts": {
     "dev": "vite",                    // 1. Vite Plugin handles dev
     "build": "vite build",            // 1. Vite Plugin handles build
-    "generate:types": "vue-i18n-dts generate", // 2. CLI for manual generation
-    "precommit": "vue-i18n-dts generate"       // 2. CLI for pre-commit
+      "generate:types": "npx unplugin-vue-i18n-dts-generation generate",
+      // 2. CLI for manual generation
+      "precommit": "npx unplugin-vue-i18n-dts-generation generate"
+      // 2. CLI for pre-commit
   }
 }
 ```
@@ -646,7 +648,7 @@ tsc scripts/generate-i18n.ts && node scripts/generate-i18n.js
 ```yaml
 # .github/workflows/ci.yml
 - name: Generate i18n types
-  run: npx vue-i18n-dts generate --verbose
+  run: npx unplugin-vue-i18n-dts-generation generate --verbose
 
 - name: Check types
   run: npm run typecheck
