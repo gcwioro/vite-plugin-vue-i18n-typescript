@@ -1,12 +1,12 @@
 <template>
   <div class="flex items-center gap-3">
-    <label for="language-select" class="text-sm font-medium text-gray-700">
+    <label for="language-select" class="label">
       {{ t('LanguageDropdown.label') }}
     </label>
     <select
       id="language-select"
       v-model="selectedLanguage"
-      class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      class="select"
     >
       <option v-for="lang in i18n.availableLocales" :key="lang" :value="lang">
         {{ lang }}

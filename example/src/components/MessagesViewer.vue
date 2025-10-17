@@ -1,33 +1,23 @@
 <template>
-  <section class="">
-    <h2 class="text-lg">Translation Messages ({{ locale }})</h2>
+  <section class="section">
+    <h2 class="section-title">Translation Messages ({{ locale }})</h2>
     <div class="sub-section">
       <p class="label">
         Shows all translation messages using <b>tm('App')</b>
       </p>
 
-      <pre class="code">{{
-          JSON.stringify(allMessages, null, 2)
-        }}</pre>
+      <pre class="code">{{ JSON.stringify(JSON.parse(JSON.stringify(allMessages)), null, 4) }}</pre>
     </div>
     <div class="sub-section">
       <p class="label">
         Shows all translation messages using <b>import {useI18nTypeSafe,messages} from
         "virtual:unplug-i18n-dts-generation";</b>
       </p>
-      <pre class=" code">
-
-        {{ JSON.stringify(messages, null, 4) }}
-      </pre>
+      <pre class="code" v-html="JSON.stringify(JSON.parse(JSON.stringify(messages)), null, 4)"/>
     </div>
-
   </section>
 </template>
-<!--<style type="text/tailwindcss">-->
-<!--@theme {-->
-<!--  &#45;&#45;color-red: #0f0;-->
-<!--}-->
-<!--</style>-->
+
 <script setup lang="ts">
 import {useI18nTypeSafe, messages} from "virtual:unplug-i18n-dts-generation";
 import {computed} from "vue";
@@ -37,8 +27,3 @@ const {tm, locale} = useI18nTypeSafe()
 // Get all messages for the current locale
 const allMessages = computed(() => tm('App'))
 </script>
-
-<style lang="css" type="text/tailwindcss">
-
-
-</style>

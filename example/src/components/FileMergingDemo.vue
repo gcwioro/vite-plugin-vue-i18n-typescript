@@ -1,94 +1,92 @@
 <template>
-  <section class="bg-white rounded-lg shadow-sm px-6 py-5 border border-gray-200">
-    <h2 class="text-lg font-semibold text-gray-900 mb-2">File Merging Demo</h2>
-    <p class="text-sm text-gray-600 mb-4">
+  <section class="section">
+    <h2 class="section-title">File Merging Demo</h2>
+    <p class="text-description">
       Demonstrates how the plugin merges translation keys from multiple JSON files
     </p>
 
-    <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-      <h3 class="text-sm font-semibold text-blue-900 mb-2">How it works:</h3>
-      <ul class="text-xs text-blue-800 space-y-1">
-        <li class="flex items-start gap-2">
-          <span class="text-blue-400">•</span>
-          <span>Translation keys from <span class="font-mono bg-blue-100 px-1 rounded">locales/en.json</span> are merged with keys from <span
-            class="font-mono bg-blue-100 px-1 rounded">components/FileMergingDemo.en.json</span></span>
+    <div class="info-box info-box-blue mb-4">
+      <h3 class="info-title-blue">How it works:</h3>
+      <ul class="info-list text-xs text-blue-800">
+        <li class="info-list-item">
+          <span class="bullet-blue">•</span>
+          <span>Translation keys from <span class="file-path-blue">locales/en.json</span> are merged with keys from <span
+            class="file-path-blue">components/FileMergingDemo.en.json</span></span>
         </li>
-        <li class="flex items-start gap-2">
-          <span class="text-blue-400">•</span>
+        <li class="info-list-item">
+          <span class="bullet-blue">•</span>
           <span>Component-specific files complement (not override) the main locale files</span>
         </li>
-        <li class="flex items-start gap-2">
-          <span class="text-blue-400">•</span>
+        <li class="info-list-item">
+          <span class="bullet-blue">•</span>
           <span>All keys are available with full type safety across the application</span>
         </li>
       </ul>
     </div>
 
     <div class="space-y-3">
-      <div class="border border-gray-200 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-gray-700 mb-3">
-          From <span
-          class="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">locales/en.json</span>
+      <div class="card">
+        <h3 class="subsection-title-sm">
+          From <span class="file-path">locales/en.json</span>
         </h3>
         <div class="space-y-2">
-          <div class="px-3 py-2 bg-gray-50 rounded text-sm">
+          <div class="card-content">
             <span class="text-gray-500 text-xs">App.fruits.label:</span>
             <p class="text-gray-900">{{ t('App.fruits.label', {amount: 5, fruit: 'apples'}) }}</p>
           </div>
-          <div class="px-3 py-2 bg-gray-50 rounded text-sm">
+          <div class="card-content">
             <span class="text-gray-500 text-xs">Greeting.message:</span>
             <p class="text-gray-900">{{ t('Greeting.message') }}</p>
           </div>
         </div>
       </div>
 
-      <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+      <div class="card info-box-green">
         <h3 class="text-sm font-semibold text-green-900 mb-3">
-          From <span class="font-mono text-xs bg-green-100 px-1.5 py-0.5 rounded">components/FileMergingDemo.en.json</span>
+          From <span class="file-path-green">components/FileMergingDemo.en.json</span>
         </h3>
         <div class="space-y-2">
-          <div class="px-3 py-2 bg-white border border-green-200 rounded text-sm">
+          <div class="card-white-border">
             <span class="text-green-600 text-xs">FileMergingDemo.title:</span>
             <p class="text-gray-900">{{ t('FileMergingDemo.title') }}</p>
           </div>
-          <div class="px-3 py-2 bg-white border border-green-200 rounded text-sm">
+          <div class="card-white-border">
             <span class="text-green-600 text-xs">FileMergingDemo.description:</span>
             <p class="text-gray-900">{{ t('FileMergingDemo.description') }}</p>
           </div>
-          <div class="px-3 py-2 bg-white border border-green-200 rounded text-sm">
+          <div class="card-white-border">
             <span class="text-green-600 text-xs">FileMergingDemo.feature.typeCheck:</span>
             <p class="text-gray-900">{{ t('FileMergingDemo.feature.typeCheck') }}</p>
           </div>
-          <div class="px-3 py-2 bg-white border border-green-200 rounded text-sm">
+          <div class="card-white-border">
             <span class="text-green-600 text-xs">FileMergingDemo.feature.autoMerge:</span>
             <p class="text-gray-900">{{ t('FileMergingDemo.feature.autoMerge') }}</p>
           </div>
         </div>
       </div>
 
-      <div class="border border-purple-200 rounded-lg p-4 bg-purple-50">
+      <div class="card info-box-purple">
         <h3 class="text-sm font-semibold text-purple-900 mb-3">
           Merged Result - All keys accessible with autocomplete
         </h3>
         <div class="space-y-2">
-          <div class="px-3 py-2 bg-white rounded text-sm">
-            <p class="text-gray-900 flex items-center gap-2">
-              <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor"
-                   viewBox="0 0 24 24">
+          <div class="card-white">
+            <div class="text-gray-900 flex items-center gap-2">
+              <svg class="icon-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M5 13l4 4L19 7"></path>
               </svg>
               <span>{{ t('FileMergingDemo.merged.success', {count: allKeysCount}) }}</span>
-            </p>
+            </div>
           </div>
-          <div class="px-3 py-2 bg-white rounded text-sm">
+          <div class="card-white">
             <p class="text-gray-900">{{ t('FileMergingDemo.merged.typeSafety') }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="mt-4 p-3 bg-gray-900 rounded-lg">
+    <div class="code mt-4">
       <p class="text-xs text-gray-400 mb-2 font-semibold">File structure:</p>
       <pre class="text-xs text-green-400 font-mono">example/src/
 ├── locales/

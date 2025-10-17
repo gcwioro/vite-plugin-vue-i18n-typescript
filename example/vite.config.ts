@@ -3,15 +3,12 @@
 import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import viteTsChecker from 'vite-plugin-checker';
-import {join} from "path";
+
 import {fileURLToPath, URL} from "url";
 
-
-import unpluginVueI18nDtsGeneration from "../src";
-// import unpluginVueI18nDtsGeneration, {
-//     VirtualKeysDtsOptions
-// } from "../src/index";
 // import unpluginVueI18nDtsGeneration,{VirtualKeysDtsOptions} from "unplugin-vue-i18n-dts-generation";
+import unpluginVueI18nDtsGeneration from "../src";
+import {viteSingleFile} from "vite-plugin-singlefile"
 
 
 // const plugin :Plugin<VirtualKeysDtsOptions>= unpluginVueI18nDtsGeneration(pluginOptions );
@@ -30,17 +27,18 @@ export default defineConfig({
     unpluginVueI18nDtsGeneration({
       baseLocale: 'en',
       debug: true,
-      virtualFilePath: './src/i18n/virtual.js',
-      emit: {emitJson: true, inlineDataInBuild: false}
+      // virtualFilePath: './src/i18n/virtual.js',
+      emit: {emitJson: false, inlineDataInBuild: true}
 
 
-    }) as any,
+    }),
     // unpluginVueI18nDtsGeneration(),
     viteTsChecker({
       overlay: {initialIsOpen: true},
       typescript: true,
       vueTsc: true,
     }),
+    viteSingleFile()
 
   ],
 })
