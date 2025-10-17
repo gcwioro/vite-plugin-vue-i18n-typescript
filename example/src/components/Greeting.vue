@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-white rounded-lg shadow-sm px-6 py-4 border border-gray-200">
-    <h2 class="text-xl font-medium text-gray-900">{{ t('Greeting.message', 'not found') }}</h2>
-  </div>
+
+  <h1 class="">{{ t('Greeting.message', 'not found') }}</h1>
+
 </template>
 <script setup lang="ts">
 import {useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";

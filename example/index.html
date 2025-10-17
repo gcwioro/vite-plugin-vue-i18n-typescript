@@ -1,15 +1,61 @@
 <!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" ></script >
+<html lang="" >
+<head >
+  <meta charset="UTF-8" >
+  <link rel="icon" href="/favicon.ico" >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+  <title >Vite App</title >
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" ></script >
 
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
-</html>
+
+  <style type="text/tailwindcss" >
+
+    @reference "tailwindcss";
+    @theme base;
+    @theme components;
+    @theme utilities;
+    @theme utility;
+    section {
+      @apply bg-white rounded-lg px-6 py-5 border border-gray-200 shadow-gray-400 shadow-lg ;
+    }
+
+    div {
+      @apply rounded-sm ;
+    }
+
+    h1 {
+      @apply text-xl font-bold text-gray-900 ;
+    }
+
+    .border {
+      @apply border border-gray-300 border-1;
+    }
+
+    .code {
+
+      @apply m-2 bg-gray-900 overflow-x-auto p-2 text-xs text-green-400 font-mono font-mono overflow-auto max-h-128 rounded-lg;
+    }
+
+    pre, .code-inline {
+      @applay font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded;
+    }
+
+    .label {
+      @apply mt-2 text-sm text-gray-600 mb-4;
+    }
+
+    p > b {
+      @apply font-mono text-xs bg-gray-400/30 px-1.5 py-0.5 rounded
+    }
+
+    p {
+      @apply text-gray-700 mb-2;
+    }
+  </style >
+
+</head >
+<body >
+<div id="app" class="" ></div >
+<script type="module" src="/src/main.ts" ></script >
+</body >
+</html >

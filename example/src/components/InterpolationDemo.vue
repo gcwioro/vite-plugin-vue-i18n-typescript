@@ -49,11 +49,15 @@
     <div class="mt-4 p-3 bg-gray-50 rounded-lg">
       <p class="text-xs text-gray-600 mb-2 font-semibold">Code examples:</p>
       <ul class="space-y-1 text-xs text-gray-700">
-        <li class="font-mono bg-white px-2 py-1 rounded">t('InterpolationDemo.welcome',
-          {'{'}name{'}'})
+        <li class="font-mono bg-white px-2 py-1 rounded">
+          t('InterpolationDemo.welcome', {name: {{ userName }})
         </li>
-        <li class="font-mono bg-white px-2 py-1 rounded">t('InterpolationDemo.profile', {'{'}name,
-          age{'}'})
+        <li class="font-mono bg-white px-2 py-1 rounded">
+          t('InterpolationDemo.welcome', {name: {{ userName }}, age: {{ userAge }} })
+        </li>
+
+        <li class="font-mono bg-white px-2 py-1 rounded">
+          t('InterpolationDemo.profile', {age: {{ userAge }} + 1})
         </li>
       </ul>
     </div>

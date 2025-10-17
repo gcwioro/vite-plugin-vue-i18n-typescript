@@ -36,11 +36,13 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       <!-- Items Example -->
       <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
-        <div class="text-xs text-gray-500 mb-1 font-mono">t('PluralizationDemo.items', {'{'}n:
-          count{'}'})
+        <div class="text-xs text-gray-500 mb-1 font-mono">t('PluralizationDemo.items', {{
+            count
+          }}'):
+
         </div>
         <div class="text-sm font-medium text-gray-900">
-          {{ t('PluralizationDemo.items', {n: count}) }}
+          {{ t('PluralizationDemo.items', count) }}
         </div>
         <div class="text-xs text-gray-400 mt-1">
           Count: {{ count }} → {{ getPluralForm(count) }}
@@ -49,8 +51,7 @@
 
       <!-- People Example -->
       <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
-        <div class="text-xs text-gray-500 mb-1 font-mono">t('PluralizationDemo.people', {'{'}n:
-          count{'}'})
+        <div class="text-xs text-gray-500 mb-1 font-mono">t('PluralizationDemo.people', {{ count }})
         </div>
         <div class="text-sm font-medium text-gray-900">
           {{ t('PluralizationDemo.people', count) }}
@@ -62,8 +63,9 @@
 
       <!-- Messages Example -->
       <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
-        <div class="text-xs text-gray-500 mb-1 font-mono">t('PluralizationDemo.messages', {'{'}n:
-          count{'}'})
+        <div class="text-xs text-gray-500 mb-1 font-mono">t('PluralizationDemo.messages', {{
+            count
+          }})
         </div>
         <div class="text-sm font-medium text-gray-900">
 
@@ -79,7 +81,7 @@
       <!-- Files Example -->
       <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
         <div class="text-xs text-gray-500 mb-1 font-mono">t('PluralizationDemo.files.uploaded',
-          {'{'}n: count{'}'})
+          {{ count }})
         </div>
         <div class="text-sm font-medium text-gray-900">
           {{ t('PluralizationDemo.files.uploaded', count) }}
