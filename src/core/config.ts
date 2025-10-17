@@ -14,9 +14,11 @@ export interface NormalizedConfig {
   banner?: string;
   debug: boolean;
   devUrlPath: string;
+
+
+  inlineDataInBuild: boolean;
   emit: {
     fileName: string;
-    inlineDataInBuild: boolean;
   };
   transformJson?: (json: unknown, absPath: string) => unknown;
   virtualId: string;
@@ -62,9 +64,9 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): Normal
     banner: userOptions.banner,
     debug: userOptions.debug ?? false,
     devUrlPath: userOptions.devUrlPath ?? "/_virtual_locales.json",
+    inlineDataInBuild: userOptions.emit?.inlineDataInBuild ?? false,
     emit: {
-      fileName: userOptions.emit?.fileName ?? "assets/locales.json",
-      inlineDataInBuild: userOptions.emit?.inlineDataInBuild ?? true,
+      fileName: "assets/locales.json",
     },
     transformJson: userOptions.transformJson,
     virtualId: userOptions.sourceId ?? 'virtual:unplug-i18n-dts-generation',

@@ -486,10 +486,55 @@ npx unplugin-vue-i18n-dts-generation generate \
 --source-id <id>           Virtual module ID (default: "virtual:unplug-i18n-dts-generation")
 --banner <text>            Custom banner comment for generated files
 --merge <type>             Merge strategy: "deep" or "shallow" (default: "deep")
+--watch, -w                Watch mode - regenerate on file changes
 --debug                    Enable debug logging
 --verbose, -v              Enable verbose output
 --help, -h                 Show help message
 --version                  Show version
+```
+
+**Watch Mode:**
+
+The CLI supports watch mode for continuous type generation during development:
+
+```bash
+# Enable watch mode
+npx unplugin-vue-i18n-dts-generation generate --watch --verbose
+
+# Watch mode with custom configuration
+npx unplugin-vue-i18n-dts-generation generate \
+  --watch \
+  --base-locale en \
+  --include "src/locales/**/*.json" \
+  --verbose
+```
+
+When watch mode is enabled:
+
+- 📂 Monitors all locale files for changes
+- 🔄 Automatically regenerates types when files are added, modified, or removed
+- ⚡ Uses debouncing (500ms) to avoid excessive regenerations during rapid edits
+- 💾 Waits for file writes to complete before triggering regeneration
+- 🎯 Shows detailed logs with `--verbose` flag
+
+**Watch Mode Example Output:**
+
+```
+✅ Generation complete in 27ms!
+👁️  Watch mode enabled - watching for changes...
+Press Ctrl+C to exit
+
+[watch] Root directory: /path/to/project
+[watch] Patterns: src/**/locales/*.json
+[watch] Found 2 locale file(s) to watch
+[watch] Watcher ready. Watching 2 file(s):
+  src\locales:
+    - de.json
+    - en.json
+
+📝 File changed: src\locales\en.json
+🚀 Generating i18n types...
+✅ Generation complete in 9ms!
 ```
 
 **Add to package.json:**
@@ -615,16 +660,16 @@ tsc scripts/generate-i18n.ts && node scripts/generate-i18n.js
 
 ### 📊 Comparison Table
 
-| Feature              | Vite Plugin    | CLI         | Programmatic API |
-|----------------------|----------------|-------------|------------------|
-| **Hot Reload**       | ✅ Yes          | ❌ No        | ❌ No             |
-| **Watch Mode**       | ✅ Yes          | ❌ No        | ❌ No             |
-| **CI/CD Friendly**   | ⚠️ Slow        | ✅ Fast      | ✅ Fast           |
-| **Pre-commit Hooks** | ❌ No           | ✅ Yes       | ✅ Yes            |
-| **Custom Workflows** | ❌ Limited      | ⚠️ CLI only | ✅ Full control   |
-| **Configuration**    | vite.config.ts | CLI args    | Code             |
-| **Speed**            | Medium         | Fast        | Fast             |
-| **Requires Vite**    | ✅ Yes          | ❌ No        | ❌ No             |
+| Feature              | Vite Plugin    | CLI               | Programmatic API |
+|----------------------|----------------|-------------------|------------------|
+| **Hot Reload**       | ✅ Yes          | ❌ No              | ❌ No             |
+| **Watch Mode**       | ✅ Yes          | ✅ Yes (`--watch`) | ❌ No             |
+| **CI/CD Friendly**   | ⚠️ Slow        | ✅ Fast            | ✅ Fast           |
+| **Pre-commit Hooks** | ❌ No           | ✅ Yes             | ✅ Yes            |
+| **Custom Workflows** | ❌ Limited      | ⚠️ CLI only       | ✅ Full control   |
+| **Configuration**    | vite.config.ts | CLI args          | Code             |
+| **Speed**            | Medium         | Fast              | Fast             |
+| **Requires Vite**    | ✅ Yes          | ❌ No              | ❌ No             |
 
 ### 🎯 Recommended Workflow
 

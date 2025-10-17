@@ -1,4 +1,5 @@
 import type {JSONValue, JSONObject, JSONArray} from '../types'
+import {transformKeys} from "./keys";
 
 
 type MessageNode = {
@@ -217,4 +218,12 @@ export function detectKeyConflicts(messages: Record<string, JSONValue>): string[
   }
 
   return conflicts
+}
+
+export function getFinalKeys<TKey extends string | number | symbol>(messages: Record<TKey, JSONValue>, baseLocale: TKey): string[] {
+  const messagesForBaseLocale = (messages?.[baseLocale] ?? Object.values(messages)[0]) as Record<string, JSONValue>;
+  const allKeysRaw = getJsonLeafPaths(messagesForBaseLocale)
+    .map((p) => p.replace(/\.body\.cases$/g, ''))
+
+  return transformKeys(allKeysRaw);
 }

@@ -147,18 +147,14 @@ export default function unpluginVueI18nDtsGeneration(
 
       if (isBuild) {
         return createVirtualModuleCode({
-          sourceId: config.sourceId,
           jsonText: jsonTextCache,
-          exportData: config.emit.inlineDataInBuild,
           buildAssetRefId: emittedRefId,
           baseLocale: config.baseLocale,
         });
       }
 
       return createVirtualModuleCode({
-        sourceId: config.sourceId,
         jsonText: jsonTextCache,
-        exportData: true,
         devUrlPath: config.devUrlPath,
         baseLocale: config.baseLocale,
       });

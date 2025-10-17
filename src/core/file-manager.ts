@@ -2,6 +2,7 @@ import path from "node:path";
 import {promises as fs} from "node:fs";
 import type {Logger} from "vite";
 import {toArray} from "../utils";
+import {parseJSONWithLocation, wrapErrorWithFile} from "../utils/error-formatter";
 
 export interface FileManagerOptions {
   include: string | string[];
@@ -171,15 +172,19 @@ export class FileManager {
 
       try {
         const raw = await fs.readFile(abs, "utf8");
-        const parsed = JSON.parse(raw);
+
+        // Parse JSON with enhanced error messages
+        const parsed = parseJSONWithLocation(raw, abs);
+
         const prepared = this.options.transformJson
           ? this.options.transformJson(parsed, abs)
           : parsed;
         this.parsedFilesCache.set(abs, {localeKey, prepared});
       } catch (err: any) {
-        const message = `Failed to parse/merge JSON: ${abs}\n${err?.message ?? err}`;
-        this.options.logger?.error(message);
-        throw err;
+        // Wrap error with file context if not already formatted
+        const formattedError = wrapErrorWithFile(abs, err);
+        this.options.logger?.error(formattedError.message);
+        throw formattedError;
       }
     }
   }

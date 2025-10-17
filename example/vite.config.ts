@@ -30,12 +30,9 @@ export default defineConfig({
     unpluginVueI18nDtsGeneration({
       baseLocale: 'en',
       debug: true,
+
       devUrlPath: "/_virtual_locales.json",
-      // virtualFilePath: "src/i18n/virtual.gen.ts",
-      emit: {
-        fileName: "assets/locales.json", // hint; final path will be handled by Rollup
-        inlineDataInBuild: true,         // also export `data` during build
-      },
+
 
     }) as any,
     // unpluginVueI18nDtsGeneration(),

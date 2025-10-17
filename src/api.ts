@@ -58,6 +58,11 @@ export interface GenerateTypesResult {
    * Number of locale files processed
    */
   localeFilesCount: number;
+
+  /**
+   * Absolute paths of all locale files that were processed
+   */
+  localeFiles: string[];
 }
 
 /**
@@ -197,5 +202,6 @@ export async function generateI18nTypes(
     },
     locales,
     localeFilesCount: lastFiles.length,
+    localeFiles: lastFiles,
   };
 }

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
+import path from "node:path";
 import {parseArgs} from "node:util";
+import {watch} from "chokidar";
 import {generateI18nTypes} from "./api";
 import type {GenerateTypesOptions} from "./api";
 
@@ -22,6 +24,7 @@ Options:
   --source-id <id>           Virtual module ID (default: "virtual:unplug-i18n-dts-generation")
   --banner <text>            Custom banner comment for generated files
   --merge <type>             Merge strategy: "deep" or "shallow" (default: "deep")
+  --watch, -w                Watch mode - regenerate on file changes
   --debug                    Enable debug logging
   --verbose, -v              Enable verbose output
   --help, -h                 Show this help message
@@ -42,6 +45,9 @@ Examples:
 
   # Custom root directory
   npx unplugin-vue-i18n-dts-generation generate --root ./packages/frontend --base-locale en
+
+  # Watch mode - regenerate on file changes
+  npx unplugin-vue-i18n-dts-generation generate --watch --verbose
 `;
 
 async function main() {
@@ -84,6 +90,7 @@ async function main() {
         "source-id": {type: "string"},
         banner: {type: "string"},
         merge: {type: "string"},
+        watch: {type: "boolean", short: "w"},
         debug: {type: "boolean"},
         verbose: {type: "boolean", short: "v"},
       },
@@ -135,17 +142,144 @@ async function main() {
     }
 
     // Run generation
-    console.log("🚀 Generating i18n types...\n");
+    let lastResult: Awaited<ReturnType<typeof generateI18nTypes>> | null = null;
 
-    const result = await generateI18nTypes(options);
+    const runGeneration = async (): Promise<void> => {
+      const startTime = Date.now();
+      console.log("🚀 Generating i18n types...\n");
 
-    console.log("\n✅ Generation complete!");
-    console.log(`📁 Generated files (${result.filesWritten}):`);
-    for (const file of result.generatedFiles) {
-      console.log(`   - ${file}`);
+      try {
+        const result = await generateI18nTypes(options);
+        lastResult = result;
+
+        const duration = Date.now() - startTime;
+        console.log(`\n✅ Generation complete in ${duration}ms!`);
+        console.log(`📁 Generated files (${result.filesWritten}):`);
+        for (const file of result.generatedFiles) {
+          console.log(`   - ${file}`);
+        }
+        console.log(`🌍 Locales (${result.locales.length}): ${result.locales.join(", ")}`);
+        console.log(`📄 Processed ${result.localeFilesCount} locale file(s)`);
+      } catch (error) {
+        console.error("\n❌ Generation failed:");
+        if (error instanceof Error) {
+          console.error(error.message);
+          if (options.debug || options.verbose) {
+            console.error("\nStack trace:");
+            console.error(error.stack);
+          }
+        } else {
+          console.error(String(error));
+        }
+        if (!values.watch) {
+          process.exit(1);
+        }
+      }
+    };
+
+    // Initial generation
+    await runGeneration();
+
+    // Watch mode
+    if (values.watch) {
+      console.log("\n👁️  Watch mode enabled - watching for changes...");
+      console.log("Press Ctrl+C to exit\n");
+
+      if (!lastResult) {
+        console.error("❌ Cannot start watch mode: Initial generation failed");
+        process.exit(1);
+      }
+
+      const rootDir = path.resolve(options.root || process.cwd());
+      const includePatterns = options.include || ['src/**/locales/*.json'];
+
+      if (options.verbose || options.debug) {
+        console.log(`[watch] Root directory: ${rootDir}`);
+        console.log(`[watch] Patterns: ${Array.isArray(includePatterns) ? includePatterns.join(', ') : includePatterns}`);
+      }
+
+      // Use the locale files from the initial generation
+      const localeFilesFullPaths = lastResult.localeFiles || [];
+
+      if (options.verbose || options.debug) {
+        console.log(`[watch] Found ${localeFilesFullPaths.length} locale file(s) to watch`);
+      }
+
+      // Watch the actual files that were found
+      const watcher = watch(localeFilesFullPaths.length > 0 ? localeFilesFullPaths : includePatterns, {
+        cwd: rootDir,
+        ignored: options.exclude || ['**/node_modules/**', '**/.git/**'],
+        persistent: true,
+        ignoreInitial: true, // Skip initial add events since we've already generated
+        awaitWriteFinish: {
+          stabilityThreshold: 300,
+          pollInterval: 100,
+        },
+      });
+
+      // Debounce to avoid multiple rapid regenerations
+      let debounceTimer: NodeJS.Timeout | null = null;
+      const debounceDelay = 500; // 500ms debounce
+      let isWatcherReady = false;
+
+      const scheduleRegeneration = (eventType: string, filePath: string) => {
+        // Skip initial 'add' events since we've already generated once
+        if (!isWatcherReady && eventType === 'added') {
+          return;
+        }
+
+        if (debounceTimer) {
+          clearTimeout(debounceTimer);
+        }
+
+        debounceTimer = setTimeout(async () => {
+          console.log(`\n📝 File ${eventType}: ${filePath}`);
+          await runGeneration();
+        }, debounceDelay);
+      };
+
+      watcher
+        .on('ready', () => {
+          isWatcherReady = true;
+          const watched = watcher.getWatched();
+          const watchedCount = Object.values(watched).reduce((sum, files) => sum + files.length, 0);
+
+          if (options.verbose || options.debug) {
+            console.log(`[watch] Watcher ready. Watching ${watchedCount} file(s):`);
+            for (const [dir, files] of Object.entries(watched)) {
+              if (files.length > 0) {
+                console.log(`  ${dir}:`);
+                for (const file of files) {
+                  console.log(`    - ${file}`);
+                }
+              }
+            }
+          }
+
+          if (watchedCount === 0) {
+            console.warn(`\n⚠️  Warning: No files are being watched!`);
+            console.warn(`   Root: ${rootDir}`);
+            console.warn(`   Patterns: ${Array.isArray(includePatterns) ? includePatterns.join(', ') : includePatterns}`);
+            console.warn(`   This may indicate that the patterns don't match any files.`);
+          }
+        })
+        .on('add', (path) => scheduleRegeneration('added', path))
+        .on('change', (path) => scheduleRegeneration('changed', path))
+        .on('unlink', (path) => scheduleRegeneration('removed', path))
+        .on('error', (error) => {
+          console.error('\n❌ Watcher error:', error);
+        });
+
+      // Keep process alive
+      process.on('SIGINT', () => {
+        console.log('\n\n👋 Stopping watch mode...');
+        watcher.close();
+        process.exit(0);
+      });
+
+      // Prevent exit
+      return;
     }
-    console.log(`🌍 Locales (${result.locales.length}): ${result.locales.join(", ")}`);
-    console.log(`📄 Processed ${result.localeFilesCount} locale file(s)`);
 
     process.exit(0);
   } catch (error) {

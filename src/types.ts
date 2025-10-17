@@ -12,7 +12,10 @@ export type VirtualKeysDtsOptions = {
   transformJson?: (json: unknown, absFilePath: string) => unknown;
   devUrlPath?: string;
   emit?: {
-    fileName?: string;
+    /**
+     * Flag to inline locale data file in the build output.
+     * @default false
+     */
     inlineDataInBuild?: boolean;
   };
   debug?: boolean;
