@@ -4,4 +4,7 @@ export type { VirtualKeysDtsOptions } from './types'
 export type { JSONValue, JSONObject, JSONArray } from './types'
 export {toTypesContent} from './generator'
 export { default } from './plugin'
-// import plugin from './plugin'
+
+// Export programmatic API
+export {generateI18nTypes} from './api'
+export type {GenerateTypesOptions, GenerateTypesResult} from './api'

@@ -19,6 +19,7 @@ autocomplete.
 
 - **Prevent Runtime i18n Errors**: Catch typos and invalid translation keys during TypeScript compilation
 - **IntelliSense Autocomplete**: Full IDE support with autocomplete for all translation keys
+- **Multiple Usage Modes**: Vite plugin, standalone CLI, or programmatic API - choose what fits your workflow
 - **Flexible Project Structure**: Works with both flat file structure (`en.json`, `de.json`) and nested folders
 - **High Performance**: Incremental updates, caching, and parallel processing for large projects
 - **Zero Config**: Works out-of-the-box with sensible defaults for Vue 3 + Vite projects
@@ -32,6 +33,7 @@ Are you looking for solutions to these common Vue i18n issues?
 - ❌ **"Type-safe vue-i18n with TypeScript"** → Full type safety with generated union types
 - ❌ **"Alternative to @intlify/unplugin-vue-i18n with better performance"** → Optimized for speed
 - ❌ **"Vue 3 i18n IntelliSense not working"** → Automatic IDE autocomplete support
+- ❌ **"Generate i18n types in CI/CD without running Vite"** → Standalone CLI available
 
 ---
 
@@ -42,10 +44,15 @@ Are you looking for solutions to these common Vue i18n issues?
 - [Type Safety in Action](#type-safety-in-action)
 - [Why Choose This Plugin?](#why-choose-this-plugin)
 - [Installation](#installation)
+- [Usage](#usage)
+- [Different Usage Approaches](#-different-usage-approaches)
+    - [Vite Plugin Approach](#1%EF%B8%8F⃣-vite-plugin-approach-recommended-for-development)
+    - [Standalone CLI Approach](#2%EF%B8%8F⃣-standalone-cli-approach-recommended-for-cicd)
+    - [Programmatic API Approach](#3%EF%B8%8F⃣-programmatic-api-approach-recommended-for-custom-scripts)
 - [Configuration Options](#configuration--customization)
 - [Performance & Debugging](#performance--debugging)
 - [Migration from @intlify/unplugin-vue-i18n](#migration-guide)
-- [Examples & Use Cases](#example-using-in-a-vue-component)
+- [Examples & Use Cases](#-use-cases--examples)
 
 ---
 
@@ -54,6 +61,7 @@ Are you looking for solutions to these common Vue i18n issues?
 - 🚀 **Seamless integration** with Vue 3 + Vite
 - 🔄 **Automatic generation** of TypeScript definitions from JSON locale files
 - 🎯 **Compile-time type safety**: Catch unknown translation key errors before runtime
+- 🛠️ **Multiple usage modes**: Vite plugin, standalone CLI, or programmatic API
 - 📁 **Flexible file structure**: Works with both flat (`en.json`, `de.json`) and nested (`locales/en/messages.json`)
   structures
 - 🔧 **Hot-reload support**: watches locale files in development for instant updates
@@ -66,6 +74,7 @@ Are you looking for solutions to these common Vue i18n issues?
 - 📊 **Performance logging**: detailed timing breakdowns for debugging
 - 🔒 **Virtual module system** for runtime locale loading
 - 🐛 **Optional virtual file generation** for debugging and inspection
+- 🎨 **CI/CD friendly**: Standalone CLI for type generation without running Vite
 
 ## 🚀 Getting Started - Type-Safe Vue 3 i18n in 5 Minutes
 
@@ -382,6 +391,274 @@ const translatedTitle = t(title)  // `t` is now aware of available keys
 In the above example, the `AllTranslationKeys` type (automatically generated) ensures that `'home.title'` is a valid
 key according to your locale messages. If you mistype a key, TypeScript will error, preventing runtime translation
 errors.
+
+## 🔧 Different Usage Approaches
+
+This plugin provides **three different ways** to generate TypeScript types from your locale files, giving you
+flexibility for different workflows and use cases.
+
+### 1️⃣ Vite Plugin Approach (Recommended for Development)
+
+The standard approach for development - types are automatically generated when you run your Vite dev server or build.
+
+**Best for:**
+
+- 🔄 Development workflow with hot reload
+- 🚀 Automatic type regeneration on file changes
+- 🎯 Integrated with Vite build pipeline
+
+**Setup:**
+
+```typescript
+// vite.config.ts
+import unpluginVueI18nDtsGeneration from 'unplugin-vue-i18n-dts-generation'
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    unpluginVueI18nDtsGeneration({
+      baseLocale: 'en',
+      typesPath: './vite-env-override.d.ts',
+    }),
+  ]
+})
+```
+
+**Usage:**
+
+```bash
+npm run dev    # Types generated automatically
+npm run build  # Types generated as part of build
+```
+
+---
+
+### 2️⃣ Standalone CLI Approach (Recommended for CI/CD)
+
+Generate types using the CLI without starting Vite - perfect for CI/CD pipelines, pre-commit hooks, or manual
+regeneration.
+
+**Best for:**
+
+- 🔨 CI/CD pipelines
+- 🪝 Pre-commit hooks
+- 🎯 Manual type generation
+- ⚡ Fast standalone generation without full build
+
+**Setup:**
+
+No configuration needed! The CLI accepts all options as parameters.
+
+**Usage:**
+
+```bash
+# Basic usage (uses defaults)
+npx vue-i18n-dts generate
+
+# With custom options
+npx vue-i18n-dts generate \
+  --base-locale en \
+  --types-path src/types/i18n.d.ts \
+  --include "src/locales/**/*.json" \
+  --verbose
+
+# Multiple include patterns
+npx vue-i18n-dts generate \
+  --include "src/locales/**/*.json" \
+  --include "src/i18n/**/*.json" \
+  --base-locale en
+
+# Generate virtual file for debugging
+npx vue-i18n-dts generate \
+  --virtual-file-path src/i18n/virtual.gen.ts \
+  --verbose
+```
+
+**Available CLI Options:**
+
+```
+--root <path>              Root directory (default: current directory)
+--include <pattern>        Glob pattern(s) for locale files (can be specified multiple times)
+--exclude <pattern>        Glob pattern(s) to exclude (can be specified multiple times)
+--base-locale <locale>     Base locale for type generation (default: "de")
+--types-path <path>        Output path for .d.ts file (default: "./vite-env-override.d.ts")
+--virtual-file-path <path> Output path for virtual module .ts file (optional)
+--source-id <id>           Virtual module ID (default: "virtual:unplug-i18n-dts-generation")
+--banner <text>            Custom banner comment for generated files
+--merge <type>             Merge strategy: "deep" or "shallow" (default: "deep")
+--debug                    Enable debug logging
+--verbose, -v              Enable verbose output
+--help, -h                 Show help message
+--version                  Show version
+```
+
+**Add to package.json:**
+
+```json
+{
+  "scripts": {
+    "generate:types": "vue-i18n-dts generate --base-locale en",
+    "precommit": "vue-i18n-dts generate && git add .",
+    "ci:types": "vue-i18n-dts generate --verbose"
+  }
+}
+```
+
+---
+
+### 3️⃣ Programmatic API Approach (Recommended for Custom Scripts)
+
+Use the TypeScript/JavaScript API directly in your own Node.js scripts for maximum flexibility.
+
+**Best for:**
+
+- 🎨 Custom build scripts
+- 🔧 Advanced automation workflows
+- 🧪 Testing and validation scripts
+- 🔄 Integration with other tools
+
+**Setup:**
+
+Import the API in any Node.js script:
+
+```typescript
+// scripts/generate-i18n.ts
+import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+
+const result = await generateI18nTypes({
+  root: process.cwd(),
+  baseLocale: 'en',
+  include: ['src/locales/**/*.json'],
+  typesPath: 'src/types/i18n.gen.d.ts',
+  virtualFilePath: 'src/types/i18n.virtual.gen.ts',
+  verbose: true
+})
+
+console.log(`✅ Generated ${result.filesWritten} files`)
+console.log(`🌍 Locales: ${result.locales.join(', ')}`)
+console.log(`📄 Processed ${result.localeFilesCount} locale files`)
+```
+
+**Full Example with Error Handling:**
+
+```typescript
+import { generateI18nTypes, type GenerateTypesResult } from 'unplugin-vue-i18n-dts-generation/api'
+
+async function generateTypes() {
+  try {
+    const result: GenerateTypesResult = await generateI18nTypes({
+      root: './packages/frontend',
+      baseLocale: 'en',
+      include: ['src/locales/**/*.json', 'src/modules/**/i18n/*.json'],
+      exclude: ['**/*.test.json'],
+      typesPath: 'src/types/i18n.gen.d.ts',
+      banner: '// Auto-generated by custom build script',
+      merge: 'deep',
+      verbose: true,
+    })
+
+    console.log('✅ Type generation successful!')
+    console.log(`   Files written: ${result.filesWritten}/${result.totalFiles}`)
+    console.log(`   Locales found: ${result.locales.join(', ')}`)
+    console.log(`   Generated files:`)
+    result.generatedFiles.forEach(file => console.log(`     - ${file}`))
+
+    return result
+  } catch (error) {
+    console.error('❌ Type generation failed:', error)
+    process.exit(1)
+  }
+}
+
+generateTypes()
+```
+
+**API Type Definitions:**
+
+```typescript
+interface GenerateTypesOptions extends VirtualKeysDtsOptions {
+  root?: string           // Project root directory
+  verbose?: boolean       // Enable detailed logging
+  // ... all other plugin options
+}
+
+interface GenerateTypesResult {
+  filesWritten: number    // Number of files written
+  totalFiles: number      // Total files checked
+  generatedFiles: string[] // List of generated file paths
+  durations: {            // Performance metrics
+    content: number
+    write: number
+    total: number
+  }
+  locales: string[]       // Detected locales
+  localeFilesCount: number // Number of locale files processed
+}
+```
+
+**Run your script:**
+
+```bash
+# Using tsx/ts-node
+tsx scripts/generate-i18n.ts
+
+# Or compile and run
+tsc scripts/generate-i18n.ts && node scripts/generate-i18n.js
+
+# Or use in package.json
+"scripts": {
+  "build:types": "tsx scripts/generate-i18n.ts"
+}
+```
+
+---
+
+### 📊 Comparison Table
+
+| Feature              | Vite Plugin    | CLI         | Programmatic API |
+|----------------------|----------------|-------------|------------------|
+| **Hot Reload**       | ✅ Yes          | ❌ No        | ❌ No             |
+| **Watch Mode**       | ✅ Yes          | ❌ No        | ❌ No             |
+| **CI/CD Friendly**   | ⚠️ Slow        | ✅ Fast      | ✅ Fast           |
+| **Pre-commit Hooks** | ❌ No           | ✅ Yes       | ✅ Yes            |
+| **Custom Workflows** | ❌ Limited      | ⚠️ CLI only | ✅ Full control   |
+| **Configuration**    | vite.config.ts | CLI args    | Code             |
+| **Speed**            | Medium         | Fast        | Fast             |
+| **Requires Vite**    | ✅ Yes          | ❌ No        | ❌ No             |
+
+### 🎯 Recommended Workflow
+
+**Combine all three approaches for the best experience:**
+
+```json
+{
+  "scripts": {
+    "dev": "vite",                    // 1. Vite Plugin handles dev
+    "build": "vite build",            // 1. Vite Plugin handles build
+    "generate:types": "vue-i18n-dts generate", // 2. CLI for manual generation
+    "precommit": "vue-i18n-dts generate"       // 2. CLI for pre-commit
+  }
+}
+```
+
+**In CI/CD:**
+
+```yaml
+# .github/workflows/ci.yml
+- name: Generate i18n types
+  run: npx vue-i18n-dts generate --verbose
+
+- name: Check types
+  run: npm run typecheck
+```
+
+**Custom build script:**
+
+```typescript
+// For advanced use cases
+import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+// ... your custom logic
+```
 
 ### Configuration & Customization
 

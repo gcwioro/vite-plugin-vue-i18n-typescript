@@ -1,6 +1,6 @@
 {
   "name": "unplugin-vue-i18n-dts-generation",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Alternative to @intlify/unplugin-vue-i18n - Catch unknown i18n key errors at compile time with TypeScript. Supports flat file structures. High-performance standalone Vite plugin.",
   "keywords": [
     "vite",
@@ -38,6 +38,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "import": "./dist/api.js",
+      "require": "./dist/api.cjs"
+    },
     "./package.json": "./package.json",
     "./i18n-types": {
       "types": "./src/virtual.d.ts"
@@ -46,6 +51,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "vue-i18n-dts": "./dist/cli.js"
+  },
   "files": [
     "dist"
   ],
