@@ -31,7 +31,7 @@ export default defineConfig({
       baseLocale: 'en',
       debug: true,
 
-      devUrlPath: "/_virtual_locales.json",
+      emit: {emitJson: false, inlineDataInBuild: false}
 
 
     }) as any,

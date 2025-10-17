@@ -199,7 +199,7 @@ async function main() {
       }
 
       // Use the locale files from the initial generation
-      const localeFilesFullPaths = lastResult.localeFiles || [];
+      const localeFilesFullPaths = lastResult?.localeFiles || [];
 
       if (options.verbose || options.debug) {
         console.log(`[watch] Found ${localeFilesFullPaths.length} locale file(s) to watch`);

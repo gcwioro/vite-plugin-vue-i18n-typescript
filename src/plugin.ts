@@ -127,8 +127,8 @@ export default function unpluginVueI18nDtsGeneration(
       groupedCache = result.grouped;
       jsonTextCache = result.jsonText;
 
-      // Emit asset file in build mode
-      if (isBuild) {
+      // Emit asset file in build mode if emitJson is enabled
+      if (isBuild && config.emit.emitJson) {
         emittedRefId = this.emitFile({
           type: "asset",
           name: config.emit.fileName,
@@ -139,25 +139,41 @@ export default function unpluginVueI18nDtsGeneration(
 
     resolveId(id) {
       if (id === config.virtualId) return config.resolvedVirtualId;
+      if (id === config.virtualJsonId) return config.resolvedVirtualJsonId;
       return null;
     },
 
     load(id) {
-      if (id !== config.resolvedVirtualId) return null;
+      // Handle JSON virtual module
+      if (id === config.resolvedVirtualJsonId) {
+        // Return as a JavaScript module, not JSON to avoid vite:json plugin
+        return {
+          code: `export default ${jsonTextCache}`,
+          map: null
+        };
+      }
 
-      if (isBuild) {
+      // Handle main virtual module
+      if (id === config.resolvedVirtualId) {
+        if (isBuild) {
+          // Reference the virtual JSON module instead of embedding or using assets
+          return createVirtualModuleCode({
+            jsonText: jsonTextCache,
+            buildAssetRefId: config.emit.emitJson ? emittedRefId : undefined,
+            baseLocale: config.baseLocale,
+            virtualJsonId: config.virtualJsonId,
+          });
+        }
+
         return createVirtualModuleCode({
           jsonText: jsonTextCache,
-          buildAssetRefId: emittedRefId,
+          devUrlPath: config.devUrlPath,
           baseLocale: config.baseLocale,
+          virtualJsonId: config.virtualJsonId,
         });
       }
 
-      return createVirtualModuleCode({
-        jsonText: jsonTextCache,
-        devUrlPath: config.devUrlPath,
-        baseLocale: config.baseLocale,
-      });
+      return null;
     },
 
     configureServer(server) {

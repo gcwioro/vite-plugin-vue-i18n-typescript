@@ -72,7 +72,7 @@ export function getModuleFunction(): string {
     '  function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>',
     '  function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )',
 
-    '',
+    'export const useI18nApp: ()=> UseI18nTypesafeReturn',
     'function useI18nTypeSafe(options?: Omit<UseI18nOptions, \'messages\'>):UseI18nTypesafeReturn;',
 
     '  export {  createI18nInstance,  createI18nInstancePlugin, useI18nTypeSafe };'].join("\n")
@@ -166,7 +166,6 @@ export function toVirtualModuleContent(params: {
 }
 
 
-
 /**
  * Emit **pure JS** (no TS annotations, no `as const`).
  * Rollup will replace `import.meta.ROLLUP_FILE_URL_<ref>` in build.
@@ -175,17 +174,37 @@ export function createVirtualModuleCode(opts: {
   jsonText: string;
   buildAssetRefId?: string;
   devUrlPath?: string;
-  baseLocale: string
+  baseLocale: string;
+  virtualJsonId?: string;
 }) {
-  const {jsonText, baseLocale, buildAssetRefId, devUrlPath} = opts;
+  const {jsonText, baseLocale, buildAssetRefId, devUrlPath, virtualJsonId} = opts;
 
+  const messages = JSON.parse(jsonText);
+  const supportedLanguages = Object.keys(messages);
+  const languagesTuple = `['${supportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}']`;
+
+  // If virtualJsonId is provided, import from the virtual JSON module
+  if (virtualJsonId) {
+    return `
+import messagesJson from '${virtualJsonId}';
+
+export const messages = messagesJson;
+export const supportedLanguages = ${languagesTuple};
+
+export async function load() {
+  return messagesJson;
+}
+
+export default messages;
+
+${helperMethodsDefinition(baseLocale).join('\n')}
+`;
+  }
+
+  // Fallback to the old behavior for backward compatibility
   const urlExpr = buildAssetRefId
     ? `import.meta.ROLLUP_FILE_URL_${buildAssetRefId}`
     : JSON.stringify(devUrlPath || "/_virtual_locales.json");
-  const messages = JSON.parse(jsonText);
-  const supportedLanguages = Object.keys(messages);
-
-  const languagesTuple = `['${supportedLanguages.filter(l => l != 'js-reserved').join(`', '`)}']`
 
   return `
 const url = ${urlExpr};
@@ -196,7 +215,7 @@ export async function load() {
   return await res.json();
 }
 
- export const supportedLanguages = ${languagesTuple}
+export const supportedLanguages = ${languagesTuple};
 
 export default messages;
 
@@ -208,23 +227,37 @@ ${helperMethodsDefinition(baseLocale).join('\n')}
 function helperMethodsDefinition(baseLocale: string) {
   return [
     "import { createI18n, useI18n } from 'vue-i18n'",
-    '',
+    'export const useI18nApp = ()=> window.i18nApp.global',
+    'var i18nApp =null',
     '/**',
     ' * Creates a type-safe i18n instance with pre-configured messages',
     ' * @param options - Optional I18n configuration (messages will be automatically provided)',
     ' * @returns Configured i18n instance',
     ' */',
+    `export const fallBackLocales =supportedLanguages.reduce(
+  (acc, locale) => {
+    acc[locale] = [locale, locale === 'en' ? undefined : 'en', locale === 'de' ? undefined : 'de'].filter(a => a !== undefined)
+    if(locale === 'en')
+ acc[locale] =[...acc[locale], 'en-US' ]
+    return acc
+  },{}
+)`,
     'export function createI18nInstance(options) {',
     '  const i18Options = {',
-    `    fallbackLocale: '${baseLocale}',`,
-    '    missingWarn: false,',
-    '    fallbackWarn: false,',
+    `    fallbackLocale: fallBackLocales,`,
+    // '    missingWarn: false,',
+    // '    fallbackWarn: false,',
+
+    `    locale: navigator?.language ?? '${baseLocale}',`,
+    `    legacy: false,`,
     '    ...options,',
     '    messages: messages,',
-    '    legacy: false',
     '  }',
-    '  const i18n = createI18n(i18Options);',
-    '  return i18n;',
+    '  i18nApp = createI18n(i18Options);',
+    '  globalThis.i18nApp = i18nApp;',
+
+    // '  i18nApp.global.locale = navigator?.language?.split("-")?.[0] ?? ' + baseLocale,
+    '  return i18nApp;',
     '}',
     '',
     'export function createI18nInstancePlugin(options) {',
@@ -233,9 +266,10 @@ function helperMethodsDefinition(baseLocale: string) {
     '}',
     '',
     'export function useI18nTypeSafe(options) {',
-    '  const {t: originalT, d, n, locale, ...rest} = useI18n(Object.assign(options ?? {',
-    `    fallbackLocale: '${baseLocale}'`,
-    '  }, {messages: messages}))',
+    '  const {t: originalT, d, n, ...rest} = useI18n({',
+    // `    fallbackLocale: '${baseLocale}',`,
+    '    ...(options??{}),',
+    '  })',
     '',
     '  const t = originalT',
     '  return {',
@@ -243,8 +277,6 @@ function helperMethodsDefinition(baseLocale: string) {
     '    t,',
     '    d,',
     '    n,',
-    '    locale,',
-    '    availableLocales: supportedLanguages',
     '  }',
     '}',
     ''];

@@ -19,10 +19,13 @@ export interface NormalizedConfig {
   inlineDataInBuild: boolean;
   emit: {
     fileName: string;
+    emitJson: boolean;
   };
   transformJson?: (json: unknown, absPath: string) => unknown;
   virtualId: string;
   resolvedVirtualId: string;
+  virtualJsonId: string;
+  resolvedVirtualJsonId: string;
 }
 
 /**
@@ -31,8 +34,10 @@ export interface NormalizedConfig {
 export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): NormalizedConfig {
   const baseLocale = userOptions.baseLocale ?? 'de';
 
+  const sourceId = userOptions.sourceId ?? 'virtual:unplug-i18n-dts-generation';
+
   const config: NormalizedConfig = {
-    sourceId: userOptions.sourceId ?? 'virtual:unplug-i18n-dts-generation',
+    sourceId,
     typesPath: userOptions.typesPath ?? './vite-env-override.d.ts',
     virtualFilePath: userOptions.virtualFilePath,
     getLocaleFromPath: userOptions.getLocaleFromPath ?? defaultGetLocaleFromPath,
@@ -42,9 +47,9 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): Normal
       : userOptions.include
         ? [userOptions.include]
         : [
-          "src/**/locales/*.json",
-          "src/**/*.vue.*.json",
-          `src/**/*${baseLocale}.json`
+          "./**/locales/*.json",
+          "./**/*.vue.*.json",
+          `./**/*${baseLocale}.json`
         ],
     exclude: Array.isArray(userOptions.exclude)
       ? userOptions.exclude
@@ -67,10 +72,13 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): Normal
     inlineDataInBuild: userOptions.emit?.inlineDataInBuild ?? false,
     emit: {
       fileName: "assets/locales.json",
+      emitJson: userOptions.emit?.emitJson ?? false,
     },
     transformJson: userOptions.transformJson,
-    virtualId: userOptions.sourceId ?? 'virtual:unplug-i18n-dts-generation',
-    resolvedVirtualId: "\0" + (userOptions.sourceId ?? 'virtual:unplug-i18n-dts-generation'),
+    virtualId: sourceId,
+    resolvedVirtualId: "\0" + sourceId,
+    virtualJsonId: sourceId + '/messages',
+    resolvedVirtualJsonId: "\0" + sourceId + '/messages',
   };
 
   return config;

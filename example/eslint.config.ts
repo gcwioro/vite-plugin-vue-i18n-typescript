@@ -15,6 +15,6 @@ export default defineConfigWithVueTs(
 
   globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
 
-  pluginVue.configs['flat/essential'],
+  pluginVue.configs['flat/base'],
   vueTsConfigs.recommended,
 )

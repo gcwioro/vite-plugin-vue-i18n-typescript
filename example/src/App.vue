@@ -1,73 +1,28 @@
-<template >
-  <main class="container">
-    <h1>{{ t('App.greetings') }}</h1>
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <header class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900">i18n Type Safe Demo</h1>
+          <p class="text-sm text-gray-600 mt-1">Vue I18n with TypeScript type safety</p>
+        </div>
+        <LanguageDropdown/>
+      </header>
 
-    <section class="card">
-      <h2>Pluralization demo</h2>
-      <div class="row">
-        <label>
-          Count:
-          <input
-            type="number"
-            min="0"
-            step="1"
-            v-model="amount"
-          />
-        </label>
+      <Greeting/>
+      <Demo/>
+    </div>
+  </div>
+</template>
 
-        <label>
-          Fruit:
-          <select v-model="fruit">
-            <option value="apple">apple</option>
-            <option value="banana">banana</option>
-          </select>
-        </label>
-      </div>
+<script setup lang="ts">
+import Demo from "@/components/Demo.vue";
+import Greeting from "@/components/Greeting.vue";
+import LanguageDropdown from "@/components/LanguageDropdown.vue";
 
-      <p class="result">
-        <!-- Build the fruit name using pluralization for 'fruits.apple' or 'fruits.banana' -->
-        <!-- Then inject it into 'fruitsLabel' as the {fruit} placeholder -->
-        Label:
-        {{ t('App.fruitsLabel', {amount, fruit: fruitName}) }}
-      </p>
-
-      <details>
-        <summary>Debug view</summary>
-        <ul>
-
-        <li>apple → {{ t('App.fruits.apple', {amount}) }}</li>
-          <li>banana → {{ t('App.fruits.banana', amount, {amount}) }}</li>
-          <li>tm('App') → {{ tm('App') }}</li>
-        </ul>
-      </details>
-    </section>
-
-    <section class="card">
-      <h2>Menu (array via tm)</h2>
-      <ul class="menu">
-        <!-- tm() returns the raw message (array/object). rt() renders each entry safely -->
-        <li v-for="(label, idx) in tm('App.menu')" :key="idx">{{ rt(label) }}</li>
-      </ul>
-    </section>
-
-  </main>
-</template >
+// get all languages from unplug i18n
 
 
-<script setup lang="ts" >
-
-import {useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";
-import {computed, ref} from "vue";
-import type {MessageSchemaGen} from "virtual:unplug-i18n-dts-generation";
-
-
-const {t, tm, rt} = useI18nTypeSafe()
-
-const amount = ref<number>(1)
-type FruitType = keyof MessageSchemaGen['App']['fruits']
-const fruit = ref<FruitType>('apple')
-const fruitName = computed(() => {
-  return t(`App.fruits.${fruit.value}`, amount.value, {amount: amount.value})
-})
-
-</script >
+// set browser tab title
+document.title = "i18n Type Safe Demo";
+</script>

@@ -17,6 +17,13 @@ export type VirtualKeysDtsOptions = {
      * @default false
      */
     inlineDataInBuild?: boolean;
+
+    /**
+     * Flag to emit the combined messages JSON file during build.
+     * When enabled, writes messages.json alongside your bundle.
+     * @default false
+     */
+    emitJson?: boolean;
   };
   debug?: boolean;
 
