@@ -30,8 +30,8 @@ export default defineConfig({
     unpluginVueI18nDtsGeneration({
       baseLocale: 'en',
       debug: true,
-
-      emit: {emitJson: false, inlineDataInBuild: false}
+      virtualFilePath: './src/i18n/virtual.js',
+      emit: {emitJson: true, inlineDataInBuild: false}
 
 
     }) as any,
@@ -39,7 +39,7 @@ export default defineConfig({
     viteTsChecker({
       overlay: {initialIsOpen: true},
       typescript: true,
-      vueTsc: {root: __dirname, tsconfigPath: join('./tsconfig.app.json')}
+      vueTsc: true,
     }),
 
   ],

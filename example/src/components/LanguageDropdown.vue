@@ -28,8 +28,8 @@ import {
 const i18n = useI18nApp()
 const {t} = useI18nTypeSafe()
 
-const supportedLanguage = supportedLanguages[0];
-const selectedLanguage = ref<SupportedLanguage>(supportedLanguage)
+
+const selectedLanguage = ref<SupportedLanguage>('en')
 
 watch(selectedLanguage, locale => {
   if (locale) {

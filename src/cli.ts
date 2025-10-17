@@ -3,6 +3,7 @@
 import path from "node:path";
 import {parseArgs} from "node:util";
 import {watch} from "chokidar";
+import {writeFile, mkdir} from "node:fs/promises";
 import {generateI18nTypes} from "./api";
 import type {GenerateTypesOptions} from "./api";
 
@@ -11,10 +12,15 @@ unplugin-vue-i18n-dts-generation CLI
 
 Generate TypeScript definitions from Vue i18n locale files
 
-Usage:
-  npx unplugin-vue-i18n-dts-generation generate [options]
+Commands:
+  generate                   Generate TypeScript definitions (default)
+  merge-export              Export merged translation messages as JSON
 
-Options:
+Usage:
+  npx unplugin-vue-i18n-dts-generation [generate] [options]
+  npx unplugin-vue-i18n-dts-generation merge-export [options]
+
+Generate Options:
   --root <path>              Root directory (default: current directory)
   --include <pattern>        Glob pattern(s) for locale files (can be specified multiple times)
   --exclude <pattern>        Glob pattern(s) to exclude (can be specified multiple times)
@@ -30,8 +36,19 @@ Options:
   --help, -h                 Show this help message
   --version                  Show version
 
+Merge-Export Options:
+  --root <path>              Root directory (default: current directory)
+  --include <pattern>        Glob pattern(s) for locale files (can be specified multiple times)
+  --exclude <pattern>        Glob pattern(s) to exclude (can be specified multiple times)
+  --output <path>            Output path for JSON file(s) (required)
+  --split                    Export separate files per locale (use {locale} placeholder)
+  --merge <type>             Merge strategy: "deep" or "shallow" (default: "deep")
+  --debug                    Enable debug logging
+  --verbose, -v              Enable verbose output
+
 Examples:
-  # Basic usage with default settings
+  # Generate TypeScript definitions (default command)
+  npx unplugin-vue-i18n-dts-generation
   npx unplugin-vue-i18n-dts-generation generate
 
   # Specify custom paths and base locale
@@ -48,7 +65,136 @@ Examples:
 
   # Watch mode - regenerate on file changes
   npx unplugin-vue-i18n-dts-generation generate --watch --verbose
+
+  # Export all messages to a single JSON file
+  npx unplugin-vue-i18n-dts-generation merge-export --output ./export/messages.json
+
+  # Export separate JSON files per locale (use {locale} placeholder in path)
+  npx unplugin-vue-i18n-dts-generation merge-export --split --output ./export/{locale}.json
+
+  # Export with custom include patterns and verbose output
+  npx unplugin-vue-i18n-dts-generation merge-export --include "src/**/*.json" --output ./messages.json --verbose
 `;
+
+async function mergeExportCommand(args: string[]) {
+  const {values} = parseArgs({
+    args,
+    options: {
+      root: {type: "string"},
+      include: {type: "string", multiple: true},
+      exclude: {type: "string", multiple: true},
+      output: {type: "string"},
+      split: {type: "boolean"},
+      merge: {type: "string"},
+      debug: {type: "boolean"},
+      verbose: {type: "boolean", short: "v"},
+    },
+    strict: true,
+    allowPositionals: false,
+  });
+
+  if (!values.output) {
+    console.error("❌ Error: --output is required for merge-export command");
+    console.error("Example: npx unplugin-vue-i18n-dts-generation merge-export --output ./messages.json");
+    process.exit(1);
+  }
+
+  const verbose = values.verbose ?? values.debug;
+  const rootDir = path.resolve(values.root || process.cwd());
+
+  if (verbose) {
+    console.log("🚀 Exporting merged translation messages...\n");
+    console.log(`Root directory: ${rootDir}`);
+    console.log(`Output: ${values.output}`);
+    console.log(`Split mode: ${values.split ? "enabled" : "disabled"}`);
+  }
+
+  // Import FileManager to read and merge locale files
+  const {FileManager} = await import("./core/file-manager");
+  const {normalizeConfig} = await import("./core/config");
+
+  const config = normalizeConfig({
+    include: values.include,
+    exclude: values.exclude,
+    merge: values.merge as "deep" | "shallow" | undefined,
+    debug: values.debug,
+  });
+
+  const fileManager = new FileManager({
+    include: config.include,
+    exclude: config.exclude,
+    root: rootDir,
+    getLocaleFromPath: config.getLocaleFromPath,
+    transformJson: config.transformJson,
+    merge: config.mergeFunction,
+    logger: {
+      info: (msg: string) => verbose && console.log(`[info] ${msg}`),
+      warn: (msg: string) => console.warn(`[warn] ${msg}`),
+      error: (msg: string) => console.error(`[error] ${msg}`),
+      warnOnce: (msg: string) => console.warn(`[warn] ${msg}`),
+      clearScreen: () => {
+      },
+      hasErrorLogged: () => false,
+      hasWarned: false,
+    },
+    debug: values.debug ?? false,
+  });
+
+  // Read and group locale files
+  const grouped = await fileManager.readAndGroup();
+  const locales = Object.keys(grouped).filter((l) => l !== "js-reserved");
+
+  if (locales.length === 0) {
+    console.error("❌ No locales found");
+    process.exit(1);
+  }
+
+  if (verbose) {
+    console.log(`\n✅ Found ${locales.length} locale(s): ${locales.join(", ")}`);
+  }
+
+  if (values.split) {
+    // Export separate files per locale
+    if (!values.output.includes("{locale}")) {
+      console.error("❌ Error: --output must contain {locale} placeholder when using --split");
+      console.error("Example: --output ./export/{locale}.json");
+      process.exit(1);
+    }
+
+    for (const locale of locales) {
+      const outputPath = path.resolve(rootDir, values.output.replace("{locale}", locale));
+      const outputDir = path.dirname(outputPath);
+
+      // Ensure output directory exists
+      await mkdir(outputDir, {recursive: true});
+
+      // Write locale messages
+      await writeFile(outputPath, JSON.stringify(grouped[locale], null, 2), "utf-8");
+
+      if (verbose) {
+        console.log(`📄 Wrote ${locale}: ${path.relative(rootDir, outputPath)}`);
+      }
+    }
+
+    console.log(`\n✅ Exported ${locales.length} locale file(s)`);
+  } else {
+    // Export combined file
+    const outputPath = path.resolve(rootDir, values.output);
+    const outputDir = path.dirname(outputPath);
+
+    // Ensure output directory exists
+    await mkdir(outputDir, {recursive: true});
+
+    // Write all messages
+    await writeFile(outputPath, JSON.stringify(grouped, null, 2), "utf-8");
+
+    if (verbose) {
+      console.log(`📄 Wrote: ${path.relative(rootDir, outputPath)}`);
+    }
+
+    console.log(`\n✅ Exported messages for ${locales.length} locale(s)`);
+  }
+}
 
 async function main() {
   try {
@@ -71,9 +217,17 @@ async function main() {
       process.exit(0);
     }
 
-    // Check if first arg is "generate" command
+    // Check command
+    const command = args[0];
     let startIndex = 0;
-    if (args[0] === "generate") {
+
+    if (command === "merge-export") {
+      await mergeExportCommand(args.slice(1));
+      process.exit(0);
+    }
+
+    // Default to "generate" command
+    if (command === "generate") {
       startIndex = 1;
     }
 

@@ -1,0 +1,15 @@
+{
+  "FileMergingDemo": {
+    "title": "Unterstützung für mehrere Dateien",
+    "description": "Diese Komponente demonstriert, wie Übersetzungsschlüssel aus mehreren Dateien automatisch zusammengeführt werden",
+    "feature": {
+      "typeCheck": "Alle zusammengeführten Schlüssel behalten vollständige TypeScript-Typprüfung",
+      "autoMerge": "Dateien werden automatisch vom Plugin erkannt und zusammengeführt",
+      "hotReload": "Änderungen an Übersetzungsdateien lösen Hot Module Replacement aus"
+    },
+    "merged": {
+      "success": "{count} Top-Level-Übersetzungs-Namespaces erfolgreich zusammengeführt!",
+      "typeSafety": "Jeder Schlüssel hat Autovervollständigungs-Unterstützung in Ihrer IDE"
+    }
+  }
+}

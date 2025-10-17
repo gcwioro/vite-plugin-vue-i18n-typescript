@@ -64,8 +64,8 @@ export default function unpluginVueI18nDtsGeneration(
 
     if (!abs.endsWith(".json")) return false;
 
-    const rel = normalizePath(path.relative(root, abs));
-    if (rel.startsWith("..")) return false;
+    // const rel = normalizePath(path.relative(root, abs));
+    // if (rel.startsWith("..")) return false;
 
     if (config.debug) {
       logger.info(`Checking file change: ${abs}`);
@@ -123,7 +123,7 @@ export default function unpluginVueI18nDtsGeneration(
 
     async buildStart() {
       // Perform initial rebuild
-      const result = await rebuildManager.rebuild("buildStart");
+      const result = await rebuildManager.rebuild("buildStart", []);
       groupedCache = result.grouped;
       jsonTextCache = result.jsonText;
 
@@ -181,7 +181,7 @@ export default function unpluginVueI18nDtsGeneration(
       rebuildManager.setServer(server, config.resolvedVirtualId);
 
       // Initial rebuild
-      rebuildManager.rebuild("initial").catch((e) => {
+      rebuildManager.rebuild("initial", []).catch((e) => {
         server.config.logger.error(`Initial rebuild failed: ${String(e)}`);
       });
 
@@ -210,23 +210,43 @@ export default function unpluginVueI18nDtsGeneration(
       }
     },
 
-    async hotUpdate({server, modules, ...ctx}: HotUpdateOptions): Promise<
+    async hotUpdate({server, timestamp, type, modules, ...ctx}: HotUpdateOptions): Promise<
       Array<EnvironmentModuleNode> | void
     > {
       if (!isWatchedFile(ctx.file)) return;
 
-      await rebuildManager.debouncedRebuild("change");
+      if (config.debug) {
+        this.environment.config.logger.info(
+          `hotUpdate: ${type} Known modules: ${modules.map(a => JSON.stringify(a, null, 2)).join(", ")}`
+        );
+      }
+      await rebuildManager.setEnv(this.environment)
+      await rebuildManager.debouncedRebuild("change", modules);
 
-      const mod = modules.filter((m) => m.id === config.resolvedVirtualId);
+
+      const mod = modules.filter((m) => m.id?.includes(config.resolvedVirtualId));
+
       if (modules.length > 0 && mod.length === 0) {
-        server.config.logger.info(`No module to hot update found for ${config.resolvedVirtualId}`);
+        this.environment.config.logger.info(`No module to hot update found for ${config.resolvedVirtualId}`);
         if (config.debug) {
-          server.config.logger.info(
+          this.environment.config.logger.info(
             `Known modules: ${[...server.moduleGraph.idToModuleMap.keys()].join(", ")}`
           );
         }
-        return;
+
+        const invalidatedModules = new Set<EnvironmentModuleNode>()
+        for (const m of mod) {
+          this.environment.moduleGraph.invalidateModule(
+            m,
+            invalidatedModules,
+            timestamp,
+            true
+          )
+        }
+        return modules;
       }
+
+      this.environment.hot.send({type: 'full-reload'})
 
       return mod.length > 0 ? mod : [];
     },

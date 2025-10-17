@@ -1,4 +1,4 @@
-import type {Logger, ViteDevServer} from "vite";
+import {DevEnvironment, EnvironmentModuleNode, Logger, ModuleNode, ViteDevServer} from "vite";
 import {canonicalize} from "../utils";
 import type {JSONValue} from "../types";
 import {FileManager} from "./file-manager";
@@ -13,6 +13,7 @@ export interface RebuildManagerOptions {
   root: string;
   logger?: Logger;
   onRebuildComplete?: (cache: {
+    modules?: EnvironmentModuleNode[];
     grouped: Record<string, any>;
     jsonText: string;
   }) => void;
@@ -26,6 +27,7 @@ export class RebuildManager {
   private lastRebuildCall = 0;
   private serverRef?: ViteDevServer;
   private resolvedVirtualId?: string;
+  private environment?: DevEnvironment;
 
   constructor(private options: RebuildManagerOptions) {
   }
@@ -41,7 +43,7 @@ export class RebuildManager {
   /**
    * Perform debounced rebuild
    */
-  async debouncedRebuild(reason: string): Promise<void> {
+  async debouncedRebuild(reason: string, modules: EnvironmentModuleNode[]) {
     const now = Date.now();
     if (!this.lastRebuildCall) this.lastRebuildCall = now;
 
@@ -50,16 +52,16 @@ export class RebuildManager {
     // If we've been waiting too long, rebuild immediately
     if (now - this.lastRebuildCall >= MAX_WAIT_MS) {
       this.lastRebuildCall = 0;
-      await this.rebuild(reason);
-      return;
+      return await this.rebuild(reason, modules);
+
     }
 
     // Otherwise, schedule a debounced rebuild
-    return new Promise<void>((resolve) => {
+    return new Promise((resolve) => {
       this.rebuildTimer = setTimeout(async () => {
         this.lastRebuildCall = 0;
-        await this.rebuild(reason);
-        resolve();
+        return resolve(await this.rebuild(reason, modules));
+
       }, DEBOUNCE_MS);
     });
   }
@@ -67,9 +69,10 @@ export class RebuildManager {
   /**
    * Perform full rebuild
    */
-  async rebuild(reason: string): Promise<{
+  async rebuild(reason: string, modules: EnvironmentModuleNode[]): Promise<{
     grouped: Record<string, any>;
     jsonText: string;
+    modules: EnvironmentModuleNode[];
   }> {
     const startRebuild = performance.now();
 
@@ -101,20 +104,23 @@ export class RebuildManager {
     );
 
     const totalRebuildDuration = Math.round(performance.now() - startRebuild);
-    this.options.logger?.info(
-      `✅ Rebuild complete (${reason}) in ${totalRebuildDuration}ms (canonicalize: ${canonicalDuration}ms) | Locales: ${Object.keys(groupedCache).join(", ")}`
-    );
 
     // Invalidate hot module
-    await this.invalidateModule();
+    const modulesResult = await this.invalidateModule(modules);
 
     // Notify listeners
     this.options.onRebuildComplete?.({
       grouped: groupedCache,
+      modules: modulesResult,
       jsonText: jsonTextCache,
     });
+    this.options.logger?.info(
+      `✅ Rebuild complete (${reason}) in ${totalRebuildDuration}ms (canonicalize: ${canonicalDuration}ms) | Locales: ${Object.keys(groupedCache).join(", ")}`
+    );
+
 
     return {
+      modules: modulesResult ?? [],
       grouped: groupedCache,
       jsonText: jsonTextCache,
     };
@@ -123,16 +129,31 @@ export class RebuildManager {
   /**
    * Invalidate virtual module and trigger hot reload
    */
-  private async invalidateModule(): Promise<void> {
-    if (!this.serverRef || !this.resolvedVirtualId) return;
+  private async invalidateModule(modules: EnvironmentModuleNode[]) {
 
-    const mod = this.serverRef.moduleGraph.getModuleById(this.resolvedVirtualId);
-    if (mod) {
-      await this.serverRef.moduleGraph.invalidateModule(mod);
-      this.serverRef.ws.send({
-        type: "full-reload",
-        path: "*",
-      });
+    if (!this.serverRef || !this.resolvedVirtualId) {
+      this.options.logger?.warn(`Not found: serverRef: ${!!this.serverRef},resolvedVirtualId ${!!this.resolvedVirtualId}`);
+      return
     }
+
+    const mod = modules.filter((m) => m.id?.includes(this.resolvedVirtualId ?? ' '));
+
+    if (mod) {
+      await this.environment?.moduleGraph?.invalidateAll();
+      // await this.serverRef.moduleGraph.invalidateModule(mod);
+
+      this.environment?.hot?.send({type: 'full-reload'})
+      const modulesInfo = mod.map(m => `${m.id} | ${m.url} | ${m.type}`).join()
+      this.options.logger?.info(`Reload ${this.resolvedVirtualId} | ${modulesInfo}`)
+    } else {
+      // log error
+      this.options.logger?.warn(`Module not found: ${this.resolvedVirtualId} | ` + this.serverRef.moduleGraph)
+
+    }
+    return mod;
+  }
+
+  async setEnv(environment: DevEnvironment) {
+    this.environment = environment;
   }
 }

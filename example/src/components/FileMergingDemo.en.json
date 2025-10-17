@@ -1,0 +1,15 @@
+{
+  "FileMergingDemo": {
+    "title": "Multi-File Translation Support",
+    "description": "This component demonstrates how translation keys from multiple files are automatically merged together",
+    "feature": {
+      "typeCheck": "All merged keys maintain full TypeScript type checking",
+      "autoMerge": "Files are discovered and merged automatically by the plugin",
+      "hotReload": "Changes to any translation file trigger hot module replacement"
+    },
+    "merged": {
+      "success": "Successfully merged {count} top-level translation namespaces!",
+      "typeSafety": "Every key has autocomplete support in your IDE"
+    }
+  }
+}
