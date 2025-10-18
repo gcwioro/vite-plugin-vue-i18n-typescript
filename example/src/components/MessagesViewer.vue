@@ -24,7 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import {messages, useI18nTypeSafe} from "virtual:vue-i18n-types";
+import {useI18nTypeSafe} from "virtual:vue-i18n-types";
+import messages from "virtual:vue-i18n-types/messages";
 import {computed} from "vue";
 
 const {tm, locale} = useI18nTypeSafe()

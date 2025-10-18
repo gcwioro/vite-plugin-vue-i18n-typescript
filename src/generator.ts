@@ -35,6 +35,9 @@ export function toTypesContent(params: {
   const bodyLines = [
     `declare module '${sourceId}' {`,
     getModuleFunction().split(NL).map(l => '  ' + l).join(NL),
+
+    '}',
+    `declare module '${sourceId}/messages' {`,
     getMessageTypeDefinitions(combinedMessages).split(NL).map(l => '  ' + l).join(NL),
 
     '}',
@@ -49,23 +52,22 @@ export function getModuleFunction(): string {
     'import type {  Composer,  ComposerOptions as Options,  ComposerOptions,  I18n,  I18nOptions,  Locale, NamedValue, TranslateOptions, UseI18nOptions} from "vue-i18n"',
 
     'export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>',
-    'export interface I18nCustom {',
-    '  (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string',
-    '',
-    '  (key: AllTranslationKeys, options?: TranslateOptions): string',
-    '',
-    '  (key: AllTranslationKeys, defaultMsg?: string): string',
-    '',
-    '  (key: AllTranslationKeys, defaultMsg: string, options?: TranslateOptions): string',
-    '',
-    '  (key: AllTranslationKeys, named: NamedValue, defaultMsg?: string): string',
-    '',
-    '  (key: AllTranslationKeys, named: NamedValue, plural?: number): string',
-    '',
-    '  (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions): string',
-    '  (key: AllTranslationKeys, plural: number, named: NamedValue): string',
-    '  (key: AllTranslationKeys, plural: number, defaultMsg: string): string',
-    '}',
+    `export interface I18nCustom {  (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string
+
+      (key: AllTranslationKeys, options?: TranslateOptions): string
+
+      (key: AllTranslationKeys, defaultMsg?: string): string
+
+      (key: AllTranslationKeys, defaultMsg: string, options?: TranslateOptions): string
+
+      (key: AllTranslationKeys, named: NamedValue, defaultMsg?: string): string
+
+      (key: AllTranslationKeys, named: NamedValue, plural?: number): string
+
+      (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions): string
+      (key: AllTranslationKeys, plural: number, named: NamedValue): string
+      (key: AllTranslationKeys, plural: number, defaultMsg: string): string
+    }`,
     '// I18n config options (excludes messages as they\'re provided by the plugin)',
     'export type I18nConfigOptions = Omit<I18nOptions<MessageSchemaGen, {}, {}, SupportedLanguage, false>, \'messages\'>;',
     "export type UseI18nTypesafeReturn = Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>,'t'> & { t: I18nCustom};",

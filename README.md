@@ -62,9 +62,9 @@ Create your locale JSON files in `src/locales/`:
 // src/locales/en.json
 {
     "welcome": "Welcome!",
-  "nav": {
-      "home": "Home"
-  }
+    "nav": {
+        "home": "Home"
+    }
 }
 ```
 

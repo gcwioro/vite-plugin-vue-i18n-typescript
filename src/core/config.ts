@@ -56,6 +56,7 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): Normal
       : userOptions.exclude
         ? [userOptions.exclude]
         : [
+          '**/tsconfig.*',
           '**/node_modules/**',
           '**/.git/**',
           '**/dist/**',
