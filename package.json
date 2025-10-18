@@ -44,6 +44,11 @@
       "import": "./dist/api.js",
       "require": "./dist/api.cjs"
     },
+    "./plugin": {
+      "types": "./dist/plugin.d.ts",
+      "import": "./dist/plugin.js",
+      "require": "./dist/plugin.cjs"
+    },
     "./package.json": "./package.json",
     "./i18n-types": {
       "types": "./src/virtual.d.ts"
@@ -73,6 +78,9 @@
     "vite": ">=4.0.0 || ^7.0.0"
   },
   "peerDependenciesMeta": {},
+  "dependencies": {
+    "fast-glob": "^3.3.3"
+  },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
     "@types/node": "^24.8.1",

@@ -3,6 +3,9 @@
   "workspaces": {
     "": {
       "name": "vite-plugin-vue-i18n-types",
+      "dependencies": {
+        "fast-glob": "^3.3.3",
+      },
       "devDependencies": {
         "@eslint/js": "^9.37.0",
         "@types/node": "^24.8.1",

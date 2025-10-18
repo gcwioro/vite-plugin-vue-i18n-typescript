@@ -11,7 +11,7 @@ import {RebuildManager} from "./core/rebuild-manager";
 /**
  * Vite plugin for generating TypeScript definitions from Vue i18n locale files
  */
-export default function unpluginVueI18nDtsGeneration(
+export function vitePluginVueI18nTypes(
   userOptions: VirtualKeysDtsOptions = {}
 ): PluginOption {
   // Normalize configuration
@@ -280,3 +280,5 @@ export default function unpluginVueI18nDtsGeneration(
     },
   };
 }
+
+export default vitePluginVueI18nTypes;
