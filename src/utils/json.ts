@@ -1,4 +1,4 @@
-import type {JSONValue, JSONObject, JSONArray} from '../types'
+import type {JSONArray, JSONObject, JSONValue} from '../types'
 import {transformKeys} from "./keys";
 
 
