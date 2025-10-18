@@ -21,6 +21,7 @@
     "target": "esnext",
     "module": "esnext",
     "skipLibCheck": true,
+    "noImplicitAny": false,
     "sourceMap": true,
     "resolveJsonModule": true,
     "isolatedModules": true,

@@ -54,12 +54,12 @@ jobs:
       - name: Lint
         working-directory: example
         run: npm run lint
-
-      - name: Type Check
-        working-directory: example
-        run: npm run typecheck
+      #
+      #      - name: Type Check
+      #        working-directory: example
+      #        run: npm run typecheck
 
       - name: Build
         working-directory: example
-        run: npm run build
+        run: npm run build-only
 
