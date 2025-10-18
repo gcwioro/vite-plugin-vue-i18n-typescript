@@ -7,7 +7,6 @@
     "nightwatch.conf.*",
     "playwright.config.*",
     "eslint.config.*"
-    //    "./**/*.d.ts",
   ],
   "compilerOptions": {
     "noEmit": true,
