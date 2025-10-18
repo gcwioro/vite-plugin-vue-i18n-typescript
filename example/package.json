@@ -9,7 +9,7 @@
     "dev:debug": "vite",
     "build": "bun x i18n-generate-types && run-p typecheck \"vite build {@}\" --",
     "preview": "vite preview",
-    "build-only": "bun i18n-generate-types && vite build",
+    "build-only": "bun run vite build",
     "typecheck": "vue-tsc --build",
     "i18n-generate-types": "bun x vite-plugin-vue-i18n-types generate --base-locale en --verbose",
     "i18n-types:export-merged": "bun x vite-plugin-vue-i18n-types merge-export --split --output ./export/{locale}.json",
