@@ -31,32 +31,26 @@ jobs:
       - name: Type Check
         run: bun run typecheck
 
+      - name: Build
+        run: bun run build
+
       - name: Test
         run: bun run test -- --run
 
-  build-example:
-    name: Lint, Type-Check, and Test (example)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
+      - name: Demo - Install dependencies
         working-directory: example
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
         run: bun install --frozen-lockfile
-
-      - name: Lint
+  De
+- name: Demo - Lint
+  working-directory: example
         run: bun run lint
 
-      # - name: Type Check
-      #   run: bun run typecheck
+- name: Demo - Type Check
+  working-directory: example
+  run: bun run typecheck
 
-      - name: Build
+- name: Demo - Build
+  working-directory: example
         run: bun run build-only
+
+
