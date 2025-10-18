@@ -15,6 +15,19 @@ This is a **high-performance alternative to @intlify/unplugin-vue-i18n** focusin
 developer experience. Perfect for Vue 3 projects using Vite that need type-safe translations with IntelliSense
 autocomplete and **live hot module replacement** that updates translations without page reloads.
 
+### 🎮 Live Demo
+
+Try the live demo to see the plugin in action: [**https://gcwioro.github.io/unplugin-vue-i18n-dts-generation/
+**](https://gcwioro.github.io/unplugin-vue-i18n-dts-generation/)
+
+The demo showcases:
+
+- Type-safe translation keys with autocomplete
+- Multiple locale support (English, German, Node.js)
+- Nested translation keys
+- Pluralization examples
+- Interpolation with parameters
+
 ### 🎯 Key Benefits
 
 - **Prevent Runtime i18n Errors**: Catch typos and invalid translation keys during TypeScript compilation
@@ -40,6 +53,7 @@ Are you looking for solutions to these common Vue i18n issues?
 
 ## 📋 Table of Contents
 
+- [Live Demo](#-live-demo)
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Type Safety in Action](#type-safety-in-action)
@@ -973,6 +987,9 @@ This plugin works seamlessly with the Vue 3 ecosystem:
 
 ### Real-World Example
 
+See our **[live demo](https://gcwioro.github.io/unplugin-vue-i18n-dts-generation/)** to explore these features in
+action!
+
 ```typescript
 // Without this plugin - No type safety
 const message = t('welcom.messge') // Typo! Runtime error
@@ -986,6 +1003,13 @@ const message = t('welcom.messge')
 // Correct usage with autocomplete
 const message = t('welcome.message') // ✅ IDE suggests all keys
 ```
+
+The **[interactive demo](https://gcwioro.github.io/unplugin-vue-i18n-dts-generation/)** lets you:
+
+- Switch between multiple languages (English, German, Node.js)
+- See nested key structures in action
+- Test pluralization with different count values
+- Experience type-safe interpolation with parameters
 
 ## 🏷️ Keywords & Topics
 
