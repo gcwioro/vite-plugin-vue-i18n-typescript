@@ -39,12 +39,14 @@ jobs:
       - name: Test
         run: bun run test -- --run
 
+      - name: Link local package
+        run: bun link
+
       - name: Demo - Install dependencies
         working-directory: example
-        run:
+        run: |
           bun install
-          bun remove vite-plugin-vue-i18n-types
-          bun add vite-plugin-vue-i18n-types -D
+          bun link vite-plugin-vue-i18n-types
 
       - name: Demo - Build
         working-directory: example
