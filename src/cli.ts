@@ -3,9 +3,9 @@
 import path from "node:path";
 import {parseArgs} from "node:util";
 import {watch} from "chokidar";
-import {writeFile, mkdir} from "node:fs/promises";
-import {generateI18nTypes} from "./api";
+import {mkdir, writeFile} from "node:fs/promises";
 import type {GenerateTypesOptions} from "./api";
+import {generateI18nTypes} from "./api";
 
 const helpText = `
 vite-plugin-vue-i18n-types CLI
@@ -25,7 +25,7 @@ Generate Options:
   --include <pattern>        Glob pattern(s) for locale files (can be specified multiple times)
   --exclude <pattern>        Glob pattern(s) to exclude (can be specified multiple times)
   --base-locale <locale>     Base locale for type generation (default: "de")
-  --types-path <path>        Output path for .d.ts file (default: "./vite-env-override.d.ts")
+  --types-path <path>        Output path for .d.ts file (default: "./src/vite-env-override.d.ts")
   --virtual-file-path <path> Output path for virtual module .ts file (optional)
   --source-id <id>           Virtual module ID (default: "virtual:vue-i18n-types")
   --banner <text>            Custom banner comment for generated files

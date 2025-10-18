@@ -37,7 +37,7 @@
   },
   "Greeting": {
     "message": "Hello TypeScript friends!",
-    "greetings": "unplug-i18n-dts-generation Plugin - Demo Project"
+    "greetings": "vite-plugin-vue-i18n-types - Demo Project"
   },
   "InterpolationDemo": {
     "welcome": "Welcome, {name}!",

@@ -22,6 +22,27 @@ console.log(`Generated ${result.filesWritten} files`)
 console.log(`Locales: ${result.locales.join(', ')}`)
 ```
 
+## Virtual Module Structure
+
+The plugin generates TypeScript declarations for two virtual modules:
+
+### `virtual:vue-i18n-types/messages`
+
+Exports the translation messages and related types:
+
+- `messages` - The complete messages object for all locales
+- `AllTranslationKeys` - Union type of all translation keys
+- `SupportedLanguage` - Union type of supported locales
+- `MessageSchemaGen` - Structure of the message schema
+
+### `virtual:vue-i18n-types`
+
+Exports helper functions for creating i18n instances:
+
+- `createI18nInstance()` - Creates a standard i18n instance
+- `createI18nInstancePlugin()` - Creates a Vue plugin with i18n
+- `useI18nTypeSafe()` - Type-safe composable for components
+
 ## API Reference
 
 ### `generateI18nTypes(options)`

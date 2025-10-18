@@ -1,6 +1,8 @@
 <template>
   <section class="section">
-    <h2 class="section-title">Menu Demo (Array via tm)</h2>
+    <h2 class="section-title">
+      Menu Demo (Array via tm)
+    </h2>
     <p class="text-description">
       Demonstrates using <span class="code-inline">tm()</span> to access translation messages as
       arrays

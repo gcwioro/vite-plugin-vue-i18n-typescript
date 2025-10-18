@@ -1,24 +1,23 @@
-/// <reference types="./vite-env-override" />
+/// <reference types="./src/vite-env-override" />
 /// <reference types="vite/client" />
-import {defineConfig} from 'vite'
-import vue from '@vitejs/plugin-vue'
-import viteTsChecker from 'vite-plugin-checker';
+
 import {join} from "path";
 import {fileURLToPath, URL} from "url";
 
-// import vitePluginVueI18nTypes,{VirtualKeysDtsOptions} from "vite-plugin-vue-i18n-types";
-import vitePluginVueI18nTypes from "../src";
+import tailwindcss from '@tailwindcss/vite'
+import vue from '@vitejs/plugin-vue'
+import {defineConfig} from 'vite'
+import viteTsChecker from 'vite-plugin-checker';
 import {viteSingleFile} from "vite-plugin-singlefile"
 
+// import vitePluginVueI18nTypes,{VirtualKeysDtsOptions} from "vite-plugin-vue-i18n-types";
+// @ts-nocheck
+import vitePluginVueI18nTypes from "../src/plugin.ts";
 
-// const plugin :Plugin<VirtualKeysDtsOptions>= vitePluginVueI18nTypes(pluginOptions );
 export default defineConfig({
-  cacheDir: '.cache',
   resolve: {
     alias: {
-
       '@': fileURLToPath(new URL('./src', import.meta.url))
-
     }
   },
   plugins: [
@@ -29,16 +28,14 @@ export default defineConfig({
       vueTsc: {root: __dirname, tsconfigPath: join('./tsconfig.app.json')}
 
     }),
+    // @ts-expect-error Only because of import of ../src/..
     vitePluginVueI18nTypes({
       baseLocale: 'en',
       debug: true,
       // virtualFilePath: './src/i18n/virtual.js',
       emit: {emitJson: false, inlineDataInBuild: true}
-
-
     }),
-    // vitePluginVueI18nTypes(),
-
+    tailwindcss(),
     viteSingleFile()
 
   ],

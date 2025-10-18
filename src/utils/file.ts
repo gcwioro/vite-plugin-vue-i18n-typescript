@@ -1,6 +1,5 @@
 import path from 'node:path'
 import fs from 'node:fs/promises'
-import {randomUUID} from 'node:crypto'
 
 /**
  * Small helper: ensure a directory exists.

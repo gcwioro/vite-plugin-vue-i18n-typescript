@@ -1,5 +1,5 @@
-import {describe, it, expect, vi} from 'vitest'
-import { debounce } from './misc'
+import {describe, expect, it, vi} from 'vitest'
+import {debounce} from './misc'
 
 describe('debounce', () => {
   it('should delay function execution', async () => {

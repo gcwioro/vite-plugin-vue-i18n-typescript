@@ -1,6 +1,8 @@
 <template>
   <section class="section">
-    <h2 class="section-title">Interpolation Demo</h2>
+    <h2 class="section-title">
+      Interpolation Demo
+    </h2>
     <p class="text-description">
       Demonstrates parameter interpolation with type-safe translation keys
     </p>
@@ -9,20 +11,20 @@
       <label class="form-group">
         <span class="label-bold">Name:</span>
         <input
-          type="text"
           v-model="userName"
+          type="text"
           class="input"
-        />
+        >
       </label>
 
       <label class="form-group">
         <span class="label-bold">Age:</span>
         <input
+          v-model="userAge"
           type="number"
           min="0"
-          v-model="userAge"
           class="input"
-        />
+        >
       </label>
     </div>
 
@@ -47,7 +49,9 @@
     </div>
 
     <div class="mt-4 p-3 info-box-gray">
-      <p class="text-xs text-gray-600 mb-2 font-semibold">Code examples:</p>
+      <p class="text-xs text-gray-600 mb-2 font-semibold">
+        Code examples:
+      </p>
       <ul class="space-y-1 text-xs text-gray-700">
         <li class="code-example">
           t('InterpolationDemo.welcome', {name: {{ userName }})

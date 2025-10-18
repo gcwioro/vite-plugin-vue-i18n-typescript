@@ -10,7 +10,7 @@ import vue from "@vitejs/plugin-vue";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '../example')
-const dtsPath = path.resolve(root, 'vite-env-override.d.ts')
+const dtsPath = path.resolve(root, './src/vite-env-override.d.ts')
 describe('i18n type generation', () => {
   it('generates types for array keys', async () => {
     await fs.rm(dtsPath, {force: true, recursive: true}).catch(() => {
@@ -23,7 +23,7 @@ describe('i18n type generation', () => {
       root,
       configFile: false,
       plugins: [vue(), unpluginVueI18nDtsGeneration({
-        typesPath: './vite-env-override.d.ts'
+        typesPath: './src/vite-env-override.d.ts'
       })],
     })
     try {

@@ -1,7 +1,11 @@
-import { defineConfig } from 'vite'
+/// <reference types="vite/client" />
+// @ts-nocheck
+import {defineConfig} from 'vite'
 import path from 'node:path'
+import viteTsChecker from 'vite-plugin-checker';
 
 export default defineConfig({
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -22,6 +26,14 @@ export default defineConfig({
       },
     },
   },
+  plugins: [
+    // viteTsChecker({
+    //   overlay: {initialIsOpen: true},
+    //   typescript: true,
+    //   vueTsc: {root: __dirname, tsconfigPath: join('./tsconfig.app.json')}
+    //
+    // }),
+  ],
   test: {
     globals: true,
     environment: 'node',

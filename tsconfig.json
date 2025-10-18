@@ -25,7 +25,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "types": [
-      "node"
+      "node",
+      "vite/client"
     ]
   },
   "include": [

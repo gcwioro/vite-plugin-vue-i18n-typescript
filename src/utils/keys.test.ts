@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { transformKeys } from './keys'
+import {describe, expect, it} from 'vitest'
+import {transformKeys} from './keys'
 
 describe('defaultTransformKeys', () => {
   it('should return empty array for empty input', () => {
