@@ -1,7 +1,7 @@
 {
-  "name": "unplugin-vue-i18n-dts-generation",
+  "name": "vite-plugin-vue-i18n-types",
   "version": "1.2.8",
-  "description": "Alternative to @intlify/unplugin-vue-i18n - Catch unknown i18n key errors at compile time with TypeScript. Supports flat file structures. High-performance standalone Vite plugin.",
+  "description": "Type-safe Vue i18n translations. Auto-generates TypeScript types from JSON locale files. Catch translation errors at compile time with full IDE autocomplete.",
   "keywords": [
     "vite",
     "vite-plugin",
@@ -10,24 +10,25 @@
     "i18n",
     "vue3",
     "vue",
-    "dts",
+    "types",
+    "type-generation",
     "localization",
-    "code-generation",
     "translation-keys",
     "internationalization",
     "type-safe",
     "compile-time-validation",
     "autocomplete",
-    "flat-structure",
-    "unplugin-vue-i18n-alternative"
+    "intellisense",
+    "hmr",
+    "hot-reload"
   ],
-  "homepage": "https://github.com/gcwioro/unplugin-vue-i18n-dts-generation#readme",
+  "homepage": "https://github.com/gcwioro/vite-plugin-vue-i18n-types#readme",
   "bugs": {
-    "url": "https://github.com/gcwioro/unplugin-vue-i18n-dts-generation/issues"
+    "url": "https://github.com/gcwioro/vite-plugin-vue-i18n-types/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gcwioro/unplugin-vue-i18n-dts-generation.git"
+    "url": "git+https://github.com/gcwioro/vite-plugin-vue-i18n-types.git"
   },
   "license": "MIT",
   "author": "Günther Cwioro",

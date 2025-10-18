@@ -5,13 +5,13 @@ Use the TypeScript/JavaScript API directly in your Node.js scripts for maximum c
 ## Installation
 
 ```bash
-npm install -D unplugin-vue-i18n-dts-generation
+npm install -D vite-plugin-vue-i18n-types
 ```
 
 ## Basic Usage
 
 ```typescript
-import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+import { generateI18nTypes } from 'vite-plugin-vue-i18n-types/api'
 
 const result = await generateI18nTypes({
   baseLocale: 'en',
@@ -102,7 +102,7 @@ interface GenerateTypesResult {
 ### Basic Example
 
 ```typescript
-import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+import { generateI18nTypes } from 'vite-plugin-vue-i18n-types/api'
 
 async function generate() {
   const result = await generateI18nTypes({
@@ -118,7 +118,7 @@ generate()
 ### Advanced Example with Error Handling
 
 ```typescript
-import { generateI18nTypes, type GenerateTypesResult } from 'unplugin-vue-i18n-dts-generation/api'
+import { generateI18nTypes, type GenerateTypesResult } from 'vite-plugin-vue-i18n-types/api'
 import path from 'path'
 
 async function generateTypes() {
@@ -165,7 +165,7 @@ generateTypes()
 ### Custom Locale Extraction
 
 ```typescript
-import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+import { generateI18nTypes } from 'vite-plugin-vue-i18n-types/api'
 
 await generateI18nTypes({
   getLocaleFromPath: (absPath, root) => {
@@ -185,7 +185,7 @@ await generateI18nTypes({
 ### Transform JSON Before Processing
 
 ```typescript
-import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+import { generateI18nTypes } from 'vite-plugin-vue-i18n-types/api'
 
 await generateI18nTypes({
   transformJson: (json, filePath) => {
@@ -205,7 +205,7 @@ await generateI18nTypes({
 
 ```typescript
 // scripts/build-i18n.ts
-import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+import { generateI18nTypes } from 'vite-plugin-vue-i18n-types/api'
 import { build } from 'vite'
 
 async function buildWithI18n() {
@@ -272,7 +272,7 @@ node scripts/generate-i18n.js
 
 ```typescript
 // scripts/ci-type-check.ts
-import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+import { generateI18nTypes } from 'vite-plugin-vue-i18n-types/api'
 import { execSync } from 'child_process'
 
 async function ciTypeCheck() {
@@ -304,7 +304,7 @@ ciTypeCheck().catch(error => {
 
 ```typescript
 // scripts/generate-all-i18n.ts
-import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+import { generateI18nTypes } from 'vite-plugin-vue-i18n-types/api'
 import path from 'path'
 
 const packages = ['app', 'admin', 'shared']

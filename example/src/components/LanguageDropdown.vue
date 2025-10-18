@@ -23,7 +23,7 @@ import {
   supportedLanguages,
   useI18nApp,
   useI18nTypeSafe
-} from "virtual:unplug-i18n-dts-generation";
+} from "virtual:vue-i18n-types";
 
 const i18n = useI18nApp()
 const {t} = useI18nTypeSafe()

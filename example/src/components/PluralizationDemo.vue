@@ -146,8 +146,8 @@
 </template>
 
 <script setup lang="ts">
-import type {MessageSchemaGen} from "virtual:unplug-i18n-dts-generation";
-import {useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";
+import type {MessageSchemaGen} from "virtual:vue-i18n-types";
+import {useI18nTypeSafe} from "virtual:vue-i18n-types";
 import {computed, ref} from "vue";
 
 const {t} = useI18nTypeSafe()

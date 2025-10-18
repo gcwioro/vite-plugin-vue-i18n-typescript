@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "typecheck": "vue-tsc --build",
-    "i18n-generate-types": "npx unplugin-vue-i18n-dts-generation generate --base-locale de --verbose -h",
+    "i18n-generate-types": "npx vite-plugin-vue-i18n-types generate --base-locale de --verbose -h",
     "live:i18n-generate": "node.exe --import file:/C:/Users/gcwio/AppData/Local/Programs/WebStorm/plugins/nodeJS/js/ts-file-loader/node_modules/tsx/dist/loader.cjs ../src/cli.ts  merge-export --output src/i18n/all.json.ts",
     "lint": "eslint . --fix"
   },

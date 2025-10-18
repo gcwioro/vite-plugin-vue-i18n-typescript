@@ -2,12 +2,12 @@
 
 ## From @intlify/unplugin-vue-i18n
 
-Migrating to `unplugin-vue-i18n-dts-generation` takes just a few minutes and gives you better type safety and
+Migrating to `vite-plugin-vue-i18n-types` takes just a few minutes and gives you better type safety and
 performance.
 
 ### Why Migrate?
 
-| Feature         | unplugin-vue-i18n-dts-generation | @intlify/unplugin-vue-i18n |
+| Feature         | vite-plugin-vue-i18n-types       | @intlify/unplugin-vue-i18n |
 |-----------------|----------------------------------|----------------------------|
 | **Type Safety** | ✅ Full autocomplete for all keys | ⚠️ Limited type inference  |
 | **Hot Reload**  | ✅ True HMR (no page refresh)     | ❌ Page reloads             |
@@ -26,7 +26,7 @@ npm uninstall @intlify/unplugin-vue-i18n
 #### 2. Install New Plugin
 
 ```bash
-npm install -D unplugin-vue-i18n-dts-generation
+npm install -D vite-plugin-vue-i18n-types
 ```
 
 #### 3. Update Vite Config
@@ -36,7 +36,7 @@ npm install -D unplugin-vue-i18n-dts-generation
 + /// <reference types="./vite-env-override" />
 
 - import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
-+ import i18nDts from 'unplugin-vue-i18n-dts-generation'
++ import i18nTypes from 'vite-plugin-vue-i18n-types'
 
 export default defineConfig({
   plugins: [
@@ -46,7 +46,7 @@ export default defineConfig({
 -     compositionOnly: true,
 -     fullInstall: false
 -   })
-+   i18nDts({
++   i18nTypes({
 +     baseLocale: 'en' // Optional: set your primary language
 +   })
   ]
@@ -61,7 +61,7 @@ export default defineConfig({
 ```diff
 // main.ts or wherever you setup i18n
 - import messages from '@intlify/unplugin-vue-i18n/messages'
-+ import messages from 'virtual:unplug-i18n-dts-generation'
++ import messages from 'virtual:vue-i18n-types'
 
 const i18n = createI18n({
   legacy: false,
@@ -111,7 +111,7 @@ If you had custom include paths:
 - })
 
 // New
-+ i18nDts({
++ i18nTypes({
 +   include: [
 +     'src/locales/**/*.json',
 +     'src/modules/**/locales/**/*.json'
@@ -141,7 +141,7 @@ fs.writeFileSync('./src/locales/en.json', JSON.stringify(doc, null, 2));
 If you were transforming messages:
 
 ```typescript
-i18nDts({
+i18nTypes({
   transformJson: (json, filePath) => {
     // Your custom transformation
     return transformedJson
@@ -204,7 +204,7 @@ import messages from 'virtual:unplug-i18n-dts-generation'
 Check your file structure matches the default pattern (`src/locales/**/*.json`) or configure custom paths:
 
 ```typescript
-i18nDts({
+i18nTypes({
   include: ['your/custom/path/**/*.json']
 })
 ```
@@ -214,4 +214,4 @@ i18nDts({
 - 📚 [Configuration Guide](./configuration.md)
 - 🔨 [CLI Usage](./cli.md)
 - 🧩 [API Reference](./api.md)
-- 🐛 [GitHub Issues](https://github.com/gcwioro/unplugin-vue-i18n-dts-generation/issues)
+- 🐛 [GitHub Issues](https://github.com/gcwioro/vite-plugin-vue-i18n-types/issues)

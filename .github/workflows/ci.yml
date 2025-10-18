@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -32,4 +32,32 @@ jobs:
 
       - name: Test
         run: npm test -- --run
+  build-example:
+    name: Lint, Type-Check, and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        working-directory: example
+        run: npm ci
+
+      - name: Lint
+        working-directory: example
+        run: npm run lint
+
+      - name: Type Check
+        working-directory: example
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: example
+        run: npm run build
 

@@ -13,7 +13,7 @@ export function toTypesContent(params: {
   const {
     combinedMessages,
     banner,
-    sourceId = '@unplug-i18n-types-locales',
+    sourceId = '@vue-i18n-types',
   } = params
 
   // Use CombinedMessages properties directly

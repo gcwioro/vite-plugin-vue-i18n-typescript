@@ -34,7 +34,7 @@ export interface NormalizedConfig {
 export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): NormalizedConfig {
   const baseLocale = userOptions.baseLocale ?? 'de';
 
-  const sourceId = userOptions.sourceId ?? 'virtual:unplug-i18n-dts-generation';
+  const sourceId = userOptions.sourceId ?? 'virtual:vue-i18n-types';
 
   const config: NormalizedConfig = {
     sourceId,

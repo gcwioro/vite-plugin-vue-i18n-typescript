@@ -6,12 +6,12 @@ import viteTsChecker from 'vite-plugin-checker';
 import {join} from "path";
 import {fileURLToPath, URL} from "url";
 
-// import unpluginVueI18nDtsGeneration,{VirtualKeysDtsOptions} from "unplugin-vue-i18n-dts-generation";
-import unpluginVueI18nDtsGeneration from "../src";
+// import vitePluginVueI18nTypes,{VirtualKeysDtsOptions} from "vite-plugin-vue-i18n-types";
+import vitePluginVueI18nTypes from "../src";
 import {viteSingleFile} from "vite-plugin-singlefile"
 
 
-// const plugin :Plugin<VirtualKeysDtsOptions>= unpluginVueI18nDtsGeneration(pluginOptions );
+// const plugin :Plugin<VirtualKeysDtsOptions>= vitePluginVueI18nTypes(pluginOptions );
 export default defineConfig({
   cacheDir: '.cache',
   resolve: {
@@ -29,7 +29,7 @@ export default defineConfig({
       vueTsc: {root: __dirname, tsconfigPath: join('./tsconfig.app.json')}
 
     }),
-    unpluginVueI18nDtsGeneration({
+    vitePluginVueI18nTypes({
       baseLocale: 'en',
       debug: true,
       // virtualFilePath: './src/i18n/virtual.js',
@@ -37,7 +37,7 @@ export default defineConfig({
 
 
     }),
-    // unpluginVueI18nDtsGeneration(),
+    // vitePluginVueI18nTypes(),
 
     viteSingleFile()
 

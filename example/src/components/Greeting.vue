@@ -4,7 +4,7 @@
 
 </template>
 <script setup lang="ts">
-import {useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";
+import {useI18nTypeSafe} from "virtual:vue-i18n-types";
 
 const {t} = useI18nTypeSafe()
 </script>

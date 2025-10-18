@@ -11,7 +11,7 @@
     <div class="sub-section">
       <p class="label">
         Shows all translation messages using <b>import {useI18nTypeSafe,messages} from
-        "virtual:unplug-i18n-dts-generation";</b>
+        "virtual:vue-i18n-types";</b>
       </p>
       <pre class="code" v-html="JSON.stringify(JSON.parse(JSON.stringify(messages)), null, 4)"/>
     </div>
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import {useI18nTypeSafe, messages} from "virtual:unplug-i18n-dts-generation";
+import {useI18nTypeSafe, messages} from "virtual:vue-i18n-types";
 import {computed} from "vue";
 
 const {tm, locale} = useI18nTypeSafe()

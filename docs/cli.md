@@ -8,20 +8,20 @@ hooks.
 The CLI comes bundled with the package:
 
 ```bash
-npm install -D unplugin-vue-i18n-dts-generation
+npm install -D vite-plugin-vue-i18n-types
 ```
 
 ## Basic Usage
 
 ```bash
 # Generate types once
-npx unplugin-vue-i18n-dts-generation generate
+npx vite-plugin-vue-i18n-types generate
 
 # Watch mode - regenerate on file changes
-npx unplugin-vue-i18n-dts-generation generate --watch
+npx vite-plugin-vue-i18n-types generate --watch
 
 # With custom options
-npx unplugin-vue-i18n-dts-generation generate \
+npx vite-plugin-vue-i18n-types generate \
   --base-locale en \
   --types-path src/types/i18n.d.ts \
   --verbose
@@ -32,34 +32,34 @@ npx unplugin-vue-i18n-dts-generation generate \
 ### Generate Command
 
 ```
-npx unplugin-vue-i18n-dts-generation generate [options]
+npx vite-plugin-vue-i18n-types generate [options]
 ```
 
 #### Options
 
-| Option                       | Description                                      | Default                              |
-|------------------------------|--------------------------------------------------|--------------------------------------|
-| `--root <path>`              | Project root directory                           | Current directory                    |
-| `--include <pattern>`        | Glob pattern for locale files (multiple allowed) | `src/locales/**/*.json`              |
-| `--exclude <pattern>`        | Glob pattern to exclude (multiple allowed)       | Node modules, dist, etc.             |
-| `--base-locale <locale>`     | Base locale for type generation                  | `de`                                 |
-| `--types-path <path>`        | Output path for TypeScript definitions           | `./vite-env-override.d.ts`           |
-| `--virtual-file-path <path>` | Generate virtual module as file (debugging)      | -                                    |
-| `--source-id <id>`           | Virtual module ID                                | `virtual:unplug-i18n-dts-generation` |
-| `--banner <text>`            | Custom header comment for generated files        | -                                    |
-| `--merge <type>`             | Merge strategy: `deep` or `shallow`              | `deep`                               |
-| `--watch, -w`                | Watch mode - regenerate on changes               | `false`                              |
-| `--debug`                    | Enable debug logging                             | `false`                              |
-| `--verbose, -v`              | Enable verbose output                            | `false`                              |
-| `--help, -h`                 | Show help message                                | -                                    |
-| `--version`                  | Show version                                     | -                                    |
+| Option                       | Description                                      | Default                    |
+|------------------------------|--------------------------------------------------|----------------------------|
+| `--root <path>`              | Project root directory                           | Current directory          |
+| `--include <pattern>`        | Glob pattern for locale files (multiple allowed) | `src/locales/**/*.json`    |
+| `--exclude <pattern>`        | Glob pattern to exclude (multiple allowed)       | Node modules, dist, etc.   |
+| `--base-locale <locale>`     | Base locale for type generation                  | `de`                       |
+| `--types-path <path>`        | Output path for TypeScript definitions           | `./vite-env-override.d.ts` |
+| `--virtual-file-path <path>` | Generate virtual module as file (debugging)      | -                          |
+| `--source-id <id>`           | Virtual module ID                                | `virtual:vue-i18n-types`   |
+| `--banner <text>`            | Custom header comment for generated files        | -                          |
+| `--merge <type>`             | Merge strategy: `deep` or `shallow`              | `deep`                     |
+| `--watch, -w`                | Watch mode - regenerate on changes               | `false`                    |
+| `--debug`                    | Enable debug logging                             | `false`                    |
+| `--verbose, -v`              | Enable verbose output                            | `false`                    |
+| `--help, -h`                 | Show help message                                | -                          |
+| `--version`                  | Show version                                     | -                          |
 
 ## Examples
 
 ### Multiple Include Patterns
 
 ```bash
-npx unplugin-vue-i18n-dts-generation generate \
+npx vite-plugin-vue-i18n-types generate \
   --include "src/locales/**/*.json" \
   --include "src/modules/**/i18n/*.json" \
   --base-locale en
@@ -68,7 +68,7 @@ npx unplugin-vue-i18n-dts-generation generate \
 ### Custom Root Directory
 
 ```bash
-npx unplugin-vue-i18n-dts-generation generate \
+npx vite-plugin-vue-i18n-types generate \
   --root ./packages/frontend \
   --base-locale en \
   --verbose
@@ -77,7 +77,7 @@ npx unplugin-vue-i18n-dts-generation generate \
 ### Generate Debug File
 
 ```bash
-npx unplugin-vue-i18n-dts-generation generate \
+npx vite-plugin-vue-i18n-types generate \
   --virtual-file-path src/i18n/debug.gen.ts \
   --verbose
 ```
@@ -85,7 +85,7 @@ npx unplugin-vue-i18n-dts-generation generate \
 ### Watch Mode
 
 ```bash
-npx unplugin-vue-i18n-dts-generation generate --watch --verbose
+npx vite-plugin-vue-i18n-types generate --watch --verbose
 ```
 
 When watch mode is enabled:
@@ -102,10 +102,10 @@ Add these scripts to your `package.json`:
 ```json
 {
   "scripts": {
-    "i18n:generate": "unplugin-vue-i18n-dts-generation generate",
-    "i18n:watch": "unplugin-vue-i18n-dts-generation generate --watch",
-    "i18n:debug": "unplugin-vue-i18n-dts-generation generate --verbose --debug",
-    "precommit": "unplugin-vue-i18n-dts-generation generate"
+    "i18n:generate": "vite-plugin-vue-i18n-types generate",
+    "i18n:watch": "vite-plugin-vue-i18n-types generate --watch",
+    "i18n:debug": "vite-plugin-vue-i18n-types generate --verbose --debug",
+    "precommit": "vite-plugin-vue-i18n-types generate"
   }
 }
 ```
@@ -131,7 +131,7 @@ jobs:
       - run: npm ci
 
       - name: Generate i18n types
-        run: npx unplugin-vue-i18n-dts-generation generate --verbose
+        run: npx vite-plugin-vue-i18n-types generate --verbose
 
       - name: Type check
         run: npm run typecheck
@@ -144,7 +144,7 @@ typecheck:
   stage: test
   script:
     - npm ci
-    - npx unplugin-vue-i18n-dts-generation generate --verbose
+    - npx vite-plugin-vue-i18n-types generate --verbose
     - npm run typecheck
 ```
 
@@ -157,7 +157,7 @@ Using `husky`:
 npm install -D husky
 
 # Add pre-commit hook
-npx husky add .husky/pre-commit "npx unplugin-vue-i18n-dts-generation generate && git add ."
+npx husky add .husky/pre-commit "npx vite-plugin-vue-i18n-types generate && git add ."
 ```
 
 ## Export Command
@@ -166,10 +166,10 @@ Export merged translation messages to JSON files:
 
 ```bash
 # Export all messages to a single file
-npx unplugin-vue-i18n-dts-generation merge-export --output ./export/messages.json
+npx vite-plugin-vue-i18n-types merge-export --output ./export/messages.json
 
 # Export separate files per locale
-npx unplugin-vue-i18n-dts-generation merge-export --split --output ./export/{locale}.json
+npx vite-plugin-vue-i18n-types merge-export --split --output ./export/{locale}.json
 ```
 
 ### Export Options

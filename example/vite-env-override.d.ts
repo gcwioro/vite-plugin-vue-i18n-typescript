@@ -2,9 +2,9 @@
 /* prettier-ignore */
 // biome-ignore lint: disable
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Content-Hash: 028c0722
+// Content-Hash: bd558f19
 
-declare module 'virtual:unplug-i18n-dts-generation' {
+declare module 'virtual:vue-i18n-types' {
   import {type Plugin, type WritableComputedRef} from 'vue'
   import type {  Composer,  ComposerOptions as Options,  ComposerOptions,  I18n,  I18nOptions,  Locale, NamedValue, TranslateOptions, UseI18nOptions} from "vue-i18n"
   export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>
@@ -35,12 +35,11 @@ declare module 'virtual:unplug-i18n-dts-generation' {
     export {  createI18nInstance,  createI18nInstancePlugin, useI18nTypeSafe };
 
   export type SupportedLanguage = AllSupportedLanguages[number]
-  export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages = ['de', 'en', 'node'] as const
+  export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages = ['de', 'en'] as const
   export type AllTranslationKeys =
     'App.fruits.apple'
     | 'App.fruits.banana'
     | 'App.fruits.label'
-    | 'App.fruitsLabel'
     | 'App.menu'
     | 'App.menu.0'
     | 'App.menu.1'
@@ -78,89 +77,92 @@ declare module 'virtual:unplug-i18n-dts-generation' {
     | 'PluralizationDemo.notifications.unread'
     | 'PluralizationDemo.people'
     | 'PluralizationDemo.title'
-  export type AllSupportedLanguages = readonly ['de', 'en', 'node']
+    | 'TestHotUpdate.message'
+  export type AllSupportedLanguages = readonly ['de', 'en']
 
   // Message structure types
   export type MessageSchemaGen = {
    "App": {
     "fruits": {
-      "apple": "kein Apfel | ein Apfel | {n} Äpfel",
-      "banana": "keine Banane | eine Banane | {count} Bananen",
-      "label": "Du hast keine {fruit} | Du hast eine {fruit} | Du hast {count} {fruit}"
+      "apple": "apple | apples",
+      "banana": "banana | bananas",
+      "label": "You have no {fruit} | You have one {fruit} | You have {count} {fruit}"
     },
-     "fruitsLabel": "Es gibt keine Früchte | Es gibt eine Frucht | Es gibt {count} Früchte",
     "menu": [
-      "Startseite",
-      "Über uns",
-      "Kontakt",
-      "Hilfe"
+      "Home",
+      "About",
+      "Contact",
+      "Term"
     ]
    },
    "FileMergingDemo": {
-     "description": "Diese Komponente demonstriert, wie Übersetzungsschlüssel aus mehreren Dateien automatisch zusammengeführt werden",
+     "description": "This component demonstrates how translation keys from multiple files are automatically merged together",
     "feature": {
-      "autoMerge": "Dateien werden automatisch vom Plugin erkannt und zusammengeführt",
-      "hotReload": "Änderungen an Übersetzungsdateien lösen Hot Module Replacement aus",
-      "typeCheck": "Alle zusammengeführten Schlüssel behalten vollständige TypeScript-Typprüfung"
+      "autoMerge": "Files are discovered and merged automatically by the plugin",
+      "hotReload": "Changes to any translation file trigger hot module replacement",
+      "typeCheck": "All merged keys maintain full TypeScript type checking"
     },
     "merged": {
-      "success": "{count} Top-Level-Übersetzungs-Namespaces erfolgreich zusammengeführt!",
-      "typeSafety": "Jeder Schlüssel hat Autovervollständigungs-Unterstützung in Ihrer IDE"
+      "success": "Successfully merged {count} top-level translation namespaces!",
+      "typeSafety": "Every key has autocomplete support in your IDE"
     },
-     "title": "Unterstützung für mehrere Dateien"
+     "title": "Multi-File Translation Support"
    },
    "Greeting": {
-     "greetings": "unplug-i18n-dts-generation Plugin - Demo Projekt",
-     "message": "Hallo TypeScript Freunde!"
+     "greetings": "unplug-i18n-dts-generation Plugin - Demo Project",
+     "message": "Hello TypeScript friends!"
    },
    "InterpolationDemo": {
-     "birthday": "Nächstes Jahr wirst du {age}!",
-     "profile": "{name} ist {age} Jahre alt",
-     "welcome": "Willkommen, {name}!"
+     "birthday": "Next year you'll be {age}!",
+     "profile": "{name} is {age} years old",
+     "welcome": "Welcome, {name}!"
    },
    "LanguageDropdown": {
-     "label": "Sprache:"
+     "label": "Language:"
    },
    "NestedKeysDemo": {
     "settings": {
      "notifications": {
-       "description": "E-Mail- und Push-Benachrichtigungen",
-       "label": "Benachrichtigungen"
+       "description": "Email and push alerts",
+       "label": "Notifications"
      },
      "privacy": {
-       "description": "Wer kann Ihre Daten sehen",
-       "label": "Datenschutz-Kontrollen"
+       "description": "Who can see your data",
+       "label": "Privacy Controls"
      },
      "theme": {
-       "description": "Dunkler oder heller Modus",
-       "label": "Design-Einstellungen"
+       "description": "Dark or light mode",
+       "label": "Theme Settings"
      }
     },
     "status": {
-      "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
-      "success": "Operation erfolgreich abgeschlossen!",
-      "warning": "Bitte überprüfen Sie Ihre Änderungen, bevor Sie fortfahren."
+      "error": "An error occurred. Please try again.",
+      "success": "Operation completed successfully!",
+      "warning": "Please review your changes before proceeding."
     }
    },
    "PluralizationDemo": {
     "cart": {
-      "status": "Ihr Warenkorb ist leer | Sie haben einen Artikel im Warenkorb | Sie haben {n} Artikel im Warenkorb"
+      "status": "Your cart is empty | You have one item in your cart | You have {count} items in your cart"
     },
     "explanation": {
-      "format": "Format: 'null | eins | viele'",
-      "note": "Der {n}-Wert bestimmt welche Form verwendet wird: 0=erste, 1=zweite, 2+=dritte",
-      "parameter": "Übergeben Sie den Parameter {n} mit dem Zählwert"
+      "format": "Format: 'zero | one | many'",
+      "note": "The {count} value determines which form is used: 0=first, 1=second, 2+=third",
+      "parameter": "Pass {count} parameter matching the count value"
     },
     "files": {
-      "uploaded": "keine Dateien hochgeladen | {n} Datei hochgeladen | {n} Dateien hochgeladen"
+      "uploaded": "no files uploaded | one file uploaded | {count} files uploaded"
     },
-     "items": "keine Artikel | ein Artikel | {n} Artikel",
-     "messages": "keine Nachrichten | eine Nachricht | {n} Nachrichten",
+     "items": "no items | one item | {count} items",
+     "messages": "no messages | one message | {count} message",
     "notifications": {
-      "unread": "keine ungelesenen Benachrichtigungen | eine ungelesene Benachrichtigung | {n} ungelesene Benachrichtigungen"
+      "unread": "no unread notifications | one unread notification | {n} unread notifications"
     },
-     "people": "niemand | {n} Person | {n} Personen",
-     "title": "Pluralisierungsbeispiele"
+     "people": "nobody | one person | {count} people",
+     "title": "Pluralization Examples"
+   },
+    "TestHotUpdate": {
+      "message": "This is a test for hot module replacement"
    }
   }
   export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>

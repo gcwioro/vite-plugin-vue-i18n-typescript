@@ -1,11 +1,11 @@
-# unplugin-vue-i18n-dts-generation
+# vite-plugin-vue-i18n-types
 
-[![npm version](https://img.shields.io/npm/v/unplugin-vue-i18n-dts-generation.svg)](https://www.npmjs.com/package/unplugin-vue-i18n-dts-generation)
+[![npm version](https://img.shields.io/npm/v/vite-plugin-vue-i18n-types.svg)](https://www.npmjs.com/package/vite-plugin-vue-i18n-types)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Stop shipping broken translations!** Get compile-time type safety for your Vue i18n JSON files.
 
-🎮 **[Live Demo](https://gcwioro.github.io/unplugin-vue-i18n-dts-generation/)** | 📚 **[Documentation](#documentation)** |
+🎮 **[Live Demo](https://gcwioro.github.io/vite-plugin-vue-i18n-types/)** | 📚 **[Documentation](#documentation)** |
 🚀 **[Quick Start](#quick-start)**
 
 ## Why This Plugin?
@@ -35,7 +35,7 @@ t('nav.home')  // IDE shows all available keys
 
 ```bash
 npm install vue-i18n
-npm install -D unplugin-vue-i18n-dts-generation
+npm install -D vite-plugin-vue-i18n-types
 ```
 
 ### 2. Add to Vite
@@ -44,12 +44,12 @@ npm install -D unplugin-vue-i18n-dts-generation
 /// <reference types="./vite-env-override" />
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import i18nDts from 'unplugin-vue-i18n-dts-generation'
+import i18nTypes from 'vite-plugin-vue-i18n-types'
 
 export default defineConfig({
   plugins: [
     vue(),
-      i18nDts() // Zero config!
+      i18nTypes() // Zero config!
   ]
 })
 ```
@@ -95,17 +95,17 @@ const err = t('welcom')      // ❌ TypeScript error
 
 ### 1. Vite Plugin (Recommended)
 ```typescript
-plugins: [i18nDts()]  // Auto-generates types during dev
+plugins: [i18nTypes()]  // Auto-generates types during dev
 ```
 
 ### 2. CLI Tool
 ```bash
-npx unplugin-vue-i18n-dts-generation generate
+npx vite-plugin-vue-i18n-types generate
 ```
 
 ### 3. Programmatic API
 ```typescript
-import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+import {generateI18nTypes} from 'vite-plugin-vue-i18n-types/api'
 
 await generateI18nTypes({baseLocale: 'en'})
 ```
@@ -113,7 +113,7 @@ await generateI18nTypes({baseLocale: 'en'})
 ## Common Configuration
 
 ```typescript
-i18nDts({
+i18nTypes({
     baseLocale: 'en',                      // Your primary language
     include: ['src/locales/**/*.json'],    // Where to find locale files
     // That's usually all you need!
@@ -129,18 +129,18 @@ Takes 2 minutes:
 ```diff
 # 1. Replace package
 - npm uninstall @intlify/unplugin-vue-i18n
-+ npm install -D unplugin-vue-i18n-dts-generation
++ npm install -D vite-plugin-vue-i18n-types
 
 # 2. Update vite.config.ts
 - import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
-+ import i18nDts from 'unplugin-vue-i18n-dts-generation'
++ import i18nTypes from 'vite-plugin-vue-i18n-types'
 
 - VueI18nPlugin({ include: './src/locales/**' })
-+ i18nDts()
++ i18nTypes()
 
 # 3. Update imports
 - import messages from '@intlify/unplugin-vue-i18n/messages'
-+ import messages from 'virtual:unplug-i18n-dts-generation'
++ import messages from 'virtual:vue-i18n-types'
 ```
 
 Your JSON files work without changes!
@@ -172,7 +172,7 @@ Not yet - convert to JSON first.
 <summary><strong>How to debug?</strong></summary>
 
 ```typescript
-i18nDts({
+i18nTypes({
     debug: true,
     virtualFilePath: 'src/debug.gen.ts' // Creates inspectable file
 })
@@ -188,7 +188,7 @@ i18nDts({
 
 ## Contributing
 
-See [GitHub repo](https://github.com/gcwioro/unplugin-vue-i18n-dts-generation).
+See [GitHub repo](https://github.com/gcwioro/vite-plugin-vue-i18n-types).
 
 ## License
 

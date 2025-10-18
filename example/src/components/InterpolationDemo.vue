@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import {useI18nTypeSafe} from "virtual:unplug-i18n-dts-generation";
+import {useI18nTypeSafe} from "virtual:vue-i18n-types";
 import {ref} from "vue";
 
 const {t} = useI18nTypeSafe()
