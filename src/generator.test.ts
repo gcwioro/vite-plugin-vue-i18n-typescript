@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest'
-import {toTypesContent} from './generator'
+import {renderMessagesModule, toTypesContent} from './generator'
 import {CombinedMessages} from './core/combined-messages'
 
 describe('toTypesContent', () => {
@@ -200,6 +200,51 @@ describe('toTypesContent', () => {
 
     expect(result).toContain('"He said \\"Hello\\""')
     expect(result).toContain('"Path\\\\to\\\\file"')
+  })
+})
+
+describe('renderMessagesModule', () => {
+  it('should render messages source with derived exports', () => {
+    const messages = {
+      en: {
+        greeting: 'Hello',
+        nested: {
+          welcome: 'Welcome',
+        },
+      },
+      fr: {
+        greeting: 'Bonjour',
+        nested: {
+          welcome: 'Bienvenue',
+        },
+      },
+    }
+
+    const combinedMessages = new CombinedMessages(messages, 'en')
+    const result = renderMessagesModule({combinedMessages})
+
+    expect(result).toContain("export const messages = {\n  \"en\": {")
+    expect(result).toContain("export const supportedLanguages = ['en', 'fr'] as const;")
+    expect(result).toContain("export const baseLocale = 'en' as const;")
+    expect(result).toContain('export type SupportedLanguage = typeof supportedLanguages[number];')
+    expect(result).toContain('export type MessageSchema = (typeof messages)[typeof baseLocale];')
+    expect(result).toContain("export type AllTranslationKeys = 'greeting' | 'nested.welcome';")
+    expect(result.trimEnd().endsWith('export default messages;')).toBe(true)
+  })
+
+  it('should respect custom banners and escape values', () => {
+    const banner = '// custom\n// header\n'
+    const messages = {
+      'en-us': {"salutation 'quote'": 'Hi'},
+    }
+
+    const combinedMessages = new CombinedMessages(messages, 'en-us')
+    const result = renderMessagesModule({combinedMessages, banner})
+
+    expect(result.startsWith('// custom\n// header\n')).toBe(true)
+    expect(result).toContain("export const supportedLanguages = ['en-us'] as const;")
+    expect(result).toContain("export const baseLocale = 'en-us' as const;")
+    expect(result).toContain("'salutation \\\'quote\\\''")
   })
 })
 
