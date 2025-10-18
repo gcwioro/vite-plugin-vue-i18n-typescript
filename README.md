@@ -62,9 +62,9 @@ Create your locale JSON files in `src/locales/`:
 // src/locales/en.json
 {
     "welcome": "Welcome!",
-  "nav": {
-      "home": "Home"
-  }
+    "nav": {
+        "home": "Home"
+    }
 }
 ```
 
@@ -110,6 +110,35 @@ import {generateI18nTypes} from 'vite-plugin-vue-i18n-types/api'
 await generateI18nTypes({baseLocale: 'en'})
 ```
 
+## Virtual Module Imports
+
+The plugin provides two virtual modules for different use cases:
+
+### `virtual:vue-i18n-types/messages`
+
+Import just the translation messages:
+
+```typescript
+import messages from 'virtual:vue-i18n-types/messages'
+
+// Use with createI18n
+const i18n = createI18n({
+    locale: 'en',
+    messages
+})
+```
+
+### `virtual:vue-i18n-types`
+
+Import helper functions for creating i18n instances:
+
+```typescript
+import { createI18nInstancePlugin } from 'virtual:vue-i18n-types'
+
+// Auto-configured plugin
+app.use(createI18nInstancePlugin())
+```
+
 ## Common Configuration
 
 ```typescript
@@ -140,7 +169,7 @@ Takes 2 minutes:
 
 # 3. Update imports
 - import messages from '@intlify/unplugin-vue-i18n/messages'
-+ import messages from 'virtual:vue-i18n-types'
++ import messages from 'virtual:vue-i18n-types/messages'
 ```
 
 Your JSON files work without changes!

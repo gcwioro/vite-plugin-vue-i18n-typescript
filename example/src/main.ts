@@ -1,6 +1,7 @@
-import App from './App.vue'
-import {createApp} from "vue";
 import {createI18nInstancePlugin} from "virtual:vue-i18n-types";
+import {createApp} from "vue";
+
+import App from './App.vue'
 
 const app = createApp(App)
 

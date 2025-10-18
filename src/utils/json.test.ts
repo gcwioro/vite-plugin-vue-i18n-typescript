@@ -1,5 +1,5 @@
-import {describe, it, expect} from 'vitest'
-import {extractJson, getJsonLeafPaths, canonicalize, detectKeyConflicts} from './json'
+import {describe, expect, it} from 'vitest'
+import {canonicalize, detectKeyConflicts, extractJson, getJsonLeafPaths} from './json'
 import complexInput from './json.test.json'
 
 describe('extractJson', () => {

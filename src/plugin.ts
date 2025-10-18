@@ -1,12 +1,6 @@
 import path from "node:path";
 import {promises as fs} from "node:fs";
-import {
-  EnvironmentModuleNode,
-  HotUpdateOptions,
-  Logger,
-  normalizePath,
-  PluginOption,
-} from "vite";
+import {EnvironmentModuleNode, HotUpdateOptions, Logger, normalizePath, PluginOption,} from "vite";
 import type {VirtualKeysDtsOptions} from "./types";
 import {createVirtualModuleCode} from "./generator";
 import {normalizeConfig} from "./core/config";
@@ -143,13 +137,19 @@ export default function unpluginVueI18nDtsGeneration(
     },
 
     resolveId(id) {
-      if (id === config.virtualId) {
-        logger.info(`🔍 [resolveId] Resolved virtual module: ${id} -> ${config.resolvedVirtualId}`);
+      if (id.includes(config.sourceId)) {
+
+
+        if (id === config.virtualJsonId) {
+          logger.info(`🔍 [resolveId] Resolved virtual JSON module: ${id} -> ${config.resolvedVirtualJsonId}`);
+          return config.resolvedVirtualJsonId;
+        }
+
+        if (id !== config.virtualId) {
+          logger.warn(`🔍 [resolveId] Resolved undefined virtual module: ${id} -> ${config.resolvedVirtualId}`);
+          return config.resolvedVirtualId;
+        }
         return config.resolvedVirtualId;
-      }
-      if (id === config.virtualJsonId) {
-        logger.info(`🔍 [resolveId] Resolved virtual JSON module: ${id} -> ${config.resolvedVirtualJsonId}`);
-        return config.resolvedVirtualJsonId;
       }
       return null;
     },

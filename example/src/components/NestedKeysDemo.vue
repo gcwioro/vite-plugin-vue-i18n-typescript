@@ -1,13 +1,17 @@
 <template>
   <section class="section">
-    <h2 class="section-title">Nested Keys Demo</h2>
+    <h2 class="section-title">
+      Nested Keys Demo
+    </h2>
     <p class="text-description">
       Demonstrates accessing deeply nested translation keys with type safety
     </p>
 
     <div class="space-y-3">
       <div class="card">
-        <h3 class="subsection-title">User Settings</h3>
+        <h3 class="subsection-title">
+          User Settings
+        </h3>
         <div class="space-y-2">
           <div class="setting-item">
             <span class="text-sm">{{ t('NestedKeysDemo.settings.theme.label') }}</span>
@@ -31,7 +35,9 @@
       </div>
 
       <div class="card">
-        <h3 class="subsection-title">Status Messages</h3>
+        <h3 class="subsection-title">
+          Status Messages
+        </h3>
         <div class="space-y-2">
           <div class="status-success">
             {{ t('NestedKeysDemo.status.success') }}
@@ -47,10 +53,16 @@
     </div>
 
     <div class="mt-4 p-3 info-box-gray">
-      <p class="text-xs text-gray-600 mb-2 font-semibold">Accessing nested keys:</p>
+      <p class="text-xs text-gray-600 mb-2 font-semibold">
+        Accessing nested keys:
+      </p>
       <ul class="space-y-1 text-xs text-gray-700">
-        <li class="code-example">t('NestedKeysDemo.settings.theme.label')</li>
-        <li class="code-example">t('NestedKeysDemo.status.success')</li>
+        <li class="code-example">
+          t('NestedKeysDemo.settings.theme.label')
+        </li>
+        <li class="code-example">
+          t('NestedKeysDemo.status.success')
+        </li>
       </ul>
     </div>
   </section>

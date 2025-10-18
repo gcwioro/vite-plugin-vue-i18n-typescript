@@ -1,6 +1,6 @@
 # Configuration Guide
 
-This guide covers all configuration options for the unplugin-vue-i18n-dts-generation plugin.
+This guide covers all configuration options for the vite-plugin-vue-i18n-types plugin.
 
 ## Basic Configuration
 
