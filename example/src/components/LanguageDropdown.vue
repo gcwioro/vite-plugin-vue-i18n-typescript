@@ -17,13 +17,8 @@
 
 <script setup lang="ts">
 
+import {type SupportedLanguage, useI18nApp, useI18nTypeSafe} from "virtual:vue-i18n-types";
 import {ref, watch} from "vue";
-import {
-  type SupportedLanguage,
-  supportedLanguages,
-  useI18nApp,
-  useI18nTypeSafe
-} from "virtual:vue-i18n-types";
 
 const i18n = useI18nApp()
 const {t} = useI18nTypeSafe()

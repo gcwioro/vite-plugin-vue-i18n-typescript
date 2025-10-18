@@ -1,7 +1,9 @@
-import { globalIgnores } from 'eslint/config'
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
-import pluginVue from 'eslint-plugin-vue'
-
+/// <reference types="./src/vite-env-override.d.ts" />
+import {defineConfigWithVueTs, vueTsConfigs} from '@vue/eslint-config-typescript'
+import {globalIgnores} from 'eslint/config'
+import importPlugin from 'eslint-plugin-import';
+import tseslint from 'typescript-eslint';
+import vueParser from 'vue-eslint-parser';
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 // import { configureVueProject } from '@vue/eslint-config-typescript'
 // configureVueProject({ scriptLangs: ['ts', 'tsx'] })
@@ -9,12 +11,61 @@ import pluginVue from 'eslint-plugin-vue'
 
 export default defineConfigWithVueTs(
   {
+
     name: 'app/files-to-lint',
-    files: ['**/*.{ts,mts,tsx,vue}', '**/tsconfig.json', '**/tsconfig.*.json'],
+    files: ['src/**/*.{ts,mts,tsx,vue}'],
   },
+// eslint load env-override.d.ts even if not imported directly
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  globalIgnores(['**/dist/**', 'eslint.config.ts', '**/dist-ssr/**', '**/coverage/**']),
 
-  pluginVue.configs['flat/base'],
-  vueTsConfigs.recommended,
+  vueTsConfigs.recommendedTypeChecked.toConfigArray(),
+
+  importPlugin.flatConfigs.recommended,
+
+  {
+    rules: {
+      '@typescript-eslint/no-unsafe-argument': 'off',
+    }
+  }
+  ,
+  {
+
+    rules: {
+      'import/no-unresolved': 'off',
+      'import/order': [
+        'warn',
+        {
+          'newlines-between': 'always',
+          distinctGroup: true,
+          alphabetize: {order: 'asc'},
+          pathGroups: [
+            {pattern: '@/**', group: 'internal', position: 'after'},
+            {pattern: './**', group: 'sibling', position: 'before'},
+            {pattern: '@virtual**', group: 'builtin', position: 'after'}
+          ],
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'object',
+            'sibling'
+          ]
+        }]
+    }
+  },
+  {
+    languageOptions: {
+      parser: vueParser,
+      parserOptions: {
+        extraFileExtensions: ['.vue', '.json'],
+        ecmaVersion: 2020,
+        sourceType: 'module',
+        projectService: true,
+
+        parser: tseslint.parser,
+        // projectService: true,
+      },
+    },
+  },
 )

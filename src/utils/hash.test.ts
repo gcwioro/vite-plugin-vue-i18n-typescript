@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { fnv1a32 } from './hash'
+import {describe, expect, it} from 'vitest'
+import {fnv1a32} from './hash'
 
 describe('fnv1a32', () => {
   it('should return consistent hash for same input', () => {

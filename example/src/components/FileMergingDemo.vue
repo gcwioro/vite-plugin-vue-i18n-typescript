@@ -1,17 +1,22 @@
 <template>
   <section class="section">
-    <h2 class="section-title">File Merging Demo</h2>
+    <h2 class="section-title">
+      File Merging Demo
+    </h2>
     <p class="text-description">
       Demonstrates how the plugin merges translation keys from multiple JSON files
     </p>
 
     <div class="info-box info-box-blue mb-4">
-      <h3 class="info-title-blue">How it works:</h3>
+      <h3 class="info-title-blue">
+        How it works:
+      </h3>
       <ul class="info-list text-xs text-blue-800">
         <li class="info-list-item">
           <span class="bullet-blue">•</span>
           <span>Translation keys from <span class="file-path-blue">locales/en.json</span> are merged with keys from <span
-            class="file-path-blue">components/FileMergingDemo.en.json</span></span>
+            class="file-path-blue"
+          >components/FileMergingDemo.en.json</span></span>
         </li>
         <li class="info-list-item">
           <span class="bullet-blue">•</span>
@@ -32,11 +37,15 @@
         <div class="space-y-2">
           <div class="card-content">
             <span class="text-gray-500 text-xs">App.fruits.label:</span>
-            <p class="text-gray-900">{{ t('App.fruits.label', {amount: 5, fruit: 'apples'}) }}</p>
+            <p class="text-gray-900">
+              {{ t('App.fruits.label', {amount: 5, fruit: 'apples'}) }}
+            </p>
           </div>
           <div class="card-content">
             <span class="text-gray-500 text-xs">Greeting.message:</span>
-            <p class="text-gray-900">{{ t('Greeting.message') }}</p>
+            <p class="text-gray-900">
+              {{ t('Greeting.message') }}
+            </p>
           </div>
         </div>
       </div>
@@ -48,19 +57,27 @@
         <div class="space-y-2">
           <div class="card-white-border">
             <span class="text-green-600 text-xs">FileMergingDemo.title:</span>
-            <p class="text-gray-900">{{ t('FileMergingDemo.title') }}</p>
+            <p class="text-gray-900">
+              {{ t('FileMergingDemo.title') }}
+            </p>
           </div>
           <div class="card-white-border">
             <span class="text-green-600 text-xs">FileMergingDemo.description:</span>
-            <p class="text-gray-900">{{ t('FileMergingDemo.description') }}</p>
+            <p class="text-gray-900">
+              {{ t('FileMergingDemo.description') }}
+            </p>
           </div>
           <div class="card-white-border">
             <span class="text-green-600 text-xs">FileMergingDemo.feature.typeCheck:</span>
-            <p class="text-gray-900">{{ t('FileMergingDemo.feature.typeCheck') }}</p>
+            <p class="text-gray-900">
+              {{ t('FileMergingDemo.feature.typeCheck') }}
+            </p>
           </div>
           <div class="card-white-border">
             <span class="text-green-600 text-xs">FileMergingDemo.feature.autoMerge:</span>
-            <p class="text-gray-900">{{ t('FileMergingDemo.feature.autoMerge') }}</p>
+            <p class="text-gray-900">
+              {{ t('FileMergingDemo.feature.autoMerge') }}
+            </p>
           </div>
         </div>
       </div>
@@ -72,22 +89,35 @@
         <div class="space-y-2">
           <div class="card-white">
             <div class="text-gray-900 flex items-center gap-2">
-              <svg class="icon-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M5 13l4 4L19 7"></path>
+              <svg
+                class="icon-success"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
               <span>{{ t('FileMergingDemo.merged.success', {count: allKeysCount}) }}</span>
             </div>
           </div>
           <div class="card-white">
-            <p class="text-gray-900">{{ t('FileMergingDemo.merged.typeSafety') }}</p>
+            <p class="text-gray-900">
+              {{ t('FileMergingDemo.merged.typeSafety') }}
+            </p>
           </div>
         </div>
       </div>
     </div>
 
     <div class="code mt-4">
-      <p class="text-xs text-gray-400 mb-2 font-semibold">File structure:</p>
+      <p class="text-xs text-gray-400 mb-2 font-semibold">
+        File structure:
+      </p>
       <pre class="text-xs text-green-400 font-mono">example/src/
 ├── locales/
 │   ├── en.json              ← Main translations

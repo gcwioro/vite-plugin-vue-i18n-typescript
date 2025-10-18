@@ -1,12 +1,6 @@
 import path from "node:path";
 import {promises as fs} from "node:fs";
-import {
-  EnvironmentModuleNode,
-  HotUpdateOptions,
-  Logger,
-  normalizePath,
-  PluginOption,
-} from "vite";
+import {EnvironmentModuleNode, HotUpdateOptions, Logger, normalizePath, PluginOption,} from "vite";
 import type {VirtualKeysDtsOptions} from "./types";
 import {createVirtualModuleCode} from "./generator";
 import {normalizeConfig} from "./core/config";

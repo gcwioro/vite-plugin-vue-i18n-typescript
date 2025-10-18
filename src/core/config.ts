@@ -38,7 +38,7 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): Normal
 
   const config: NormalizedConfig = {
     sourceId,
-    typesPath: userOptions.typesPath ?? './vite-env-override.d.ts',
+    typesPath: userOptions.typesPath ?? './src/vite-env-override.d.ts',
     virtualFilePath: userOptions.virtualFilePath,
     getLocaleFromPath: userOptions.getLocaleFromPath ?? defaultGetLocaleFromPath,
     baseLocale,

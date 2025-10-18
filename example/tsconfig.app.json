@@ -3,21 +3,20 @@
   "include": [
     "env.d.ts",
     "src/**/*.ts",
-    "./vite-env-override.d.ts",
-    "src/**/*.json",
-    //    "../src/**/*.ts",
-    //    "../src/**/*.ts",
+    "src/*.d.ts",
+    "src/*/**/*.json",
     "src/**/*.d.ts",
     "src/**/*.vue"
   ],
   "exclude": [
-    "src/**/__tests__/*"
-    //    "../src/**/*.test.ts",
-    //    "../node_modules",
-    //    "../*.config.ts",
+    "src/**/__tests__/*",
+    "dist",
+    "node_modules",
+    ".cache"
   ],
   "compilerOptions": {
     "rootDir": "./src",
+    "allowImportingTsExtensions": true,
     "useDefineForClassFields": true,
     "target": "esnext",
     "module": "esnext",
