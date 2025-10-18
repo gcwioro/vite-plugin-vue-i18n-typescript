@@ -200,6 +200,40 @@ export function vitePluginVueI18nTypes(
       rebuildManager.setServer(server, config.virtualId);
       logger.info(`🌐 [configureServer] Server reference set for virtual module: ${config.virtualId}`);
 
+      const resolvePattern = (pattern: string): string | undefined => {
+        if (!pattern) return undefined;
+        const isNegated = pattern.startsWith("!");
+        const rawPattern = isNegated ? pattern.slice(1) : pattern;
+        const trimmedPattern = rawPattern.startsWith("./") ? rawPattern.slice(2) : rawPattern;
+        const absolutePattern = path.isAbsolute(rawPattern)
+          ? rawPattern
+          : path.join(root, trimmedPattern);
+        const normalized = normalizePath(absolutePattern);
+        return isNegated ? `!${normalized}` : normalized;
+      };
+
+      const includePatterns = config.include
+        .map(resolvePattern)
+        .filter((pattern): pattern is string => Boolean(pattern));
+      const excludePatterns = config.exclude
+        .map((pattern) => {
+          const resolved = resolvePattern(pattern);
+          if (!resolved) return undefined;
+          return resolved.startsWith("!") ? resolved : `!${resolved}`;
+        })
+        .filter((pattern): pattern is string => Boolean(pattern));
+
+      const watcherPatterns = [...includePatterns, ...excludePatterns];
+
+      if (watcherPatterns.length > 0) {
+        server.watcher.add(watcherPatterns);
+        if (config.debug) {
+          logger.info(
+            `🌐 [configureServer] Registered watcher patterns: ${watcherPatterns.join(", ")}`
+          );
+        }
+      }
+
       // Initial rebuild
       logger.info(`🌐 [configureServer] Triggering initial rebuild...`);
       rebuildManager.rebuild("initial", []).catch((e) => {
