@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: example
-        run: npm ci
+        run: npm ci --omit=dev
 
       - name: Build
         working-directory: example

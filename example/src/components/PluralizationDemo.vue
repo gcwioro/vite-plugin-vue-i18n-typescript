@@ -147,17 +147,30 @@
 
 <script setup lang="ts">
 import {useI18nTypeSafe} from "virtual:vue-i18n-types";
-import type {MessageSchemaGen} from "virtual:vue-i18n-types/messages";
+import type {AllTranslationKeys, MessageSchemaGen} from "virtual:vue-i18n-types/messages";
 import {computed, ref} from "vue";
 
 const {t} = useI18nTypeSafe()
 
 const count = ref<number>(0)
 const amount = ref<number>(1)
-type FruitType = keyof MessageSchemaGen['App']['fruits']
+
+// Infer fruit types from the MessageSchemaGen type
+type FruitKeys = keyof MessageSchemaGen['App']['fruits']
+// Filter to only get the fruit types (not 'label')
+type FruitType = Exclude<FruitKeys, 'label'>
+
 const fruit = ref<FruitType>('apple')
+
+// Helper to construct the translation key with proper typing
+const getFruitKey = (fruitType: FruitType): AllTranslationKeys => {
+  return `App.fruits.${String(fruitType)}` satisfies AllTranslationKeys
+}
+
 const fruitName = computed(() => {
-  return t(`App.fruits.${fruit.value}`, amount.value, {amount: amount.value})
+  // Now we can use the dynamic key while maintaining type safety
+  const key = getFruitKey(fruit.value)
+  return t(key, amount.value, {amount: amount.value})
 })
 
 const getPluralForm = (n: number): string => {
