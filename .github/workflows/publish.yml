@@ -1,22 +1,29 @@
 name: Publish to npm
+
 on:
   push:
+    branches:
+      - 'release/**'     # publish alpha on pushes to git-flow release branches
     tags:
-      - 'v*.*.*'     # runs when a semver tag is pushed
-  workflow_dispatch:   # manual trigger
+      - 'v*.*.*'         # publish stable on semver tags (e.g., v1.2.3)
+  workflow_dispatch:      # manual trigger
 
 jobs:
   release:
+    name: Publish stable (tagged release)
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
+
       - run: npm ci
-#      - run: npm test
+      #     - run: npm test
       - name: Lint
         run: npm run lint
 
@@ -25,7 +32,53 @@ jobs:
 
       - name: Test
         run: npm test -- --run
-      - run: npm run build          # tsup generates dist
-      - run: npm publish --access public
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish (stable)
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  alpha-release:
+    name: Publish alpha (git-flow release/*)
+    if: startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+      #     - run: npm test
+      - name: Lint
+        run: npm run lint
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test -- --run
+
+      - name: Build
+        run: npm run build
+
+      # Derive an alpha pre-release version from the base version in package.json
+      # Example: 1.4.0 -> 1.4.0-alpha.123  (123 = GITHUB_RUN_NUMBER)
+      - name: Set alpha version (no git tag/commit)
+        shell: bash
+        run: |
+          BASE_VERSION=$(node -p "require('./package.json').version.split('-')[0]")
+          PRERELEASE_VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
+          echo "Setting pre-release version to ${PRERELEASE_VERSION}"
+          npm --no-git-tag-version version "${PRERELEASE_VERSION}"
+
+      - name: Publish (alpha dist-tag)
+        run: npm publish --access public --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
