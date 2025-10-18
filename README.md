@@ -13,12 +13,13 @@ compile-time type safety for internationalization (i18n) and localization**
 
 This is a **high-performance alternative to @intlify/unplugin-vue-i18n** focusing on type safety, performance, and
 developer experience. Perfect for Vue 3 projects using Vite that need type-safe translations with IntelliSense
-autocomplete.
+autocomplete and **live hot module replacement** that updates translations without page reloads.
 
 ### 🎯 Key Benefits
 
 - **Prevent Runtime i18n Errors**: Catch typos and invalid translation keys during TypeScript compilation
 - **IntelliSense Autocomplete**: Full IDE support with autocomplete for all translation keys
+- **Live Hot Module Replacement**: Update translations instantly without page reloads - see changes immediately!
 - **Multiple Usage Modes**: Vite plugin, standalone CLI, or programmatic API - choose what fits your workflow
 - **Flexible Project Structure**: Works with both flat file structure (`en.json`, `de.json`) and nested folders
 - **High Performance**: Incremental updates, caching, and parallel processing for large projects
@@ -61,20 +62,16 @@ Are you looking for solutions to these common Vue i18n issues?
 - 🚀 **Seamless integration** with Vue 3 + Vite
 - 🔄 **Automatic generation** of TypeScript definitions from JSON locale files
 - 🎯 **Compile-time type safety**: Catch unknown translation key errors before runtime
+- 🔥 **Live Hot Module Replacement**: Edit JSON files and see translations update instantly without page reload
 - 🛠️ **Multiple usage modes**: Vite plugin, standalone CLI, or programmatic API
 - 📁 **Flexible file structure**: Works with both flat (`en.json`, `de.json`) and nested (`locales/en/messages.json`)
   structures
-- 🔧 **Hot-reload support**: watches locale files in development for instant updates
 - 📦 **Deterministic output** with content hashing for consistent builds
-- ⚡ **High-performance**:
-  - Debounced generation (300ms with 2000ms max wait) prevents rebuild storms
-  - Incremental updates: only re-reads changed files
-  - Cached canonicalization: data normalized once and reused
-  - Parallel file operations for faster processing
-- 📊 **Performance logging**: detailed timing breakdowns for debugging
-- 🔒 **Virtual module system** for runtime locale loading
-- 🐛 **Optional virtual file generation** for debugging and inspection
+- ⚡ **Optimized for speed**: Smart caching and incremental updates mean fast regeneration even with hundreds of locale
+  files
+- 📊 **Performance insights**: Optional debug mode shows exactly how long operations take
 - 🎨 **CI/CD friendly**: Standalone CLI for type generation without running Vite
+- 🐛 **Debugging support**: Generate virtual modules as physical files for inspection
 
 ## 🚀 Getting Started - Type-Safe Vue 3 i18n in 5 Minutes
 
@@ -216,10 +213,12 @@ The plugin will automatically:
 - Generate TypeScript definitions at `src/i18n/i18n.types.gen.d.ts`
 - Generate type-safe helper functions at `src/i18n/i18n.gen.ts`
 - Provide autocomplete for all translation keys in your IDE
+- **Live update translations without page reload** when you edit JSON files
 - Watch for changes and regenerate types automatically
 
-**That's it!** You now have fully type-safe internationalization. TypeScript will catch any typos in translation keys at
-compile time.
+**That's it!** You now have fully type-safe internationalization with live hot module replacement. TypeScript will catch
+any typos in translation keys at compile time, and changes to your locale files will appear instantly in your running
+app!
 
 ### 🛡️ TypeScript Type Safety in Action - Catch Translation Errors at Compile Time
 

@@ -48,7 +48,7 @@ describe('i18n type generation', () => {
       expect(fileExists).toBe(true)
 
       const content = await fs.readFile(dtsPath, 'utf-8')
-      expect(content).toContain("'App.greetings'")
+      expect(content).toContain("'App.fruits.apple'")
       expect(content).toContain("'App.fruits")
       expect(content).toContain("'App.menu'")
       expect(content).toContain("'en'")
