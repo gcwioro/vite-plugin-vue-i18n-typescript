@@ -2,7 +2,7 @@
 /* prettier-ignore */
 // biome-ignore lint: disable
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Content-Hash: e84a893c
+// Content-Hash: bd558f19
 
 declare module 'virtual:unplug-i18n-dts-generation' {
   import {type Plugin, type WritableComputedRef} from 'vue'
@@ -36,7 +36,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   
   export type SupportedLanguage = AllSupportedLanguages[number]
   export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages = ['de', 'en'] as const
-  export type AllTranslationKeys = 'App.fruits.apple' | 'App.fruits.banana' | 'App.fruits.label' | 'App.menu' | 'App.menu.0' | 'App.menu.1' | 'App.menu.2' | 'App.menu.3' | 'FileMergingDemo.description' | 'FileMergingDemo.feature.autoMerge' | 'FileMergingDemo.feature.hotReload' | 'FileMergingDemo.feature.typeCheck' | 'FileMergingDemo.merged.success' | 'FileMergingDemo.merged.typeSafety' | 'FileMergingDemo.title' | 'Greeting.greetings' | 'Greeting.message' | 'InterpolationDemo.birthday' | 'InterpolationDemo.profile' | 'InterpolationDemo.welcome' | 'LanguageDropdown.label' | 'NestedKeysDemo.settings.notifications.description' | 'NestedKeysDemo.settings.notifications.label' | 'NestedKeysDemo.settings.privacy.description' | 'NestedKeysDemo.settings.privacy.label' | 'NestedKeysDemo.settings.theme.description' | 'NestedKeysDemo.settings.theme.label' | 'NestedKeysDemo.status.error' | 'NestedKeysDemo.status.success' | 'NestedKeysDemo.status.warning' | 'PluralizationDemo.cart.status' | 'PluralizationDemo.explanation.format' | 'PluralizationDemo.explanation.note' | 'PluralizationDemo.explanation.parameter' | 'PluralizationDemo.files.uploaded' | 'PluralizationDemo.items' | 'PluralizationDemo.messages' | 'PluralizationDemo.notifications.unread' | 'PluralizationDemo.people' | 'PluralizationDemo.title'
+  export type AllTranslationKeys = 'App.fruits.apple' | 'App.fruits.banana' | 'App.fruits.label' | 'App.menu' | 'App.menu.0' | 'App.menu.1' | 'App.menu.2' | 'App.menu.3' | 'FileMergingDemo.description' | 'FileMergingDemo.feature.autoMerge' | 'FileMergingDemo.feature.hotReload' | 'FileMergingDemo.feature.typeCheck' | 'FileMergingDemo.merged.success' | 'FileMergingDemo.merged.typeSafety' | 'FileMergingDemo.title' | 'Greeting.greetings' | 'Greeting.message' | 'InterpolationDemo.birthday' | 'InterpolationDemo.profile' | 'InterpolationDemo.welcome' | 'LanguageDropdown.label' | 'NestedKeysDemo.settings.notifications.description' | 'NestedKeysDemo.settings.notifications.label' | 'NestedKeysDemo.settings.privacy.description' | 'NestedKeysDemo.settings.privacy.label' | 'NestedKeysDemo.settings.theme.description' | 'NestedKeysDemo.settings.theme.label' | 'NestedKeysDemo.status.error' | 'NestedKeysDemo.status.success' | 'NestedKeysDemo.status.warning' | 'PluralizationDemo.cart.status' | 'PluralizationDemo.explanation.format' | 'PluralizationDemo.explanation.note' | 'PluralizationDemo.explanation.parameter' | 'PluralizationDemo.files.uploaded' | 'PluralizationDemo.items' | 'PluralizationDemo.messages' | 'PluralizationDemo.notifications.unread' | 'PluralizationDemo.people' | 'PluralizationDemo.title' | 'TestHotUpdate.message'
   export type AllSupportedLanguages = readonly ['de', 'en']
   
   // Message structure types
@@ -51,7 +51,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
      "Home",
      "About",
      "Contact",
-     "Terms"
+     "Term"
     ]
    },
    "FileMergingDemo": {
@@ -119,6 +119,9 @@ declare module 'virtual:unplug-i18n-dts-generation' {
     },
     "people": "nobody | one person | {count} people",
     "title": "Pluralization Examples"
+   },
+   "TestHotUpdate": {
+    "message": "This is a test for hot module replacement"
    }
   }
   export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>

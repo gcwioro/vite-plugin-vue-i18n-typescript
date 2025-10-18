@@ -1,0 +1,71 @@
+{
+  "App": {
+    "fruits": {
+      "label": "You have no {fruit} | You have one {fruit} | You have {count} {fruit}",
+      "apple": "apple | apples",
+      "banana": "banana | bananas"
+    },
+    "menu": [
+      "Home",
+      "About",
+      "Contact",
+      "Term"
+    ]
+  },
+  "PluralizationDemo": {
+    "title": "Pluralization Examples",
+    "items": "no items | one item | {count} items",
+    "people": "nobody | one person | {count} people",
+    "messages": "no messages | one message | {count} message",
+    "files": {
+      "uploaded": "no files uploaded | one file uploaded | {count} files uploaded"
+    },
+    "cart": {
+      "status": "Your cart is empty | You have one item in your cart | You have {count} items in your cart"
+    },
+    "notifications": {
+      "unread": "no unread notifications | one unread notification | {n} unread notifications"
+    },
+    "explanation": {
+      "format": "Format: 'zero | one | many'",
+      "parameter": "Pass {count} parameter matching the count value",
+      "note": "The {count} value determines which form is used: 0=first, 1=second, 2+=third"
+    }
+  },
+  "LanguageDropdown": {
+    "label": "Language:"
+  },
+  "Greeting": {
+    "message": "Hello TypeScript friends!",
+    "greetings": "unplug-i18n-dts-generation Plugin - Demo Project"
+  },
+  "InterpolationDemo": {
+    "welcome": "Welcome, {name}!",
+    "profile": "{name} is {age} years old",
+    "birthday": "Next year you'll be {age}!"
+  },
+  "TestHotUpdate": {
+    "message": "This is a test for hot module replacement"
+  },
+  "NestedKeysDemo": {
+    "settings": {
+      "theme": {
+        "label": "Theme Settings",
+        "description": "Dark or light mode"
+      },
+      "notifications": {
+        "label": "Notifications",
+        "description": "Email and push alerts"
+      },
+      "privacy": {
+        "label": "Privacy Controls",
+        "description": "Who can see your data"
+      }
+    },
+    "status": {
+      "success": "Operation completed successfully!",
+      "warning": "Please review your changes before proceeding.",
+      "error": "An error occurred. Please try again."
+    }
+  }
+}

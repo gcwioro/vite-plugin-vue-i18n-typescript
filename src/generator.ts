@@ -197,6 +197,35 @@ export async function load() {
 
 export default messages;
 
+// HMR handling for live updates
+if (import.meta.hot) {
+  import.meta.hot.on('i18n-update', (data) => {
+    console.log('[i18n] Received hot update with new messages');
+
+    // Update the exported messages
+    Object.assign(messages, data.messages);
+
+    // Update the global i18n instance if it exists
+    if (globalThis.i18nApp) {
+      const i18n = useI18nApp()
+
+      // Update messages for all locales
+      Object.keys(data.messages).forEach(locale => {
+        if (locale !== 'js-reserved') {
+          i18n.setLocaleMessage(locale, data.messages[locale]);
+        }
+      });
+
+      // Force re-render by updating a reactive property
+      const currentLocale = i18n.locale.value;
+      i18n.locale.value = 'de-AT';
+      i18n.locale.value = currentLocale;
+
+      console.log('[i18n] Messages updated successfully');
+    }
+  });
+}
+
 ${helperMethodsDefinition(baseLocale).join('\n')}
 `;
   }
@@ -218,6 +247,34 @@ export async function load() {
 export const supportedLanguages = ${languagesTuple};
 
 export default messages;
+
+// HMR handling for live updates
+if (import.meta.hot) {
+  import.meta.hot.on('i18n-update', (data) => {
+    console.log('[i18n] Received hot update with new messages');
+
+    // Update the exported messages
+    Object.assign(messages, data.messages);
+
+    // Update the global i18n instance if it exists
+    if (globalThis.i18nApp) {
+      const i18n = globalThis.i18nApp;
+
+      // Update messages for all locales
+      Object.keys(data.messages).forEach(locale => {
+        if (locale !== 'js-reserved') {
+          i18n.global.setLocaleMessage(locale, data.messages[locale]);
+        }
+      });
+
+      // Force re-render by updating a reactive property
+      const currentLocale = i18n.global.locale.value;
+      i18n.global.locale.value = currentLocale;
+
+      console.log('[i18n] Messages updated successfully');
+    }
+  });
+}
 
 ${helperMethodsDefinition(baseLocale).join('\n')}
 `;

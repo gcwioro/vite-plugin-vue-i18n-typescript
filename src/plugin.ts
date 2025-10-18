@@ -83,7 +83,7 @@ export default function unpluginVueI18nDtsGeneration(
       isBuild = cfg.command === "build";
       logger = cfg.logger;
 
-      logger.info(`Config resolved. Root: ${root}, isBuild: ${isBuild}`);
+      logger.info(`🔧 [configResolved] Hook triggered. Root: ${root}, Command: ${cfg.command}, isBuild: ${isBuild}`);
 
       // Initialize core managers
       fileManager = new FileManager({
@@ -122,10 +122,14 @@ export default function unpluginVueI18nDtsGeneration(
     },
 
     async buildStart() {
+      logger.info(`🚀 [buildStart] Hook triggered. isBuild: ${isBuild}`);
+
       // Perform initial rebuild
       const result = await rebuildManager.rebuild("buildStart", []);
       groupedCache = result.grouped;
       jsonTextCache = result.jsonText;
+
+      logger.info(`📊 [buildStart] Initial rebuild complete. Locales: ${Object.keys(groupedCache).join(", ")}`);
 
       // Emit asset file in build mode if emitJson is enabled
       if (isBuild && config.emit.emitJson) {
@@ -134,18 +138,26 @@ export default function unpluginVueI18nDtsGeneration(
           name: config.emit.fileName,
           source: jsonTextCache,
         });
+        logger.info(`📦 [buildStart] Emitted asset: ${config.emit.fileName}, refId: ${emittedRefId}`);
       }
     },
 
     resolveId(id) {
-      if (id === config.virtualId) return config.resolvedVirtualId;
-      if (id === config.virtualJsonId) return config.resolvedVirtualJsonId;
+      if (id === config.virtualId) {
+        logger.info(`🔍 [resolveId] Resolved virtual module: ${id} -> ${config.resolvedVirtualId}`);
+        return config.resolvedVirtualId;
+      }
+      if (id === config.virtualJsonId) {
+        logger.info(`🔍 [resolveId] Resolved virtual JSON module: ${id} -> ${config.resolvedVirtualJsonId}`);
+        return config.resolvedVirtualJsonId;
+      }
       return null;
     },
 
     load(id) {
       // Handle JSON virtual module
       if (id === config.resolvedVirtualJsonId) {
+        logger.info(`📄 [load] Loading virtual JSON module: ${id}, data size: ${jsonTextCache.length} bytes`);
         // Return as a JavaScript module, not JSON to avoid vite:json plugin
         return {
           code: `export default ${jsonTextCache}`,
@@ -155,32 +167,41 @@ export default function unpluginVueI18nDtsGeneration(
 
       // Handle main virtual module
       if (id === config.resolvedVirtualId) {
+        logger.info(`📄 [load] Loading virtual module: ${id}, isBuild: ${isBuild}`);
         if (isBuild) {
           // Reference the virtual JSON module instead of embedding or using assets
-          return createVirtualModuleCode({
+          const code = createVirtualModuleCode({
             jsonText: jsonTextCache,
             buildAssetRefId: config.emit.emitJson ? emittedRefId : undefined,
             baseLocale: config.baseLocale,
             virtualJsonId: config.virtualJsonId,
           });
+          logger.info(`📄 [load] Generated build code for virtual module, size: ${code.length} bytes`);
+          return code;
         }
 
-        return createVirtualModuleCode({
+        const code = createVirtualModuleCode({
           jsonText: jsonTextCache,
           devUrlPath: config.devUrlPath,
           baseLocale: config.baseLocale,
           virtualJsonId: config.virtualJsonId,
         });
+        logger.info(`📄 [load] Generated dev code for virtual module, size: ${code.length} bytes`);
+        return code;
       }
 
       return null;
     },
 
     configureServer(server) {
-      // Set server reference for hot updates
-      rebuildManager.setServer(server, config.resolvedVirtualId);
+      logger.info(`🌐 [configureServer] Hook triggered. Setting up dev server...`);
+
+      // Set server reference for hot updates (use virtualId for module graph lookups)
+      rebuildManager.setServer(server, config.virtualId);
+      logger.info(`🌐 [configureServer] Server reference set for virtual module: ${config.virtualId}`);
 
       // Initial rebuild
+      logger.info(`🌐 [configureServer] Triggering initial rebuild...`);
       rebuildManager.rebuild("initial", []).catch((e) => {
         server.config.logger.error(`Initial rebuild failed: ${String(e)}`);
       });
@@ -189,6 +210,7 @@ export default function unpluginVueI18nDtsGeneration(
       server.middlewares.use((req, res, next) => {
         if (!req.url) return next();
         if (req.url === config.devUrlPath) {
+          logger.info(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${jsonTextCache.length} bytes`);
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.end(jsonTextCache);
@@ -213,42 +235,48 @@ export default function unpluginVueI18nDtsGeneration(
     async hotUpdate({server, timestamp, type, modules, ...ctx}: HotUpdateOptions): Promise<
       Array<EnvironmentModuleNode> | void
     > {
-      if (!isWatchedFile(ctx.file)) return;
+      logger.info(`🔥 [hotUpdate] Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`);
+      logger.info(`🔥 [hotUpdate] Environment: ${this.environment?.name}, modules count: ${modules.length}`);
+
+      if (!isWatchedFile(ctx.file)) {
+        logger.info(`🔥 [hotUpdate] File not watched, skipping: ${ctx.file}`);
+        return;
+      }
 
       if (config.debug) {
-        this.environment.config.logger.info(
-          `hotUpdate: ${type} Known modules: ${modules.map(a => JSON.stringify(a, null, 2)).join(", ")}`
-        );
-      }
-      await rebuildManager.setEnv(this.environment)
-      await rebuildManager.debouncedRebuild("change", modules);
-
-
-      const mod = modules.filter((m) => m.id?.includes(config.resolvedVirtualId));
-
-      if (modules.length > 0 && mod.length === 0) {
-        this.environment.config.logger.info(`No module to hot update found for ${config.resolvedVirtualId}`);
-        if (config.debug) {
-          this.environment.config.logger.info(
-            `Known modules: ${[...server.moduleGraph.idToModuleMap.keys()].join(", ")}`
-          );
-        }
-
-        const invalidatedModules = new Set<EnvironmentModuleNode>()
-        for (const m of mod) {
-          this.environment.moduleGraph.invalidateModule(
-            m,
-            invalidatedModules,
-            timestamp,
-            true
-          )
-        }
-        return modules;
+        logger.info(`🔥 [hotUpdate] Debug: Module details for ${type}:`);
+        modules.forEach((m, i) => {
+          logger.info(`  Module ${i}: id=${m.id}, url=${m.url}, type=${m.type}`);
+        });
       }
 
-      this.environment.hot.send({type: 'full-reload'})
+      // Only process in client environment to avoid duplicate rebuilds
+      if (this.environment?.name !== 'client') {
+        logger.info(`🔥 [hotUpdate] Skipping for non-client environment: ${this.environment?.name}`);
+        return;
+      }
 
-      return mod.length > 0 ? mod : [];
+      logger.info(`🔥 [hotUpdate] Triggering rebuild for file change...`);
+      await rebuildManager.setEnv(this.environment);
+
+      // Perform rebuild immediately (no debouncing needed in Vite 7)
+      const result = await rebuildManager.rebuild("change", modules);
+
+      // Send custom HMR event to update i18n messages directly
+      logger.info(`🔥 [hotUpdate] Sending custom i18n-update event with new messages`);
+
+      // Send the updated messages to the client
+      server.ws.send({
+        type: 'custom',
+        event: 'i18n-update',
+        data: {
+          messages: result.grouped,
+          timestamp
+        }
+      });
+
+      // Return empty array to prevent default HMR behavior
+      return [];
     },
   };
 }

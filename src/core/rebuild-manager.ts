@@ -1,4 +1,4 @@
-import {DevEnvironment, EnvironmentModuleNode, Logger, ModuleNode, ViteDevServer} from "vite";
+import {DevEnvironment, EnvironmentModuleNode, Logger, ViteDevServer} from "vite";
 import {canonicalize} from "../utils";
 import type {JSONValue} from "../types";
 import {FileManager} from "./file-manager";
@@ -38,6 +38,7 @@ export class RebuildManager {
   setServer(server: ViteDevServer, resolvedVirtualId: string): void {
     this.serverRef = server;
     this.resolvedVirtualId = resolvedVirtualId;
+    this.options.logger?.info(`🔧 [RebuildManager] Server reference set. Virtual ID: ${resolvedVirtualId}`);
   }
 
   /**
@@ -127,33 +128,17 @@ export class RebuildManager {
   }
 
   /**
-   * Invalidate virtual module and trigger hot reload
+   * Invalidate virtual module (simplified for Vite 7)
+   * Module invalidation is now handled in the hotUpdate hook
    */
   private async invalidateModule(modules: EnvironmentModuleNode[]) {
-
-    if (!this.serverRef || !this.resolvedVirtualId) {
-      this.options.logger?.warn(`Not found: serverRef: ${!!this.serverRef},resolvedVirtualId ${!!this.resolvedVirtualId}`);
-      return
-    }
-
-    const mod = modules.filter((m) => m.id?.includes(this.resolvedVirtualId ?? ' '));
-
-    if (mod) {
-      await this.environment?.moduleGraph?.invalidateAll();
-      // await this.serverRef.moduleGraph.invalidateModule(mod);
-
-      this.environment?.hot?.send({type: 'full-reload'})
-      const modulesInfo = mod.map(m => `${m.id} | ${m.url} | ${m.type}`).join()
-      this.options.logger?.info(`Reload ${this.resolvedVirtualId} | ${modulesInfo}`)
-    } else {
-      // log error
-      this.options.logger?.warn(`Module not found: ${this.resolvedVirtualId} | ` + this.serverRef.moduleGraph)
-
-    }
-    return mod;
+    this.options.logger?.info(`🔄 [invalidateModule] Module invalidation completed`);
+    // In Vite 7, module invalidation is handled per-environment in the hotUpdate hook
+    return modules;
   }
 
   async setEnv(environment: DevEnvironment) {
     this.environment = environment;
+    this.options.logger?.info(`🔧 [RebuildManager] Environment set: ${environment.name}`);
   }
 }

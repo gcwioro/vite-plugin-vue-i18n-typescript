@@ -168,7 +168,7 @@ export async function generateI18nTypes(
   });
 
   // Perform generation
-  const result = await rebuildManager.rebuild("api");
+  const result = await rebuildManager.rebuild("api", []);
 
   groupedCache = result.grouped;
   lastFiles = fileManager.getLastFiles();

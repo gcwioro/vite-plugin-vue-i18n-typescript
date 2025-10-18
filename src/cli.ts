@@ -141,7 +141,8 @@ async function mergeExportCommand(args: string[]) {
   });
 
   // Read and group locale files
-  const grouped = await fileManager.readAndGroup();
+  const result = await fileManager.readAndGroup();
+  const grouped = result.grouped;
   const locales = Object.keys(grouped).filter((l) => l !== "js-reserved");
 
   if (locales.length === 0) {
@@ -296,7 +297,7 @@ async function main() {
     }
 
     // Run generation
-    let lastResult: Awaited<ReturnType<typeof generateI18nTypes>> | null = null;
+    let lastResult: Awaited<ReturnType<typeof generateI18nTypes>> | undefined;
 
     const runGeneration = async (): Promise<void> => {
       const startTime = Date.now();
@@ -353,7 +354,7 @@ async function main() {
       }
 
       // Use the locale files from the initial generation
-      const localeFilesFullPaths = lastResult?.localeFiles || [];
+      const localeFilesFullPaths = lastResult ? lastResult.localeFiles : [];
 
       if (options.verbose || options.debug) {
         console.log(`[watch] Found ${localeFilesFullPaths.length} locale file(s) to watch`);
