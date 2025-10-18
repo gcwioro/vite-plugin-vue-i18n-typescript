@@ -41,7 +41,10 @@ jobs:
 
       - name: Demo - Install dependencies
         working-directory: example
-        run: bun install --frozen-lockfile
+        run:
+          bun install --frozen-lockfile
+          bun remove vite-plugin-vue-i18n-types
+          bun add vite-plugin-vue-i18n-types -D
 
       - name: Demo - Build
         working-directory: example
