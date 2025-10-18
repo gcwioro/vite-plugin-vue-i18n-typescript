@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [ main ,develop ]
+    branches: [ main, develop ]
   push:
-    branches: [ main , develop, release/* ]
+    branches: [ main, develop, release/* ]
 
 permissions:
   contents: read
@@ -17,46 +17,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: npm
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: npm run lint
+        run: bun run lint
 
       - name: Type Check
-        run: npm run typecheck
+        run: bun run typecheck
 
       - name: Test
-        run: npm test -- --run
+        run: bun run test -- --run
+
   build-example:
-    name: Lint, Type-Check, and Test
+    name: Lint, Type-Check, and Test (example)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: example
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: npm
+          bun-version: latest
 
       - name: Install dependencies
-        run: cd example && npm ci
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: cd example && npm run lint
-      #
-      #      - name: Type Check
-      #        working-directory: example
-      #        run: npm run typecheck
+        run: bun run lint
+
+      # - name: Type Check
+      #   run: bun run typecheck
 
       - name: Build
-        run: cd example && npm run build-only
-
+        run: bun run build-only
