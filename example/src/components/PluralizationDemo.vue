@@ -164,7 +164,7 @@ const fruit = ref<FruitType>('apple')
 
 // Helper to construct the translation key with proper typing
 const getFruitKey = (fruitType: FruitType): AllTranslationKeys => {
-  return `App.fruits.${String(fruitType)}` satisfies AllTranslationKeys
+  return `App.fruits.${String(fruitType)}` as AllTranslationKeys
 }
 
 const fruitName = computed(() => {
