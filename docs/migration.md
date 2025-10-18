@@ -61,7 +61,7 @@ export default defineConfig({
 ```diff
 // main.ts or wherever you setup i18n
 - import messages from '@intlify/unplugin-vue-i18n/messages'
-+ import messages from 'virtual:vue-i18n-types'
++ import messages from 'virtual:vue-i18n-types/messages'
 
 const i18n = createI18n({
   legacy: false,
@@ -155,7 +155,7 @@ The new plugin generates all types at build time, so you get the same benefits:
 
 ```typescript
 // Types are generated, runtime is minimal
-import messages from 'virtual:unplug-i18n-dts-generation'
+import messages from 'virtual:vue-i18n-types/messages'
 ```
 
 ## Feature Comparison
@@ -196,7 +196,7 @@ Make sure you have the reference directive:
 Check your import matches exactly:
 
 ```typescript
-import messages from 'virtual:unplug-i18n-dts-generation'
+import messages from 'virtual:vue-i18n-types/messages'
 ```
 
 ### Locale Files Not Found
