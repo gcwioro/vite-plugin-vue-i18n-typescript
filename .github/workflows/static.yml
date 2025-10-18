@@ -47,12 +47,4 @@ jobs:
         working-directory: example
         run: npm run build-only
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload entire repository
-          path: './example/dist/index.html'
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
