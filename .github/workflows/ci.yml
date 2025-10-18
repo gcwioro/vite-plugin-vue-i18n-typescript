@@ -41,6 +41,10 @@ jobs:
         working-directory: example
         run: bun install --frozen-lockfile
 
+      - name: Demo - Build
+        working-directory: example
+        run: bun run build-only
+
       - name: Demo - Lint
         working-directory: example
         run: bun run lint
@@ -49,8 +53,5 @@ jobs:
         working-directory: example
         run: bun run typecheck
 
-      - name: Demo - Build
-        working-directory: example
-        run: bun run build-only
 
 
