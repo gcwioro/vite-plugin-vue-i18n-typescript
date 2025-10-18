@@ -40,10 +40,10 @@ npx vite-plugin-vue-i18n-types generate [options]
 | Option                       | Description                                      | Default                    |
 |------------------------------|--------------------------------------------------|----------------------------|
 | `--root <path>`              | Project root directory                           | Current directory          |
-| `--include <pattern>`        | Glob pattern for locale files (multiple allowed) | `src/locales/**/*.json`    |
-| `--exclude <pattern>`        | Glob pattern to exclude (multiple allowed)       | Node modules, dist, etc.   |
+| `--include <pattern>`        | Glob pattern for locale files (multiple allowed) | `./**/locales/*.json`<br>`./**/*.vue.*.json`<br>`./**/*<base-locale>.json` |
+| `--exclude <pattern>`        | Glob pattern to exclude (multiple allowed)       | `**/tsconfig.*`<br>`**/node_modules/**`<br>`**/.git/**`<br>`**/dist/**`<br>`**/.output/**`<br>`**/.vercel/**`<br>`**/.next/**`<br>`**/build/**` |
 | `--base-locale <locale>`     | Base locale for type generation                  | `de`                       |
-| `--types-path <path>`        | Output path for TypeScript definitions           | `./vite-env-override.d.ts` |
+| `--types-path <path>`        | Output path for TypeScript definitions           | `./src/vite-env-override.d.ts` |
 | `--virtual-file-path <path>` | Generate virtual module as file (debugging)      | -                          |
 | `--source-id <id>`           | Virtual module ID                                | `virtual:vue-i18n-types`   |
 | `--banner <text>`            | Custom header comment for generated files        | -                          |

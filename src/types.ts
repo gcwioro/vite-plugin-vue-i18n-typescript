@@ -37,7 +37,7 @@ export type VirtualKeysDtsOptions = {
   /**
    * Path for the TypeScript type definitions file (.d.ts).
    *
-   * @default "./vite-env-override.d.ts"
+   * @default "./src/vite-env-override.d.ts"
    * @example "src/types/i18n.types.d.ts"
    */
   typesPath?: string

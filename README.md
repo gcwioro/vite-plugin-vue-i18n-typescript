@@ -49,8 +49,8 @@ import i18nTypes from 'vite-plugin-vue-i18n-types'
 export default defineConfig({
   plugins: [
     vue(),
-      i18nTypes() // Zero config!
-  ]
+    i18nTypes(), // Zero config!
+  ],
 })
 ```
 
@@ -143,9 +143,9 @@ app.use(createI18nInstancePlugin())
 
 ```typescript
 i18nTypes({
-    baseLocale: 'en',                      // Your primary language
-    include: ['src/locales/**/*.json'],    // Where to find locale files
-    // That's usually all you need!
+  baseLocale: 'en',                      // Your primary language (defaults to 'de')
+  include: ['src/locales/**/*.json'],    // Where to find locale files
+  // That's usually all you need!
 })
 ```
 

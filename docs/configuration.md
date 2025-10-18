@@ -27,7 +27,7 @@ export default defineConfig({
 #### `include`
 
 - **Type:** `string | string[]`
-- **Default:** `['src/locales/**/*.json']`
+- **Default:** `['./**/locales/*.json', './**/*.vue.*.json', './**/*<baseLocale>.json']`
 - **Description:** Glob patterns for finding locale files
 
 ```typescript
@@ -42,7 +42,7 @@ i18nTypes({
 #### `exclude`
 
 - **Type:** `string | string[]`
-- **Default:** `['**/node_modules/**', '**/dist/**', '**/.git/**', ...]`
+- **Default:** `['**/tsconfig.*', '**/node_modules/**', '**/.git/**', '**/dist/**', '**/.output/**', '**/.vercel/**', '**/.next/**', '**/build/**']`
 - **Description:** Glob patterns to exclude from scanning
 
 ```typescript
@@ -75,24 +75,12 @@ i18nTypes({
 #### `typesPath`
 
 - **Type:** `string`
-- **Default:** `'src/i18n/i18n.types.gen.d.ts'`
+- **Default:** `'./src/vite-env-override.d.ts'`
 - **Description:** Path for generated TypeScript type definitions
 
 ```typescript
 i18nTypes({
   typesPath: 'src/types/i18n-generated.d.ts'
-})
-```
-
-#### `constsPath`
-
-- **Type:** `string`
-- **Default:** `'src/i18n/i18n.gen.ts'`
-- **Description:** Path for generated runtime constants and helpers
-
-```typescript
-i18nTypes({
-  constsPath: 'src/utils/i18n-helpers.ts'
 })
 ```
 
@@ -172,31 +160,19 @@ i18nTypes({
 
 ### Virtual Module Configuration
 
-#### `virtualId`
-
-- **Type:** `string`
-- **Default:** `'virtual:vue-i18n-types'`
-- **Description:** Virtual module ID for imports
-
-```typescript
-i18nTypes({
-  virtualId: 'virtual:my-i18n'
-})
-
-// Then import as:
-import messages from 'virtual:my-i18n'
-```
-
 #### `sourceId`
 
 - **Type:** `string`
-- **Default:** `'@vue-i18n-types'`
-- **Description:** Module ID used in generated type definitions
+- **Default:** `'virtual:vue-i18n-types'`
+- **Description:** Virtual module ID used for runtime imports and generated type definitions
 
 ```typescript
 i18nTypes({
-  sourceId: '@my-app/i18n'
+  sourceId: 'virtual:my-i18n'
 })
+
+// Then import as:
+import messages from 'virtual:my-i18n/messages'
 ```
 
 #### `devUrlPath`
@@ -213,29 +189,18 @@ i18nTypes({
 
 ### Runtime Options
 
-#### `exportMessages`
-
-- **Type:** `boolean`
-- **Default:** `false`
-- **Description:** Whether to export messages in the generated constants file
-
-```typescript
-i18nTypes({
-  exportMessages: true // Include messages in i18n.gen.ts
-})
-```
-
 #### `emit`
 
-- **Type:** `{ fileName?: string; inlineDataInBuild?: boolean }`
-- **Default:** `{ fileName: 'locales.json', inlineDataInBuild: false }`
+- **Type:** `{ fileName?: string; inlineDataInBuild?: boolean; emitJson?: boolean }`
+- **Default:** `{ fileName: 'assets/locales.json', inlineDataInBuild: false, emitJson: false }`
 - **Description:** Asset emission configuration for build
 
 ```typescript
 i18nTypes({
   emit: {
     fileName: 'i18n-messages.json',
-    inlineDataInBuild: true // Embed in bundle instead of separate file
+    inlineDataInBuild: true,   // Embed in bundle instead of separate file
+    emitJson: true             // Emit physical JSON asset alongside build output
   }
 })
 ```
@@ -301,7 +266,6 @@ export default defineConfig({
 
       // Output Paths
       typesPath: 'src/types/i18n.gen.d.ts',
-      constsPath: 'src/utils/i18n.gen.ts',
       virtualFilePath: process.env.DEBUG ? 'src/debug/i18n.gen.ts' : undefined,
 
       // Locales
@@ -309,15 +273,14 @@ export default defineConfig({
       merge: 'deep',
 
       // Virtual Module
-      virtualId: 'virtual:i18n-messages',
-      sourceId: '@app/i18n',
+      sourceId: 'virtual:i18n-messages',
       devUrlPath: '/__i18n__/locales.json',
 
       // Runtime
-      exportMessages: false,
       emit: {
         fileName: 'locales.json',
-        inlineDataInBuild: false
+        inlineDataInBuild: false,
+        emitJson: true
       },
 
       // Custom Functions
@@ -441,7 +404,7 @@ i18nTypes({
 
   // Use package-specific paths
   typesPath: 'src/types/i18n.d.ts',
-  virtualId: 'virtual:app-i18n'
+  sourceId: 'virtual:app-i18n'
 })
 ```
 
@@ -487,11 +450,11 @@ i18nTypes({
 Ensure the import matches your configuration:
 
 ```typescript
-// If using custom virtualId:
+// If using a custom module ID:
 i18nTypes({
-  virtualId: 'virtual:my-custom-i18n'
+  sourceId: 'virtual:my-custom-i18n'
 })
 
 // Import must match:
-import messages from 'virtual:my-custom-i18n'
+import messages from 'virtual:my-custom-i18n/messages'
 ```
