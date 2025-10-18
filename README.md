@@ -7,90 +7,31 @@
 
 > **Type-Safe Vue 3 i18n Plugin** | Generate TypeScript types from JSON locale files | Catch translation errors at
 > compile time
+> **Type-Safe Vue 3 i18n Plugin** | Generate TypeScript types from JSON locale files | Catch translation errors at
+> compile time
 
-**A standalone Vite plugin for Vue 3 that generates TypeScript declaration files from JSON locale files, providing
-compile-time type safety for internationalization (i18n) and localization**
+A **standalone Vite plugin** that automatically generates TypeScript definitions from your Vue i18n JSON files,
+providing compile-time type safety and IntelliSense autocomplete for all translation keys. Features **live hot module
+replacement** - see translation changes instantly without page reloads!
 
-This is a **high-performance alternative to @intlify/unplugin-vue-i18n** focusing on type safety, performance, and
-developer experience. Perfect for Vue 3 projects using Vite that need type-safe translations with IntelliSense
-autocomplete and **live hot module replacement** that updates translations without page reloads.
+🎮 **[Try the Live Demo →](https://gcwioro.github.io/unplugin-vue-i18n-dts-generation/)**
 
-### 🎮 Live Demo
+## ✨ Key Features
 
-Try the live demo to see the plugin in action: [**https://gcwioro.github.io/unplugin-vue-i18n-dts-generation/
-**](https://gcwioro.github.io/unplugin-vue-i18n-dts-generation/)
+- 🎯 **Type-Safe Translations** - Catch typos and invalid keys at compile time
+- 🔥 **Live Hot Module Replacement** - Edit JSON files, see changes instantly
+- 🚀 **Zero Config** - Works out-of-the-box with sensible defaults
+- 📚 **IntelliSense Support** - Full IDE autocomplete for all translation keys
+- 🛠️ **Multiple Usage Modes** - Use as [Vite plugin](#vite-plugin-usage), [CLI](#cli-usage), or [API](#programmatic-api)
+- ⚡ **High Performance** - Incremental updates and smart caching
 
-The demo showcases:
-
-- Type-safe translation keys with autocomplete
-- Multiple locale support (English, German, Node.js)
-- Nested translation keys
-- Pluralization examples
-- Interpolation with parameters
-
-### 🎯 Key Benefits
-
-- **Prevent Runtime i18n Errors**: Catch typos and invalid translation keys during TypeScript compilation
-- **IntelliSense Autocomplete**: Full IDE support with autocomplete for all translation keys
-- **Live Hot Module Replacement**: Update translations instantly without page reloads - see changes immediately!
-- **Multiple Usage Modes**: Vite plugin, standalone CLI, or programmatic API - choose what fits your workflow
-- **Flexible Project Structure**: Works with both flat file structure (`en.json`, `de.json`) and nested folders
-- **High Performance**: Incremental updates, caching, and parallel processing for large projects
-- **Zero Config**: Works out-of-the-box with sensible defaults for Vue 3 + Vite projects
-
-### 📖 Common Problems Solved
-
-Are you looking for solutions to these common Vue i18n issues?
-
-- ❌ **"How to get TypeScript autocomplete for vue-i18n translation keys?"** → This plugin auto-generates types
-- ❌ **"Catching invalid i18n keys at compile time"** → TypeScript will error on unknown keys
-- ❌ **"Type-safe vue-i18n with TypeScript"** → Full type safety with generated union types
-- ❌ **"Alternative to @intlify/unplugin-vue-i18n with better performance"** → Optimized for speed
-- ❌ **"Vue 3 i18n IntelliSense not working"** → Automatic IDE autocomplete support
-- ❌ **"Generate i18n types in CI/CD without running Vite"** → Standalone CLI available
+Perfect as a **modern alternative to @intlify/unplugin-vue-i18n** with better type safety and performance.
 
 ---
 
-## 📋 Table of Contents
+## 🚀 Quick Start
 
-- [Live Demo](#-live-demo)
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Type Safety in Action](#type-safety-in-action)
-- [Why Choose This Plugin?](#why-choose-this-plugin)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Different Usage Approaches](#-different-usage-approaches)
-    - [Vite Plugin Approach](#1%EF%B8%8F⃣-vite-plugin-approach-recommended-for-development)
-    - [Standalone CLI Approach](#2%EF%B8%8F⃣-standalone-cli-approach-recommended-for-cicd)
-    - [Programmatic API Approach](#3%EF%B8%8F⃣-programmatic-api-approach-recommended-for-custom-scripts)
-- [Configuration Options](#configuration--customization)
-- [Performance & Debugging](#performance--debugging)
-- [Migration from @intlify/unplugin-vue-i18n](#migration-guide)
-- [Examples & Use Cases](#-use-cases--examples)
-
----
-
-## ✨ Features
-
-- 🚀 **Seamless integration** with Vue 3 + Vite
-- 🔄 **Automatic generation** of TypeScript definitions from JSON locale files
-- 🎯 **Compile-time type safety**: Catch unknown translation key errors before runtime
-- 🔥 **Live Hot Module Replacement**: Edit JSON files and see translations update instantly without page reload
-- 🛠️ **Multiple usage modes**: Vite plugin, standalone CLI, or programmatic API
-- 📁 **Flexible file structure**: Works with both flat (`en.json`, `de.json`) and nested (`locales/en/messages.json`)
-  structures
-- 📦 **Deterministic output** with content hashing for consistent builds
-- ⚡ **Optimized for speed**: Smart caching and incremental updates mean fast regeneration even with hundreds of locale
-  files
-- 📊 **Performance insights**: Optional debug mode shows exactly how long operations take
-- 🎨 **CI/CD friendly**: Standalone CLI for type generation without running Vite
-- 🐛 **Debugging support**: Generate virtual modules as physical files for inspection
-
-## 🚀 Getting Started - Type-Safe Vue 3 i18n in 5 Minutes
-
-This quick start guide shows you how to add compile-time type safety to your Vue 3 + Vite i18n project. Perfect for
-migrating from @intlify/unplugin-vue-i18n or starting fresh with vue-i18n.
+Get type-safe Vue 3 i18n working in 5 minutes!
 
 ### 1. Install Dependencies
 
@@ -234,7 +175,7 @@ The plugin will automatically:
 any typos in translation keys at compile time, and changes to your locale files will appear instantly in your running
 app!
 
-### 🛡️ TypeScript Type Safety in Action - Catch Translation Errors at Compile Time
+## 🛡️ Type Safety in Action
 
 Once set up, TypeScript will validate all your translation keys and show errors for typos or invalid keys:
 
@@ -255,82 +196,41 @@ const invalid = t('nav.unknown')  // Caught before runtime!
 Your IDE will also provide autocomplete suggestions for all available translation keys, making development faster and
 preventing errors.
 
-### 📁 Flexible File Structure - Flat or Nested Locale Files
+---
 
-The plugin supports both flat file structure (simple projects) and nested folder structure (large-scale apps):
+## 📋 Documentation
 
-**Flat Structure** (simpler for small projects):
+### Table of Contents
 
-```
-src/
-  locales/
-    en.json
-    de.json
-    fr.json
-```
+- **Getting Started**
+    - [Installation](#installation)
+    - [Basic Configuration](#basic-configuration)
+    - [Migration from @intlify/unplugin-vue-i18n](#migration-guide)
 
-**Nested Structure** (better for organizing large translation sets):
+- **Usage Modes**
+    - [Vite Plugin Usage](#vite-plugin-usage) - For development with hot reload
+    - [CLI Usage](#cli-usage) - For CI/CD and pre-commit hooks
+    - [Programmatic API](#programmatic-api) - For custom build scripts
 
-```
-src/
-  locales/
-    en/
-      common.json
-      errors.json
-      navigation.json
-    de/
-      common.json
-      errors.json
-      navigation.json
-```
+- **Advanced Topics**
+    - [Configuration Options](#configuration-options)
+    - [File Structure Support](#file-structure-support)
+    - [Performance & Debugging](#performance--debugging)
+    - [Examples & Use Cases](#examples--use-cases)
 
-Both structures work automatically - the plugin detects your locale code from filenames and merges multiple files per
-locale when needed.
+---
 
-## 🏆 Why Choose This Plugin? - Better Alternative to @intlify/unplugin-vue-i18n
+## Installation
 
-This plugin is a modern alternative to `@intlify/unplugin-vue-i18n` with significant improvements in type safety,
-performance, and developer experience:
-
-**Performance**
-
-- **Incremental updates**: Only re-reads changed locale files, not all files on every change
-- **Debounced generation**: Prevents rebuild storms during rapid file edits (300ms with 2s max wait)
-- **Cached processing**: Translation data is normalized once and reused
-- **Parallel operations**: File operations run in parallel for faster processing
-
-**Type Safety**
-
-- **Compile-time validation**: TypeScript will show errors for unknown/mistyped translation keys
-- **Zero runtime errors**: Catch typos like `t('welcme')` instead of `t('welcome')` at build time
-- **Type-safe helper functions** (`useI18nTypeSafe()`) with full IDE autocomplete
-- **Autocomplete support**: Your IDE will suggest all available translation keys as you type
-
-**Developer Experience**
-
-- **Zero configuration**: Works out-of-the-box with sensible defaults
-- **Detailed logging**: Performance breakdowns show exactly where time is spent
-- **Virtual file debugging**: Optional generation of virtual module as physical file for inspection
-- **Hot reload**: Automatic type regeneration on locale file changes
-
-**Simplicity**
-
-- **Standalone implementation**: No dependency on `@intlify/unplugin-vue-i18n`
-- **Direct JSON processing**: Reads locale files directly without transform pipelines
-- **Flexible file organization**: Supports flat file structure (`src/locales/*.json`) for simpler projects
-- **Cleaner architecture**: Modular design with clear separation of concerns
-
-## Prerequisites
+### Prerequisites
 
 - Node.js >= 20.19.0 or >= 22.12.0
 - Vite >= 4.0.0 or >= 7.0.0
 - Vue I18n ^11.0.0 (for runtime i18n support)
 
-Ensure you have the above requirements in your project before using this plugin.
+### Install the Plugin
 
-## Installation
-
-Install the plugin **as a development dependency** using your package manager:
+Install **as a development dependency**:
 
 ```bash
 # Using npm
@@ -342,9 +242,9 @@ bun add -D unplugin-vue-i18n-dts-generation
 bun add vue-i18n
 ```
 
-## Usage
+## Basic Configuration
 
-Add the plugin in your Vite configuration (e.g. vite.config.ts):
+Add the plugin to your Vite configuration:
 
 ```typescript
 /// <reference types="./vite-env-override" />
@@ -405,12 +305,12 @@ In the above example, the `AllTranslationKeys` type (automatically generated) en
 key according to your locale messages. If you mistype a key, TypeScript will error, preventing runtime translation
 errors.
 
-## 🔧 Different Usage Approaches
+## Usage Modes
 
 This plugin provides **three different ways** to generate TypeScript types from your locale files, giving you
 flexibility for different workflows and use cases.
 
-### 1️⃣ Vite Plugin Approach (Recommended for Development)
+### Vite Plugin Usage
 
 The standard approach for development - types are automatically generated when you run your Vite dev server or build.
 
@@ -446,7 +346,7 @@ npm run build  # Types generated as part of build
 
 ---
 
-### 2️⃣ Standalone CLI Approach (Recommended for CI/CD)
+### CLI Usage
 
 Generate types using the CLI without starting Vite - perfect for CI/CD pipelines, pre-commit hooks, or manual
 regeneration.
@@ -564,7 +464,7 @@ Press Ctrl+C to exit
 
 ---
 
-### 3️⃣ Programmatic API Approach (Recommended for Custom Scripts)
+### Programmatic API
 
 Use the TypeScript/JavaScript API directly in your own Node.js scripts for maximum flexibility.
 
@@ -720,13 +620,11 @@ import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
 // ... your custom logic
 ```
 
-### Configuration & Customization
+## Configuration Options
 
-The plugin provides an options API to customize its behavior. You can pass an options object to
-`unpluginVueI18nDtsGeneration()` in your Vite config to override things like the locales path, output file location,
-base locale, etc.
+The plugin provides comprehensive options to customize its behavior.
 
-### Custom Options Example
+### Example Configuration
 
 ```typescript
 /// <reference types="./vite-env-override" />
@@ -809,6 +707,38 @@ All options are optional – the plugin comes with sensible defaults. Here are t
 Most users will only need to adjust `include`, `baseLocale`, `typesPath`, and `constsPath` for their specific project
 structure.
 
+## File Structure Support
+
+The plugin supports both flat and nested file structures:
+
+### Flat Structure (Simple Projects)
+
+```
+src/
+  locales/
+    en.json
+    de.json
+    fr.json
+```
+
+### Nested Structure (Large-Scale Apps)
+
+```
+src/
+  locales/
+    en/
+      common.json
+      errors.json
+      navigation.json
+    de/
+      common.json
+      errors.json
+      navigation.json
+```
+
+Both structures work automatically - the plugin detects your locale code from filenames and merges multiple files per
+locale when needed.
+
 ## Performance & Debugging
 
 ### Performance Optimizations
@@ -868,7 +798,7 @@ Benefits:
 - **Version Control**: Track changes to translations over time
 - **Inspection**: Easily inspect the full translation structure
 
-## 🔄 Migration Guide - Switching from @intlify/unplugin-vue-i18n
+## Migration Guide
 
 Migrating from `@intlify/unplugin-vue-i18n` to this plugin is straightforward and takes less than 5 minutes.
 
@@ -950,6 +880,32 @@ generate TypeScript types.
 - ✅ Pluralization and formatting work with vue-i18n runtime
 - ⚠️ YAML locale files need to be converted to JSON
 
+## Why Choose This Plugin?
+
+This plugin offers significant advantages over alternatives like `@intlify/unplugin-vue-i18n`:
+
+### Performance Benefits
+
+- **Incremental updates**: Only re-reads changed locale files
+- **Smart caching**: Translation data normalized once and reused
+- **Parallel processing**: File operations run concurrently
+- **Debounced generation**: Prevents rebuild storms during rapid edits
+
+### Type Safety Benefits
+
+- **Compile-time validation**: Catch errors before runtime
+- **Full IntelliSense**: IDE autocomplete for all translation keys
+- **Type-safe helpers**: Custom `useI18nTypeSafe()` composable
+- **Zero runtime errors**: Typos caught during development
+
+### Developer Experience
+
+- **Zero configuration**: Works out-of-the-box
+- **Live HMR**: See translation changes without page reload
+- **Multiple usage modes**: Vite plugin, CLI, or API
+- **Flexible file structure**: Supports flat and nested layouts
+- **Standalone implementation**: No complex dependencies
+
 ## 📚 Related Technologies & Resources
 
 This plugin works seamlessly with the Vue 3 ecosystem:
@@ -966,7 +922,7 @@ This plugin works seamlessly with the Vue 3 ecosystem:
 - [Vite Plugin Development](https://vitejs.dev/guide/api-plugin.html)
 - [Internationalization Best Practices](https://vue-i18n.intlify.dev/guide/essentials/syntax.html)
 
-## 💡 Use Cases & Examples
+## Examples & Use Cases
 
 ### When to Use This Plugin
 
