@@ -40,17 +40,17 @@ jobs:
       - name: Demo - Install dependencies
         working-directory: example
         run: bun install --frozen-lockfile
-  De
-- name: Demo - Lint
-  working-directory: example
+
+      - name: Demo - Lint
+        working-directory: example
         run: bun run lint
 
-- name: Demo - Type Check
-  working-directory: example
-  run: bun run typecheck
+      - name: Demo - Type Check
+        working-directory: example
+        run: bun run typecheck
 
-- name: Demo - Build
-  working-directory: example
+      - name: Demo - Build
+        working-directory: example
         run: bun run build-only
 
 
