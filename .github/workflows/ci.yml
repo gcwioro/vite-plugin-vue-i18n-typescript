@@ -10,7 +10,9 @@ permissions:
   contents: read
   pages: write
   id-token: write
-
+concurrency:
+  group: "ci-${{ github.ref }}"
+  cancel-in-progress: false
 jobs:
   build:
     name: Lint, Type-Check, and Test
@@ -61,14 +63,17 @@ jobs:
         run: bun run typecheck
 
       - name: Upload artifact
+        if: startsWith(github.ref, 'refs/heads/main/')
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload built demo site
           path: example/dist
 
       - name: Deploy to GitHub Pages
+        if: startsWith(github.ref, 'refs/heads/main/')
         id: deployment
         uses: actions/deploy-pages@v4
+
 
 
 

@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "dev:debug": "vite",
-    "build": "bun x i18n-generate-types && run-p typecheck \"vite build {@}\" --",
+    "build": "bun x vite-plugin-vue-i18n-types generate --base-locale en --verbose && run-p typecheck \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "bun run vite build",
     "typecheck": "vue-tsc --build",
