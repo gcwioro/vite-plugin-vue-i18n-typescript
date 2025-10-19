@@ -99,7 +99,8 @@ async function mergeExportCommand(args: string[]) {
     process.exit(1);
   }
 
-  const verbose = values.verbose ?? values.debug;
+  const debugEnabled = values.debug ?? values.verbose ?? false;
+  const verbose = debugEnabled;
   const rootDir = path.resolve(values.root || process.cwd());
 
   if (verbose) {
@@ -117,7 +118,7 @@ async function mergeExportCommand(args: string[]) {
     include: values.include,
     exclude: values.exclude,
     merge: values.merge as "deep" | "shallow" | undefined,
-    debug: values.debug,
+    debug: debugEnabled,
   });
 
   const fileManager = new FileManager({
@@ -137,7 +138,7 @@ async function mergeExportCommand(args: string[]) {
       hasErrorLogged: () => false,
       hasWarned: false,
     },
-    debug: values.debug ?? false,
+    debug: debugEnabled,
   });
 
   // Read and group locale files
@@ -198,6 +199,7 @@ async function mergeExportCommand(args: string[]) {
 }
 
 async function main() {
+  let debugEnabled = false;
   try {
     const args = process.argv.slice(2);
 
@@ -253,11 +255,13 @@ async function main() {
       allowPositionals: false,
     });
 
+    debugEnabled = values.debug ?? values.verbose ?? false;
+
     // Build options
     const options: GenerateTypesOptions = {
       root: values.root,
-      verbose: values.verbose ?? values.debug,
-      debug: values.debug,
+      verbose: debugEnabled,
+      debug: debugEnabled,
     };
 
     if (values.include) {
@@ -319,7 +323,7 @@ async function main() {
         console.error("\n❌ Generation failed:");
         if (error instanceof Error) {
           console.error(error.message);
-          if (options.debug || options.verbose) {
+          if (options.debug) {
             console.error("\nStack trace:");
             console.error(error.stack);
           }
@@ -348,7 +352,7 @@ async function main() {
       const rootDir = path.resolve(options.root || process.cwd());
       const includePatterns = options.include || ['src/**/locales/*.json'];
 
-      if (options.verbose || options.debug) {
+      if (options.debug) {
         console.log(`[watch] Root directory: ${rootDir}`);
         console.log(`[watch] Patterns: ${Array.isArray(includePatterns) ? includePatterns.join(', ') : includePatterns}`);
       }
@@ -356,7 +360,7 @@ async function main() {
       // Use the locale files from the initial generation
       const localeFilesFullPaths = lastResult ? lastResult.localeFiles : [];
 
-      if (options.verbose || options.debug) {
+      if (options.debug) {
         console.log(`[watch] Found ${localeFilesFullPaths.length} locale file(s) to watch`);
       }
 
@@ -399,7 +403,7 @@ async function main() {
           const watched = watcher.getWatched();
           const watchedCount = Object.values(watched).reduce((sum, files) => sum + files.length, 0);
 
-          if (options.verbose || options.debug) {
+          if (options.debug) {
             console.log(`[watch] Watcher ready. Watching ${watchedCount} file(s):`);
             for (const [dir, files] of Object.entries(watched)) {
               if (files.length > 0) {
@@ -441,7 +445,7 @@ async function main() {
     console.error("\n❌ Error generating types:");
     if (error instanceof Error) {
       console.error(error.message);
-      if (process.argv.includes("--debug") || process.argv.includes("--verbose")) {
+      if (debugEnabled) {
         console.error("\nStack trace:");
         console.error(error.stack);
       }

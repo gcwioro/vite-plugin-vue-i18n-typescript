@@ -20,6 +20,7 @@ export function vitePluginVueI18nTypes(
   // Plugin state
   let root = "";
   let logger: Logger;
+  let infoLogger: (message: string) => void = () => {};
   let isBuild = false;
   let emittedRefId: string | undefined;
   let groupedCache: Record<string, any> = {};
@@ -41,7 +42,7 @@ export function vitePluginVueI18nTypes(
 
     try {
       await fs.access(typesOutPath, fs.constants.W_OK);
-      logger.info(`Types file is accessible at: ${typesOutPath}`);
+      infoLogger(`Types file is accessible at: ${typesOutPath}`);
     } catch (e: unknown) {
       const err = e as Error;
       logger.warn(
@@ -62,7 +63,7 @@ export function vitePluginVueI18nTypes(
     // if (rel.startsWith("..")) return false;
 
     if (config.debug) {
-      logger.info(`Checking file change: ${abs}`);
+      infoLogger(`Checking file change: ${abs}`);
     }
 
     return true;
@@ -76,8 +77,13 @@ export function vitePluginVueI18nTypes(
       root = cfg.root;
       isBuild = cfg.command === "build";
       logger = cfg.logger;
+      infoLogger = config.debug
+        ? (message: string) => {
+            logger.info(message);
+          }
+        : () => {};
 
-      logger.info(`🔧 [configResolved] Hook triggered. Root: ${root}, Command: ${cfg.command}, isBuild: ${isBuild}`);
+      infoLogger(`🔧 [configResolved] Hook triggered. Root: ${root}, Command: ${cfg.command}, isBuild: ${isBuild}`);
 
       // Initialize core managers
       fileManager = new FileManager({
@@ -116,14 +122,14 @@ export function vitePluginVueI18nTypes(
     },
 
     async buildStart() {
-      logger.info(`🚀 [buildStart] Hook triggered. isBuild: ${isBuild}`);
+      infoLogger(`🚀 [buildStart] Hook triggered. isBuild: ${isBuild}`);
 
       // Perform initial rebuild
       const result = await rebuildManager.rebuild("buildStart", []);
       groupedCache = result.grouped;
       jsonTextCache = result.jsonText;
 
-      logger.info(`📊 [buildStart] Initial rebuild complete. Locales: ${Object.keys(groupedCache).join(", ")}`);
+      infoLogger(`📊 [buildStart] Initial rebuild complete. Locales: ${Object.keys(groupedCache).join(", ")}`);
 
       // Emit asset file in build mode if emitJson is enabled
       if (isBuild && config.emit.emitJson) {
@@ -132,7 +138,7 @@ export function vitePluginVueI18nTypes(
           name: config.emit.fileName,
           source: jsonTextCache,
         });
-        logger.info(`📦 [buildStart] Emitted asset: ${config.emit.fileName}, refId: ${emittedRefId}`);
+        infoLogger(`📦 [buildStart] Emitted asset: ${config.emit.fileName}, refId: ${emittedRefId}`);
       }
     },
 
@@ -141,7 +147,7 @@ export function vitePluginVueI18nTypes(
 
 
         if (id === config.virtualJsonId) {
-          logger.info(`🔍 [resolveId] Resolved virtual JSON module: ${id} -> ${config.resolvedVirtualJsonId}`);
+          infoLogger(`🔍 [resolveId] Resolved virtual JSON module: ${id} -> ${config.resolvedVirtualJsonId}`);
           return config.resolvedVirtualJsonId;
         }
 
@@ -157,7 +163,7 @@ export function vitePluginVueI18nTypes(
     load(id) {
       // Handle JSON virtual module
       if (id === config.resolvedVirtualJsonId) {
-        logger.info(`📄 [load] Loading virtual JSON module: ${id}, data size: ${jsonTextCache.length} bytes`);
+        infoLogger(`📄 [load] Loading virtual JSON module: ${id}, data size: ${jsonTextCache.length} bytes`);
         // Return as a JavaScript module, not JSON to avoid vite:json plugin
         return {
           code: `export default ${jsonTextCache}`,
@@ -167,7 +173,7 @@ export function vitePluginVueI18nTypes(
 
       // Handle main virtual module
       if (id === config.resolvedVirtualId) {
-        logger.info(`📄 [load] Loading virtual module: ${id}, isBuild: ${isBuild}`);
+        infoLogger(`📄 [load] Loading virtual module: ${id}, isBuild: ${isBuild}`);
         if (isBuild) {
           // Reference the virtual JSON module instead of embedding or using assets
           const code = createVirtualModuleCode({
@@ -176,7 +182,7 @@ export function vitePluginVueI18nTypes(
             baseLocale: config.baseLocale,
             virtualJsonId: config.virtualJsonId,
           });
-          logger.info(`📄 [load] Generated build code for virtual module, size: ${code.length} bytes`);
+          infoLogger(`📄 [load] Generated build code for virtual module, size: ${code.length} bytes`);
           return code;
         }
 
@@ -186,7 +192,7 @@ export function vitePluginVueI18nTypes(
           baseLocale: config.baseLocale,
           virtualJsonId: config.virtualJsonId,
         });
-        logger.info(`📄 [load] Generated dev code for virtual module, size: ${code.length} bytes`);
+        infoLogger(`📄 [load] Generated dev code for virtual module, size: ${code.length} bytes`);
         return code;
       }
 
@@ -194,11 +200,11 @@ export function vitePluginVueI18nTypes(
     },
 
     configureServer(server) {
-      logger.info(`🌐 [configureServer] Hook triggered. Setting up dev server...`);
+      infoLogger(`🌐 [configureServer] Hook triggered. Setting up dev server...`);
 
       // Set server reference for hot updates (use virtualId for module graph lookups)
       rebuildManager.setServer(server, config.virtualId);
-      logger.info(`🌐 [configureServer] Server reference set for virtual module: ${config.virtualId}`);
+      infoLogger(`🌐 [configureServer] Server reference set for virtual module: ${config.virtualId}`);
 
       const resolvePattern = (pattern: string): string | undefined => {
         if (!pattern) return undefined;
@@ -228,14 +234,14 @@ export function vitePluginVueI18nTypes(
       if (watcherPatterns.length > 0) {
         server.watcher.add(watcherPatterns);
         if (config.debug) {
-          logger.info(
+          infoLogger(
             `🌐 [configureServer] Registered watcher patterns: ${watcherPatterns.join(", ")}`
           );
         }
       }
 
       // Initial rebuild
-      logger.info(`🌐 [configureServer] Triggering initial rebuild...`);
+      infoLogger(`🌐 [configureServer] Triggering initial rebuild...`);
       rebuildManager.rebuild("initial", []).catch((e) => {
         server.config.logger.error(`Initial rebuild failed: ${String(e)}`);
       });
@@ -244,7 +250,7 @@ export function vitePluginVueI18nTypes(
       server.middlewares.use((req, res, next) => {
         if (!req.url) return next();
         if (req.url === config.devUrlPath) {
-          logger.info(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${jsonTextCache.length} bytes`);
+          infoLogger(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${jsonTextCache.length} bytes`);
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.end(jsonTextCache);
@@ -269,35 +275,35 @@ export function vitePluginVueI18nTypes(
     async hotUpdate({server, timestamp, type, modules, ...ctx}: HotUpdateOptions): Promise<
       Array<EnvironmentModuleNode> | void
     > {
-      logger.info(`🔥 [hotUpdate] Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`);
-      logger.info(`🔥 [hotUpdate] Environment: ${this.environment?.name}, modules count: ${modules.length}`);
+      infoLogger(`🔥 [hotUpdate] Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`);
+      infoLogger(`🔥 [hotUpdate] Environment: ${this.environment?.name}, modules count: ${modules.length}`);
 
       if (!isWatchedFile(ctx.file)) {
-        logger.info(`🔥 [hotUpdate] File not watched, skipping: ${ctx.file}`);
+        infoLogger(`🔥 [hotUpdate] File not watched, skipping: ${ctx.file}`);
         return;
       }
 
       if (config.debug) {
-        logger.info(`🔥 [hotUpdate] Debug: Module details for ${type}:`);
+        infoLogger(`🔥 [hotUpdate] Debug: Module details for ${type}:`);
         modules.forEach((m, i) => {
-          logger.info(`  Module ${i}: id=${m.id}, url=${m.url}, type=${m.type}`);
+          infoLogger(`  Module ${i}: id=${m.id}, url=${m.url}, type=${m.type}`);
         });
       }
 
       // Only process in client environment to avoid duplicate rebuilds
       if (this.environment?.name !== 'client') {
-        logger.info(`🔥 [hotUpdate] Skipping for non-client environment: ${this.environment?.name}`);
+        infoLogger(`🔥 [hotUpdate] Skipping for non-client environment: ${this.environment?.name}`);
         return;
       }
 
-      logger.info(`🔥 [hotUpdate] Triggering rebuild for file change...`);
+      infoLogger(`🔥 [hotUpdate] Triggering rebuild for file change...`);
       await rebuildManager.setEnv(this.environment);
 
       // Perform rebuild immediately (no debouncing needed in Vite 7)
       const result = await rebuildManager.rebuild("change", modules);
 
       // Send custom HMR event to update i18n messages directly
-      logger.info(`🔥 [hotUpdate] Sending custom i18n-update event with new messages`);
+      infoLogger(`🔥 [hotUpdate] Sending custom i18n-update event with new messages`);
 
       // Send the updated messages to the client
       server.ws.send({
