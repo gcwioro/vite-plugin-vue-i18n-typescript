@@ -11,6 +11,7 @@ import vue from "@vitejs/plugin-vue";
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '../example')
 const dtsPath = path.resolve(root, './src/vite-env-override.d.ts')
+const messagesTsPath = path.resolve(root, './src/messages.ts')
 describe('i18n type generation', () => {
   it('generates types for array keys', async () => {
     await fs.rm(dtsPath, {force: true, recursive: true}).catch(() => {
@@ -48,10 +49,10 @@ describe('i18n type generation', () => {
       expect(fileExists).toBe(true)
 
       const content = await fs.readFile(dtsPath, 'utf-8')
-      expect(content).toContain("'App.fruits.apple'")
-      expect(content).toContain("'App.fruits")
-      expect(content).toContain("'App.menu'")
-      expect(content).toContain("'en'")
+      expect(content).toContain('"App.fruits.apple"')
+      expect(content).toContain('"App.fruits')
+      expect(content).toContain('"App.menu"')
+      expect(content).toContain('export { messages, supportedLanguages, baseLocale };')
     } finally {
       await server.close()
     }
@@ -94,7 +95,11 @@ describe('i18n type generation', () => {
       while (Date.now() - startTime < maxWaitTime) {
         try {
           const content = await fs.readFile(dtsPath, 'utf-8')
-          if (content.includes("AllSupportedLanguages = readonly ['de', 'en', 'fr']")) {
+          const messagesContent = await fs.readFile(messagesTsPath, 'utf-8')
+          if (
+            content.includes('export { messages, supportedLanguages, baseLocale };') &&
+            messagesContent.includes('supportedLanguages = ["de", "en", "fr"] as const;')
+          ) {
             hasUpdated = true
             break
           }
