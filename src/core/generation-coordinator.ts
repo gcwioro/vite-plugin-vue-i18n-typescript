@@ -1,10 +1,11 @@
-import path from "node:path";
-import {promises as fs} from "node:fs";
-import type {Logger} from "vite";
-import {detectKeyConflicts, ensureDir, writeFileAtomic} from "../utils";
-import {toTypesContent, toVirtualModuleContent} from "../generator";
-import type {JSONObject, JSONValue} from "../types";
-import {CombinedMessages} from "./combined-messages";
+import path from 'node:path'
+import {promises as fs} from 'node:fs'
+import type {Logger} from 'vite'
+import {detectKeyConflicts, ensureDir, writeFileAtomic} from '../utils'
+import {generateModuleArtifacts, GeneratedModuleArtifacts} from '../generator'
+import type {JSONObject, JSONValue} from '../types'
+import {CombinedMessages} from './combined-messages'
+import type {ModuleArtifact} from '../generator'
 
 export interface GenerationOptions {
   typesPath: string;
@@ -15,7 +16,7 @@ export interface GenerationOptions {
   logger?: Logger;
 }
 
-interface GenerationResult {
+export interface GenerationResult {
   filesWritten: number;
   totalFiles: number;
   durations: {
@@ -24,58 +25,66 @@ interface GenerationResult {
     total: number;
   };
   filesList: string[];
+  runtime: ModuleArtifact;
+  messages: ModuleArtifact;
+  typesContent: string;
 }
 
-/**
- * Coordinates the generation of TypeScript definition files
- */
 export class GenerationCoordinator {
+  private lastArtifacts?: GeneratedModuleArtifacts
+
   constructor(private options: GenerationOptions) {
   }
 
-  /**
-   * Generate type definition and virtual module files
-   */
+  getRuntimeModule(): ModuleArtifact | undefined {
+    return this.lastArtifacts?.runtime
+  }
+
+  getMessagesModule(): ModuleArtifact | undefined {
+    return this.lastArtifacts?.messages
+  }
+
+  getTypesContent(): string | undefined {
+    return this.lastArtifacts?.typesContent
+  }
+
   async generateFiles(
     messages: Record<string, JSONValue>,
     rootDir: string
   ): Promise<GenerationResult> {
-    const start = performance.now();
+    const start = performance.now()
 
-    // Create CombinedMessages instance
     const combinedMessages = new CombinedMessages(
       messages as Record<string, JSONObject>,
       this.options.baseLocale
-    );
+    )
 
-    // Resolve output paths
     const typesOutPath = path.isAbsolute(this.options.typesPath)
       ? this.options.typesPath
-      : path.join(rootDir, this.options.typesPath);
+      : path.join(rootDir, this.options.typesPath)
 
     const virtualOutPath = this.options.virtualFilePath
       ? path.isAbsolute(this.options.virtualFilePath)
         ? this.options.virtualFilePath
         : path.join(rootDir, this.options.virtualFilePath)
-      : undefined;
+      : undefined
 
-    // Validate and generate content
-    const startContentGen = performance.now();
-    this.validateMessages(messages);
-    const {typesContent, virtualContent} = await this.generateContent(combinedMessages);
-    const contentGenDuration = Math.round(performance.now() - startContentGen);
+    const startContentGen = performance.now()
+    this.validateMessages(messages)
+    const artifacts = this.generateContent(combinedMessages)
+    const contentGenDuration = Math.round(performance.now() - startContentGen)
 
-    // Write files
-    const startWrite = performance.now();
-    const filesWritten = await this.writeFiles(typesOutPath, virtualOutPath, typesContent, virtualContent);
-    const writeDuration = Math.round(performance.now() - startWrite);
+    this.lastArtifacts = artifacts
 
-    const totalDuration = Math.round(performance.now() - start);
+    const startWrite = performance.now()
+    const filesWritten = await this.writeFiles(typesOutPath, virtualOutPath, artifacts)
+    const writeDuration = Math.round(performance.now() - startWrite)
 
-    // Build file list for logging
-    const filesList = [path.relative(rootDir, typesOutPath)];
+    const totalDuration = Math.round(performance.now() - start)
+
+    const filesList = [path.relative(rootDir, typesOutPath)]
     if (virtualOutPath) {
-      filesList.push(path.relative(rootDir, virtualOutPath));
+      filesList.push(path.relative(rootDir, virtualOutPath))
     }
 
     return {
@@ -87,88 +96,63 @@ export class GenerationCoordinator {
         total: totalDuration,
       },
       filesList,
-    };
+      runtime: artifacts.runtime,
+      messages: artifacts.messages,
+      typesContent: artifacts.typesContent,
+    }
   }
 
-  /**
-   * Validate messages and log conflicts
-   */
   private validateMessages(messages: Record<string, JSONValue>): void {
-    const conflicts = detectKeyConflicts(messages);
+    const conflicts = detectKeyConflicts(messages)
     if (conflicts.length > 0) {
       this.options.logger?.warn('⚠️  Conflicting translation keys detected:', {
         timestamp: true,
-      });
+      })
       for (const conflict of conflicts) {
-        this.options.logger?.warn(`   ${conflict}`, {timestamp: true});
+        this.options.logger?.warn(`   ${conflict}`, {timestamp: true})
       }
     }
   }
 
-  /**
-   * Generate file content
-   */
-  private async generateContent(combinedMessages: CombinedMessages<string, JSONObject>): Promise<{
-    typesContent: string;
-    virtualContent?: string;
-  }> {
-    const typesContent = toTypesContent({
+  private generateContent(combinedMessages: CombinedMessages<string, JSONObject>): GeneratedModuleArtifacts {
+    return generateModuleArtifacts({
       combinedMessages,
       banner: this.options.banner,
       sourceId: this.options.sourceId,
-    });
-
-    const virtualContent = this.options.virtualFilePath
-      ? toVirtualModuleContent({
-        combinedMessages,
-        banner: this.options.banner,
-      })
-      : undefined;
-
-    return {typesContent, virtualContent};
+    })
   }
 
-  /**
-   * Write files to disk (only if content changed)
-   */
   private async writeFiles(
     typesPath: string,
     virtualPath: string | undefined,
-    typesContent: string,
-    virtualContent: string | undefined
+    artifacts: GeneratedModuleArtifacts
   ): Promise<number> {
-    let filesWritten = 0;
+    let filesWritten = 0
 
-    // Write types file
-    await ensureDir(typesPath);
-    if (await this.shouldWriteFile(typesPath, typesContent)) {
-      await writeFileAtomic(typesPath, typesContent);
-      filesWritten++;
+    await ensureDir(typesPath)
+    if (await this.shouldWriteFile(typesPath, artifacts.typesContent)) {
+      await writeFileAtomic(typesPath, artifacts.typesContent)
+      filesWritten++
     }
 
-    // Write virtual module file if specified
-    if (virtualPath && virtualContent) {
-      await ensureDir(virtualPath);
+    if (virtualPath) {
+      await ensureDir(virtualPath)
+      const virtualContent = `${artifacts.runtime.js}\n`
       if (await this.shouldWriteFile(virtualPath, virtualContent)) {
-        await writeFileAtomic(virtualPath, virtualContent);
-        filesWritten++;
+        await writeFileAtomic(virtualPath, virtualContent)
+        filesWritten++
       }
     }
 
-    return filesWritten;
+    return filesWritten
   }
 
-  /**
-   * Check if file should be written (content changed)
-   */
   private async shouldWriteFile(filePath: string, newContent: string): Promise<boolean> {
     try {
-      const existing = await fs.readFile(filePath, 'utf8');
-      return existing !== newContent;
+      const existing = await fs.readFile(filePath, 'utf8')
+      return existing !== newContent
     } catch {
-      return true; // File doesn't exist, should write
+      return true
     }
   }
 }
-
-

@@ -1,0 +1,290 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`template rendering > renders messages and runtime modules > messages-ts 1`] = `
+"/* eslint-disable */
+/* prettier-ignore */
+// @ts-nocheck
+// AUTO-GENERATED FILE. DO NOT EDIT.
+// Content-Hash: b1586b08
+export const baseLocale = "en" as const
+
+export const messages = {
+  "en": {
+    "greeting": "Hello",
+    "nested": {
+      "welcome": "Welcome"
+    }
+  },
+  "de": {
+    "greeting": "Hallo",
+    "nested": {
+      "welcome": "Willkommen"
+    }
+  }
+} as const
+
+export const supportedLanguages = ['de', 'en'] as const
+
+export type AllSupportedLanguages = readonly ['de', 'en']
+export type SupportedLanguage = AllSupportedLanguages[number]
+
+export type AllTranslationKeys = 'greeting' | 'nested.welcome'
+
+export type MessageSchemaGen = (typeof messages)[typeof baseLocale]
+export type AllTranslations = typeof messages
+export type MessagesType = AllTranslations
+
+export default messages
+"
+`;
+
+exports[`template rendering > renders messages and runtime modules > runtime-ts 1`] = `
+"/* eslint-disable */
+/* prettier-ignore */
+// @ts-nocheck
+// AUTO-GENERATED FILE. DO NOT EDIT.
+// Content-Hash: b1586b08
+import {createI18n, useI18n} from 'vue-i18n'
+import type {Composer, DefineDateTimeFormat, DefineNumberFormat, FallbackLocale, I18n, I18nOptions, Locale, NamedValue, TranslateOptions, UseI18nOptions} from 'vue-i18n'
+import messages, {baseLocale, supportedLanguages} from './messages.ts'
+import type {AllTranslationKeys, MessageSchemaGen, MessagesType, SupportedLanguage} from './messages.ts'
+
+const FALLBACK_LOCALES = supportedLanguages.reduce<Record<SupportedLanguage, SupportedLanguage[]>>((acc: Record<SupportedLanguage, SupportedLanguage[]>, locale: SupportedLanguage) => {
+  const chain = new Set<SupportedLanguage>()
+  chain.add(locale)
+  if (locale !== "en") {
+    chain.add("en" as SupportedLanguage)
+  }
+  acc[locale] = Array.from(chain)
+  return acc
+}, {} as Record<SupportedLanguage, SupportedLanguage[]>)
+
+type WritableMessages = {
+  -readonly [Locale in keyof typeof messages]: {
+    -readonly [Key in keyof typeof messages[Locale]]: typeof messages[Locale][Key];
+  };
+};
+
+const mutableMessages = messages as WritableMessages;
+
+function withNumericSecondArg<Fn extends (...args: any[]) => any>(fn: Fn): Fn {
+  return ((...args: Parameters<Fn>) => {
+    const nextArgs = [...args] as unknown[]
+    if (nextArgs.length >= 2) {
+      const second = nextArgs[1]
+      const numeric = typeof second === 'number'
+        ? second
+        : typeof second === 'string'
+          ? Number.parseFloat(second)
+          : Number.NaN
+      if (Number.isFinite(numeric)) {
+        const third = nextArgs[2]
+        const named = third && typeof third === 'object' && !Array.isArray(third)
+          ? {...third as Record<string, unknown>}
+          : {}
+        named.count = numeric
+        named.n = numeric
+        nextArgs[2] = named
+      }
+    }
+    return fn(...nextArgs as Parameters<Fn>) as ReturnType<Fn>
+  }) as Fn
+}
+
+export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>;
+
+export interface I18nCustom {
+  (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string;
+  (key: AllTranslationKeys, options?: TranslateOptions): string;
+  (key: AllTranslationKeys, defaultMsg?: string): string;
+  (key: AllTranslationKeys, defaultMsg: string, options?: TranslateOptions): string;
+  (key: AllTranslationKeys, named: NamedValue, defaultMsg?: string): string;
+  (key: AllTranslationKeys, named: NamedValue, plural?: number): string;
+  (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions): string;
+  (key: AllTranslationKeys, plural: number, named: NamedValue): string;
+  (key: AllTranslationKeys, plural: number, defaultMsg: string): string;
+}
+
+type DateTimeSchema = Record<string, DefineDateTimeFormat>;
+type NumberSchema = Record<string, DefineNumberFormat>;
+type SchemaDefinition = {
+  message: MessageSchemaGen;
+  datetime: DateTimeSchema;
+  number: NumberSchema;
+};
+type DateTimeFormatsMap = Record<SupportedLanguage, DateTimeSchema>;
+type NumberFormatsMap = Record<SupportedLanguage, NumberSchema>;
+
+type VueI18nInstance = I18n<MessagesType, DateTimeFormatsMap, NumberFormatsMap, SupportedLanguage, false>;
+type ComposerInstance = Composer<MessagesType, DateTimeFormatsMap, NumberFormatsMap, SupportedLanguage>;
+
+export type I18nConfigOptions = I18nOptions<SchemaDefinition, SupportedLanguage>;
+type UseI18nSchema = UseI18nOptions<SchemaDefinition, SupportedLanguage>;
+
+export type UseI18nTypesafeReturn = Omit<ComposerInstance, 't'> & { t: I18nCustom };
+
+export function createI18nInstance<T extends Partial<I18nConfigOptions>>(options?: T) {
+  const locale = options?.locale ?? (typeof navigator !== 'undefined' && navigator.language ? navigator.language : baseLocale);
+  const typedOptions: I18nConfigOptions = {
+    legacy: false,
+    fallbackLocale: FALLBACK_LOCALES as FallbackLocale,
+    locale: locale as SupportedLanguage,
+    messages,
+    ...(options ?? {}),
+  };
+  const i18n = createI18n(typedOptions as I18nConfigOptions & { legacy: false; messages: MessagesType });
+  const instance = i18n as unknown as VueI18nInstance;
+  (globalThis as Record<string, unknown>).i18nApp = instance;
+  return instance;
+}
+
+export function createI18nInstancePlugin<T extends Partial<I18nConfigOptions>>(options?: T): VueI18nInstance {
+  return createI18nInstance(options);
+}
+
+export function useI18nTypeSafe(options?: Omit<UseI18nSchema, 'messages'>): UseI18nTypesafeReturn {
+  const composer = useI18n({
+    ...(options ?? {}),
+    messages,
+  } as UseI18nSchema) as unknown as ComposerInstance;
+  const {t, ...rest} = composer;
+  return {
+    ...rest,
+    t: withNumericSecondArg(t),
+  };
+}
+
+export async function load() {
+  return messages
+}
+
+export {messages, supportedLanguages};
+export {baseLocale};
+
+type ImportMetaHot = {
+  hot?: {
+    on: (event: string, cb: (payload: {messages: Partial<typeof messages>}) => void) => void;
+  };
+};
+
+function applyMessagesUpdate(next: Partial<typeof messages>) {
+  for (const [locale, value] of Object.entries(next)) {
+    if (!value) continue
+    ;(mutableMessages as Record<string, unknown>)[locale] = value
+  }
+}
+
+const hot = (import.meta as ImportMetaHot).hot
+if (hot) {
+  hot.on('i18n-update', (data: {messages: Partial<typeof messages>}) => {
+    applyMessagesUpdate(data.messages)
+    const instance = (globalThis as Record<string, unknown>).i18nApp as
+      | VueI18nInstance
+      | undefined
+    if (instance) {
+      for (const [locale, value] of Object.entries(data.messages)) {
+        if (value) {
+          instance.global.setLocaleMessage(locale, value as MessageSchemaGen)
+        }
+      }
+      const current = instance.global.locale.value
+      instance.global.locale.value = current
+    }
+  })
+}
+
+export default messages;
+"
+`;
+
+exports[`template rendering > renders messages and runtime modules > types-dts 1`] = `
+"/* eslint-disable */
+/* prettier-ignore */
+// @ts-nocheck
+// AUTO-GENERATED FILE. DO NOT EDIT.
+// Content-Hash: b1586b08
+
+import type { Composer, DefineDateTimeFormat, DefineNumberFormat, I18n, I18nOptions, NamedValue, TranslateOptions, UseI18nOptions } from 'vue-i18n';
+import messages, { baseLocale, supportedLanguages } from './messages.js';
+import type { AllTranslationKeys, MessageSchemaGen, MessagesType, SupportedLanguage } from './messages.js';
+
+declare module 'virtual:vue-i18n-types' {
+  export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>;
+  export interface I18nCustom {
+      (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string;
+      (key: AllTranslationKeys, options?: TranslateOptions): string;
+      (key: AllTranslationKeys, defaultMsg?: string): string;
+      (key: AllTranslationKeys, defaultMsg: string, options?: TranslateOptions): string;
+      (key: AllTranslationKeys, named: NamedValue, defaultMsg?: string): string;
+      (key: AllTranslationKeys, named: NamedValue, plural?: number): string;
+      (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions): string;
+      (key: AllTranslationKeys, plural: number, named: NamedValue): string;
+      (key: AllTranslationKeys, plural: number, defaultMsg: string): string;
+  }
+  type DateTimeSchema = Record<string, DefineDateTimeFormat>;
+  type NumberSchema = Record<string, DefineNumberFormat>;
+  type SchemaDefinition = {
+      message: MessageSchemaGen;
+      datetime: DateTimeSchema;
+      number: NumberSchema;
+  };
+  type DateTimeFormatsMap = Record<SupportedLanguage, DateTimeSchema>;
+  type NumberFormatsMap = Record<SupportedLanguage, NumberSchema>;
+  type VueI18nInstance = I18n<MessagesType, DateTimeFormatsMap, NumberFormatsMap, SupportedLanguage, false>;
+  type ComposerInstance = Composer<MessagesType, DateTimeFormatsMap, NumberFormatsMap, SupportedLanguage>;
+  export type I18nConfigOptions = I18nOptions<SchemaDefinition, SupportedLanguage>;
+  type UseI18nSchema = UseI18nOptions<SchemaDefinition, SupportedLanguage>;
+  export type UseI18nTypesafeReturn = Omit<ComposerInstance, 't'> & {
+      t: I18nCustom;
+  };
+  export function createI18nInstance<T extends Partial<I18nConfigOptions>>(options?: T): VueI18nInstance;
+  export function createI18nInstancePlugin<T extends Partial<I18nConfigOptions>>(options?: T): VueI18nInstance;
+  export function useI18nTypeSafe(options?: Omit<UseI18nSchema, 'messages'>): UseI18nTypesafeReturn;
+  export function load(): Promise<{
+      readonly en: {
+          readonly greeting: "Hello";
+          readonly nested: {
+              readonly welcome: "Welcome";
+          };
+      };
+      readonly de: {
+          readonly greeting: "Hallo";
+          readonly nested: {
+              readonly welcome: "Willkommen";
+          };
+      };
+  }>;
+  export { messages, supportedLanguages };
+  export { baseLocale };
+  export default messages;
+
+}
+
+declare module 'virtual:vue-i18n-types/messages' {
+  export const baseLocale: "en";
+  export const messages: {
+      readonly en: {
+          readonly greeting: "Hello";
+          readonly nested: {
+              readonly welcome: "Welcome";
+          };
+      };
+      readonly de: {
+          readonly greeting: "Hallo";
+          readonly nested: {
+              readonly welcome: "Willkommen";
+          };
+      };
+  };
+  export const supportedLanguages: readonly ["de", "en"];
+  export type AllSupportedLanguages = readonly ['de', 'en'];
+  export type SupportedLanguage = AllSupportedLanguages[number];
+  export type AllTranslationKeys = 'greeting' | 'nested.welcome';
+  export type MessageSchemaGen = (typeof messages)[typeof baseLocale];
+  export type AllTranslations = typeof messages;
+  export type MessagesType = AllTranslations;
+  export default messages;
+
+}
+"
+`;

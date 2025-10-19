@@ -23,7 +23,7 @@ describe('toTypesContent', () => {
     expect(result).toContain("export type AllTranslationKeys = 'hello' | 'world'")
     expect(result).toContain('export type AllSupportedLanguages = readonly')
     expect(result).toContain('export type SupportedLanguage = AllSupportedLanguages[number]')
-    expect(result).toContain('export type I18nMessages =')
+    expect(result).toContain('export type MessagesType = AllTranslations')
   })
 
   it('should handle nested message structure', () => {
