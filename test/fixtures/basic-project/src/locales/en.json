@@ -1,0 +1,17 @@
+{
+  "App": {
+    "fruits": {
+      "label": "You have no {fruit} | You have one {fruit} | You have {count} {fruit}",
+      "apple": "apple | apples",
+      "banana": "banana | bananas"
+    },
+    "menu": [
+      "Home",
+      "About",
+      "Contact"
+    ]
+  },
+  "Greeting": {
+    "message": "Hello TypeScript friends!"
+  }
+}
