@@ -1,4 +1,4 @@
-/// <reference types="./src/vite-env-override" />
+/// <reference types="./src/vite-env-override.d.ts" />
 /// <reference types="vite/client" />
 
 import {join} from "path";
@@ -9,9 +9,10 @@ import vue from '@vitejs/plugin-vue'
 import {defineConfig} from 'vite'
 import viteTsChecker from 'vite-plugin-checker';
 import {viteSingleFile} from "vite-plugin-singlefile"
-import vitePluginVueI18nTypes from "vite-plugin-vue-i18n-typescript";
+
+// import vitePluginVueI18nTypes from "vite-plugin-vue-i18n-typescript";
 // @xts-nocheck
-// import vitePluginVueI18nTypes from "../src/plugin.ts";
+import vitePluginVueI18nTypes from "../src/plugin.ts";
 
 export default defineConfig({
   resolve: {
@@ -30,6 +31,7 @@ export default defineConfig({
     // @ts-expect-error Only because of import of ../src/..
     vitePluginVueI18nTypes({
       baseLocale: 'en',
+      // virtualFilePath: 'src/extensions/i18n.virtual.gen.js',
       debug: true,
       // virtualFilePath: './src/i18n/virtual.js',
       emit: {emitJson: false, inlineDataInBuild: true}

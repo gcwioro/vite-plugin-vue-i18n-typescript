@@ -16,6 +16,7 @@ export interface NormalizedConfig {
   devUrlPath: string;
 
 
+
   inlineDataInBuild: boolean;
   emit: {
     fileName: string;
@@ -79,6 +80,8 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): Normal
     virtualId: sourceId,
     resolvedVirtualId: "\0" + sourceId,
     virtualJsonId: sourceId + '/messages',
+    // resolvedLanguagesVirtualId: "\0" + sourceId,
+    // virtualLanguagesId: sourceId + '/supportedLanguages',
     resolvedVirtualJsonId: "\0" + sourceId + '/messages',
   };
 

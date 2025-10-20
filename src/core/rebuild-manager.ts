@@ -2,7 +2,8 @@ import {DevEnvironment, EnvironmentModuleNode, Logger, ViteDevServer} from "vite
 import {canonicalize} from "../utils";
 import type {JSONValue} from "../types";
 import {FileManager} from "./file-manager";
-import {GenerationCoordinator} from "./generation-coordinator";
+import {GenerationCoordinator, GenerationOptions} from "./generation-coordinator";
+import {CombinedMessages} from "./combined-messages";
 
 const DEBOUNCE_MS = 300;
 const MAX_WAIT_MS = 2000;
@@ -11,11 +12,11 @@ export interface RebuildManagerOptions {
   fileManager: FileManager;
   generationCoordinator: GenerationCoordinator;
   root: string;
+  config: GenerationOptions,
   logger?: Logger;
   onRebuildComplete?: (cache: {
     modules?: EnvironmentModuleNode[];
-    grouped: Record<string, any>;
-    jsonText: string;
+    messages: CombinedMessages
   }) => void;
 }
 
@@ -71,8 +72,8 @@ export class RebuildManager {
    * Perform full rebuild
    */
   async rebuild(reason: string, modules: EnvironmentModuleNode[]): Promise<{
-    grouped: Record<string, any>;
-    jsonText: string;
+    messages: CombinedMessages,
+
     modules: EnvironmentModuleNode[];
   }> {
     const startRebuild = performance.now();
@@ -89,13 +90,15 @@ export class RebuildManager {
 
     // Canonicalize once and cache
     const startCanonical = performance.now();
+
     const groupedCache = canonicalize(grouped as JSONValue) as Record<string, any>;
-    const jsonTextCache = JSON.stringify(groupedCache);
+    const messagesCached = new CombinedMessages(groupedCache, this.options.config.baseLocale)
+    // const jsonTextCache = JSON.stringify(groupedCache);
     const canonicalDuration = Math.round(performance.now() - startCanonical);
 
     // Generate TypeScript definition files
     const generationResult = await this.options.generationCoordinator.generateFiles(
-      groupedCache,
+      messagesCached,
       this.options.root
     );
 
@@ -111,9 +114,9 @@ export class RebuildManager {
 
     // Notify listeners
     this.options.onRebuildComplete?.({
-      grouped: groupedCache,
+      messages: messagesCached,
       modules: modulesResult,
-      jsonText: jsonTextCache,
+
     });
     this.options.logger?.info(
       `✅ Rebuild complete (${reason}) in ${totalRebuildDuration}ms (canonicalize: ${canonicalDuration}ms) | Locales: ${Object.keys(groupedCache).join(", ")}`
@@ -122,8 +125,7 @@ export class RebuildManager {
 
     return {
       modules: modulesResult ?? [],
-      grouped: groupedCache,
-      jsonText: jsonTextCache,
+      messages: messagesCached,
     };
   }
 

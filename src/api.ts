@@ -146,11 +146,7 @@ export async function generateI18nTypes(
   });
 
   const generationCoordinator = new GenerationCoordinator({
-    typesPath: config.typesPath,
-    virtualFilePath: config.virtualFilePath,
-    baseLocale: config.baseLocale,
-    banner: config.banner,
-    sourceId: config.sourceId,
+    ...config,
     logger,
   });
 
@@ -158,12 +154,13 @@ export async function generateI18nTypes(
   let lastFiles: string[] = [];
 
   const rebuildManager = new RebuildManager({
+    config: {...config, logger},
     fileManager,
     generationCoordinator,
     root,
     logger,
     onRebuildComplete: (cache) => {
-      groupedCache = cache.grouped;
+      groupedCache = cache.messages;
       lastFiles = fileManager.getLastFiles();
     },
   });
@@ -171,7 +168,7 @@ export async function generateI18nTypes(
   // Perform generation
   const result = await rebuildManager.rebuild("api", []);
 
-  groupedCache = result.grouped;
+  groupedCache = result.messages;
   lastFiles = fileManager.getLastFiles();
 
   const locales = Object.keys(groupedCache).filter((l) => l !== "js-reserved");

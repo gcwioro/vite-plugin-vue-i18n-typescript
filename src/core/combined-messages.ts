@@ -9,6 +9,7 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
   public readonly baseLocaleMessages: TMessages;
   public readonly languages: TLanguages[];
   public readonly contentId: string;
+  public readonly keysId: string;
 
 
   public constructor(public messages: Record<TLanguages, TMessages>, public baseLocale: keyof typeof messages) {
@@ -23,6 +24,7 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
     ) as TLanguages[];
 
     this.contentId = fnv1a32(this.messagesJsonString);
+    this.keysId = fnv1a32(this.keys.join('|'));
   }
 
   public languagesTuple(): string {

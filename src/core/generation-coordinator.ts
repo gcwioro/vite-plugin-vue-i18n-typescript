@@ -5,14 +5,10 @@ import {detectKeyConflicts, ensureDir, writeFileAtomic} from "../utils";
 import {toTypesContent, toVirtualModuleContent} from "../generator";
 import type {JSONObject, JSONValue} from "../types";
 import {CombinedMessages} from "./combined-messages";
+import {NormalizedConfig} from "./config";
 
-export interface GenerationOptions {
-  typesPath: string;
-  virtualFilePath?: string;
-  baseLocale: string;
-  banner?: string;
-  sourceId: string;
-  logger?: Logger;
+export interface GenerationOptions extends NormalizedConfig {
+  logger: Logger;
 }
 
 interface GenerationResult {
@@ -37,16 +33,13 @@ export class GenerationCoordinator {
    * Generate type definition and virtual module files
    */
   async generateFiles(
-    messages: Record<string, JSONValue>,
+    messages: CombinedMessages,
     rootDir: string
   ): Promise<GenerationResult> {
     const start = performance.now();
 
     // Create CombinedMessages instance
-    const combinedMessages = new CombinedMessages(
-      messages as Record<string, JSONObject>,
-      this.options.baseLocale
-    );
+
 
     // Resolve output paths
     const typesOutPath = path.isAbsolute(this.options.typesPath)
@@ -61,8 +54,8 @@ export class GenerationCoordinator {
 
     // Validate and generate content
     const startContentGen = performance.now();
-    this.validateMessages(messages);
-    const {typesContent, virtualContent} = await this.generateContent(combinedMessages);
+    this.validateMessages(messages.messages);
+    const {typesContent, virtualContent} = await this.generateContent(messages);
     const contentGenDuration = Math.round(performance.now() - startContentGen);
 
     // Write files
@@ -114,15 +107,12 @@ export class GenerationCoordinator {
   }> {
     const typesContent = toTypesContent({
       combinedMessages,
-      banner: this.options.banner,
-      sourceId: this.options.sourceId,
+      config: this.options,
+
     });
 
     const virtualContent = this.options.virtualFilePath
-      ? toVirtualModuleContent({
-        combinedMessages,
-        banner: this.options.banner,
-      })
+      ? toVirtualModuleContent({config: this.options}, combinedMessages)
       : undefined;
 
     return {typesContent, virtualContent};
@@ -138,13 +128,15 @@ export class GenerationCoordinator {
     virtualContent: string | undefined
   ): Promise<number> {
     let filesWritten = 0;
+    this.options.logger.info(`Types Path: ${typesPath}, Virtual Path: ${virtualPath}`);
+
 
     // Write types file
     await ensureDir(typesPath);
-    if (await this.shouldWriteFile(typesPath, typesContent)) {
+    // if (await this.shouldWriteFile(typesPath, typesContent)) {
       await writeFileAtomic(typesPath, typesContent);
       filesWritten++;
-    }
+    // }
 
     // Write virtual module file if specified
     if (virtualPath && virtualContent) {

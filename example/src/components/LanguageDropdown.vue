@@ -13,18 +13,27 @@
         {{ lang }}
       </option>
     </select>
+    <!--    {{metaX}}-->
+    <!--{{meta}}-->
+
+    {{ supportedLanguagess }}
   </div>
 </template>
 
 <script setup lang="ts">
 
-import {useI18nApp, useI18nTypeSafe} from "virtual:vue-i18n-types";
-import type {SupportedLanguage} from "virtual:vue-i18n-types/messages";
-import {ref, watch} from "vue";
+import {
+  useI18nApp,
+  useI18nTypeSafe,
+  supportedLanguages,
+  supportedLanguagess
+} from "virtual:vue-i18n-types";
+import {type  SupportedLanguage} from "virtual:vue-i18n-types/messages";
+// import metaX from "virtual:vue-i18n-types/supportedLanguages";
+import {ref, watch, watchEffect} from "vue";
 
 const i18n = useI18nApp()
 const {t} = useI18nTypeSafe()
-
 
 const selectedLanguage = ref<SupportedLanguage>('en')
 
@@ -34,5 +43,6 @@ watch(selectedLanguage, locale => {
   }
 }, {immediate: true})
 
+watchEffect(() => console.log("Current locale:", i18n.locale.value, `Available locales: ${i18n.availableLocales.join(',')}`, `Found by plugin locales:${supportedLanguages.join(',')}`))
 
 </script>
