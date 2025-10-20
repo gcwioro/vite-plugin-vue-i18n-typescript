@@ -15,9 +15,9 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
     this.messagesJsonString = JSON.stringify(messages);
 
     this.keys = getFinalKeys(messages, baseLocale)
-    this.baseLocaleMessages = messages?.[baseLocale] ?? Object.values(baseLocale)[0] ?? {} as TMessages;
+    this.baseLocaleMessages = messages?.[baseLocale] ?? Object.values(messages)[0] ?? {} as TMessages;
 
-    const languages = Object.keys(messages).filter(l => l !== 'js-reserved');
+    const languages = Object.keys(messages);
     this.languages = Array.from(new Set(languages)).sort((a, b) =>
       a < b ? -1 : a > b ? 1 : 0
     ) as TLanguages[];
