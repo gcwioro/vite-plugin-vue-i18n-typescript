@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "vite-plugin-vue-i18n-types",
+      "name": "vite-plugin-vue-i18n-typescript",
       "dependencies": {
         "fast-glob": "^3.3.3",
       },

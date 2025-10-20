@@ -1,11 +1,11 @@
-# vite-plugin-vue-i18n-types
+# vite-plugin-vue-i18n-typescript
 
-[![npm version](https://img.shields.io/npm/v/vite-plugin-vue-i18n-types.svg)](https://www.npmjs.com/package/vite-plugin-vue-i18n-types)
+[![npm version](https://img.shields.io/npm/v/vite-plugin-vue-i18n-typescript.svg)](https://www.npmjs.com/package/vite-plugin-vue-i18n-typescript)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Stop shipping broken translations!** Get compile-time type safety for your Vue i18n JSON files.
 
-🎮 **[Live Demo](https://gcwioro.github.io/vite-plugin-vue-i18n-types/)** | 📚 **[Documentation](#documentation)** |
+🎮 **[Live Demo](https://gcwioro.github.io/vite-plugin-vue-i18n-typescript/)** | 📚 **[Documentation](#documentation)** |
 🚀 **[Quick Start](#quick-start)**
 
 ## Why This Plugin?
@@ -35,7 +35,7 @@ t('nav.home')  // IDE shows all available keys
 
 ```bash
 npm install vue-i18n
-npm install -D vite-plugin-vue-i18n-types
+npm install -D vite-plugin-vue-i18n-typescript
 ```
 
 ### 2. Add to Vite
@@ -44,7 +44,7 @@ npm install -D vite-plugin-vue-i18n-types
 /// <reference types="./vite-env-override" />
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import i18nTypes from 'vite-plugin-vue-i18n-types'
+import i18nTypes from 'vite-plugin-vue-i18n-typescript'
 
 export default defineConfig({
   plugins: [
@@ -100,12 +100,12 @@ plugins: [i18nTypes()]  // Auto-generates types during dev
 
 ### 2. CLI Tool
 ```bash
-npx vite-plugin-vue-i18n-types generate
+npx vite-plugin-vue-i18n-typescript generate
 ```
 
 ### 3. Programmatic API
 ```typescript
-import {generateI18nTypes} from 'vite-plugin-vue-i18n-types/api'
+import {generateI18nTypes} from 'vite-plugin-vue-i18n-typescript/api'
 
 await generateI18nTypes({baseLocale: 'en'})
 ```
@@ -158,11 +158,11 @@ Takes 2 minutes:
 ```diff
 # 1. Replace package
 - npm uninstall @intlify/unplugin-vue-i18n
-+ npm install -D vite-plugin-vue-i18n-types
++ npm install -D vite-plugin-vue-i18n-typescript
 
 # 2. Update vite.config.ts
 - import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
-+ import i18nTypes from 'vite-plugin-vue-i18n-types'
++ import i18nTypes from 'vite-plugin-vue-i18n-typescript'
 
 - VueI18nPlugin({ include: './src/locales/**' })
 + i18nTypes()
@@ -217,7 +217,7 @@ i18nTypes({
 
 ## Contributing
 
-See [GitHub repo](https://github.com/gcwioro/vite-plugin-vue-i18n-types).
+See [GitHub repo](https://github.com/gcwioro/vite-plugin-vue-i18n-typescript).
 
 ## License
 

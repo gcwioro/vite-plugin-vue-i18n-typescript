@@ -1,6 +1,6 @@
 # Configuration Guide
 
-This guide covers all configuration options for the vite-plugin-vue-i18n-types plugin.
+This guide covers all configuration options for the vite-plugin-vue-i18n-typescript plugin.
 
 ## Basic Configuration
 
@@ -8,7 +8,7 @@ The plugin works with zero configuration, but you can customize its behavior:
 
 ```typescript
 // vite.config.ts
-import i18nTypes from 'vite-plugin-vue-i18n-types'
+import i18nTypes from 'vite-plugin-vue-i18n-typescript'
 
 export default defineConfig({
   plugins: [
@@ -246,7 +246,7 @@ i18nTypes({
 /// <reference types="./vite-env-override" />
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import i18nTypes from 'vite-plugin-vue-i18n-types'
+import i18nTypes from 'vite-plugin-vue-i18n-typescript'
 import path from 'path'
 
 export default defineConfig({

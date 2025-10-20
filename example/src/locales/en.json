@@ -37,7 +37,7 @@
   },
   "Greeting": {
     "message": "Hello TypeScript friends!",
-    "greetings": "vite-plugin-vue-i18n-types - Demo Project"
+    "greetings": "vite-plugin-vue-i18n-typescript - Demo Project"
   },
   "InterpolationDemo": {
     "welcome": "Welcome, {name}!",
