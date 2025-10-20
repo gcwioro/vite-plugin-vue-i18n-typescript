@@ -10,7 +10,7 @@ on:
     inputs:
       npm_version:
         description: 'Version to publish (e.g., 1.2.3 or 1.2.3-alpha.1)'
-        required: true
+        required: false
       #channel
       release_channel:
         description: 'Release channel (stable or alpha)'
@@ -33,30 +33,33 @@ jobs:
           bun-version: latest
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm install
+      #      - run: npm install
       #     - run: npm test
+
+      - run: bun install --frozen-lockfile
       - name: Lint
-        run: npm run lint
+        run: bun run lint
 
       - name: Type Check
-        run: npm run typecheck
+        run: bun run typecheck
 
       - name: Test
-        run: npm test -- --run
-
+        run: bun install --frozen-lockfile
       - name: Set version if npm_version input is provided
         if: ${{ github.event.inputs.npm_version != '' }}
         shell: bash
         run: |
           BASE_VERSION="${{ github.event.inputs.npm_version }}"
-          echo "Setting release version to ${PRERELEASE_VERSION}"
-          npm --no-git-tag-version version "${PRERELEASE_VERSION}"
+          echo "Setting release version to ${BASE_VERSION}"
+          npm --no-git-tag-version version "${BASE_VERSION}"
 
       - name: Build
-        run: npm run build
+        run: bun run build
+      - name: Configure npm for publishing
+        run: printf "//registry.npmjs.org/:_authToken={{ secrets.NPM_TOKEN }}\n" >> ~/.npmrc
 
       - name: Publish (stable)
-        run: npm publish --access public
+        run: bun publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -72,32 +75,45 @@ jobs:
         with:
           bun-version: latest
           registry-url: 'https://registry.npmjs.org'
-
-      - run: npm install
+      - run: bun install --frozen-lockfile
+      #      - run: npm install
       #     - run: npm test
       - name: Lint
-        run: npm run lint
+        run: bun run lint
 
       - name: Type Check
-        run: npm run typecheck
+        run: bun run typecheck
 
       - name: Test
-        run: npm test -- --run
+        run: bun run test -- --run
 
       - name: Build
-        run: npm run build
+        run: bun run build
 
       # Derive an alpha pre-release version from the base version in package.json
       # Example: 1.4.0 -> 1.4.0-alpha.123  (123 = GITHUB_RUN_NUMBER)
+      - name: Set version if npm_version input is provided
+        if: ${{ github.event.inputs.npm_version != '' }}
+        shell: bash
+        run: |
+          BASE_VERSION="${{ github.event.inputs.npm_version }}"
+          PRERELEASE_VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
+          echo "Setting release version to ${PRERELEASE_VERSION}"
+          npm --no-git-tag-version version "${PRERELEASE_VERSION}"
+
       - name: Set alpha version (no git tag/commit)
         shell: bash
+        if: ${{ github.event.inputs.npm_version == '' }}
+
         run: |
           BASE_VERSION=$(node -p "require('./package.json').version.split('-')[0]")
           PRERELEASE_VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
           echo "Setting pre-release version to ${PRERELEASE_VERSION}"
           npm --no-git-tag-version version "${PRERELEASE_VERSION}"
+      - name: Configure npm for publishing
+        run: printf "//registry.npmjs.org/:_authToken={{ secrets.NPM_TOKEN }}\n" >> ~/.npmrc
 
       - name: Publish (alpha dist-tag)
-        run: npm publish --access public --tag alpha
+        run: bun publish --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
