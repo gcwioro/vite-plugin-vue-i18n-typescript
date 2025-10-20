@@ -101,11 +101,9 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
 
   return {
     [imports]: "import { createI18n, useI18n } from 'vue-i18n';",
-    [messages]: `${getMessages()}
-     export const supportedLanguages = ${messagesCombined.languagesTuple()}
-     export const fallbackLocales = ${JSON.stringify(messagesCombined.fallbackLocales)}`,
-    // [supportedLanguages]: ``,
-    // [fallbackLocales]: `export const fallbackLocales = ${JSON.stringify(messagesCombined.fallbackLocales)};`,
+    [messages]: getMessages(),
+    [supportedLanguages]: `export const supportedLanguages = ${messagesCombined.languagesTuple()};`,
+    [fallbackLocales]: `export const fallbackLocales = ${JSON.stringify(messagesCombined.fallbackLocales)};`,
     [hrmHotUpdate]: codeHrmHotUpdate,
     [useI18nApp]: "export const useI18nApp = () => globalThis.i18nApp.global;",
 

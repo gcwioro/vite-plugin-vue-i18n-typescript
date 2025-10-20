@@ -31,7 +31,7 @@ export default defineConfig({
     // @ts-expect-error Only because of import of ../src/..
     vitePluginVueI18nTypes({
       baseLocale: 'en',
-      // virtualFilePath: 'src/extensions/i18n.virtual.gen.js',
+      // virtualFilePath: 'src/i18n/i18n.virtual.gen.js',
       debug: true,
       // virtualFilePath: './src/i18n/virtual.js',
       emit: {emitJson: false, inlineDataInBuild: true}

@@ -177,8 +177,8 @@ export function vitePluginVueI18nTypes(
           return {
             code: `
             export default ${combinedMessages.messagesJsonString}
-            export const supportedLanguages = ${combinedMessages.languagesTuple()}
-            export const fallbackLocales = ${JSON.stringify(combinedMessages.fallbackLocales)}
+            // export const supportedLanguages = ${combinedMessages.languagesTuple()}
+            // export const fallbackLocales = ${JSON.stringify(combinedMessages.fallbackLocales)}
 
             `,
             map: null

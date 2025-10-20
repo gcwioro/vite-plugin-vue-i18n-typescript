@@ -21,12 +21,15 @@
 
 import {
   useI18nApp,
-  useI18nTypeSafe,
-
-  fallbackLocales,
+  useI18nTypeSafe
 } from "virtual:vue-i18n-types";
-import {type  SupportedLanguage, supportedLanguages} from "virtual:vue-i18n-types/messages";
+import fallbackLocales from "virtual:vue-i18n-types/fallbackLocales";
+
 // import metaX from "virtual:vue-i18n-types/supportedLanguages";
+import {
+  type  SupportedLanguage,
+  supportedLanguages
+} from "virtual:vue-i18n-types/supportedLanguages";
 import {ref, watch, watchEffect} from "vue";
 
 const i18n = useI18nApp()

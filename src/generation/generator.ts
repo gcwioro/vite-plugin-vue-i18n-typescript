@@ -33,7 +33,7 @@ export function toTypesContent(params: {
   const NL = '\n'
      const baseLocaleMessages = combinedMessages.baseLocaleMessages;
   const finalKeys = combinedMessages.keys;
-  const AllSupportedLanguages = combinedMessages.languages;
+  const supportedLanguages = combinedMessages.languages;
 
   // Type definitions only - build with array for better performance
   const bodyLines = [
@@ -42,13 +42,9 @@ export function toTypesContent(params: {
     `  import {type Plugin, type WritableComputedRef} from 'vue'`,
     '  import type {  Composer, Locale, FallbackLocale, ComposerOptions as Options,  ComposerOptions,  I18n,  I18nOptions,  Locale, NamedValue, TranslateOptions, UseI18nOptions} from "vue-i18n"',
     // '  import type {MessageSchemaGen, MessagesType, AllTranslations, AllTranslationKeys, SupportedLanguage} from "virtual:vue-i18n-types/messages"',
-    `  export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>`,
-    `  export type AllTranslations = I18nMessages`,
-    `  export type MessagesType = I18nMessages`,
+
     '  export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>',
-        `  export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
-    `  export type AllSupportedLanguages = readonly [${AllSupportedLanguages.map(l => `'${l}'`).join(', ')}]`,
-    `  export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages)}`,
+
 
     `  export interface I18nCustom {  (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string
       (key: AllTranslationKeys, options?: TranslateOptions): string
@@ -65,26 +61,42 @@ export function toTypesContent(params: {
     "  export type UseI18nTypesafeReturn = Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>,'t'> & { t: I18nCustom};",
     '  function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>',
     '  function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )',
-    '  export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages',
-    '  export const languages: SupportedLanguage[] | AllSupportedLanguages',
-    '  export const fallbackLocales: { [locale in string]: Locale[];}',
+    // '  export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages',
+    // '  export const languages: SupportedLanguage[] | AllSupportedLanguages',
+    // '  export const fallbackLocales: { [locale in string]: Locale[];}',
     '  export type SupportedLanguage = AllSupportedLanguages[number]',
 
+    `  export {fallbackLocales} from '${sourceId}/fallbackLocales'`,
+    `  export {supportedLanguage} from '${sourceId}/supportedLanguage'`,
+    `  export {messages} from '${sourceId}/messages'`,
 
-    `  export const supportedLanguages: typeof languages`,
+    // `  export const supportedLanguages: typeof languages`,
     `  export const useI18nApp: ()=> UseI18nTypesafeReturn`,
     `  function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>):UseI18nTypesafeReturn;`,
-    ` // export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages;`,
-
+    ` // export const supportedLanguages: SupportedLanguage[] | string[];`,
+    `  export type * from '${sourceId}/messages';`,
     '  export {  createI18nInstance,  createI18nInstancePlugin, useI18nTypeSafe };',
-    '}\n\n',
+    '}\n',
     `declare module '${sourceId}/messages' {`,
-    `  export type * from 'virtual:vue-i18n-types';`,
-    `  export { supportedLanguages , fallbackLocales } from 'virtual:vue-i18n-types';`,
+    `  export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
+    `  export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>`,
+    `  export type AllTranslations = I18nMessages`,
+    `  export type MessagesType = I18nMessages`,
+    `  export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages)}`,
     '  export const messages: MessagesType;',
     '  export default messages;',
 
     '}',
+    `declare module '${sourceId}/supportedLanguages' {`,
+        `  export type AllSupportedLanguages = readonly [${supportedLanguages.map(l => `'${l}'`).join(', ')}]`,
+   `  export const supportedLanguages: AllSupportedLanguages;`,
+   `  export default supportedLanguages;`,
+    '}',
+     `declare module '${sourceId}/fallbackLocales' {`,
+     `  import type { Locale } from "vue-i18n";`,
+     `  export const fallbackLocales: { [locale in string]: Locale[];}`,
+     `  export default fallbackLocales;`,
+        '}',
 
   ];
 
