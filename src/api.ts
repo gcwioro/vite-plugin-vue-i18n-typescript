@@ -68,12 +68,12 @@ export interface GenerateTypesResult {
 /**
  * Create a simple console logger compatible with Vite's Logger interface
  */
-function createLogger(verbose: boolean = false): Logger {
+function createLogger(debugEnabled: boolean = false): Logger {
   const warnedMessages = new Set<string>();
 
   return {
     info: (msg: string) => {
-      if (verbose) {
+      if (debugEnabled) {
         console.log(`[vue-i18n-dts] ${msg}`);
       }
     },
@@ -120,13 +120,14 @@ export async function generateI18nTypes(
   options: GenerateTypesOptions = {}
 ): Promise<GenerateTypesResult> {
   const root = options.root ? path.resolve(options.root) : process.cwd();
-  const verbose = options.verbose ?? false;
-  const logger = createLogger(verbose);
+  const debugEnabled = options.debug ?? options.verbose ?? false;
+  const config = normalizeConfig({
+    ...options,
+    debug: debugEnabled,
+  });
+  const logger = createLogger(config.debug);
 
   logger.info(`Starting type generation in: ${root}`);
-
-  // Normalize configuration
-  const config = normalizeConfig(options);
 
   logger.info(`Base locale: ${config.baseLocale}`);
   logger.info(`Include patterns: ${config.include.join(", ")}`);
