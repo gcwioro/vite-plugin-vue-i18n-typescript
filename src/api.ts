@@ -150,7 +150,6 @@ export async function generateI18nTypes(
     logger,
   });
 
-  let groupedCache: Record<string, any> = {};
   let lastFiles: string[] = [];
 
   const rebuildManager = new RebuildManager({
@@ -159,8 +158,7 @@ export async function generateI18nTypes(
     generationCoordinator,
     root,
     logger,
-    onRebuildComplete: (cache) => {
-      groupedCache = cache.messages;
+    onRebuildComplete: (_cache) => {
       lastFiles = fileManager.getLastFiles();
     },
   });
@@ -168,10 +166,9 @@ export async function generateI18nTypes(
   // Perform generation
   const result = await rebuildManager.rebuild("api", []);
 
-  groupedCache = result.messages;
   lastFiles = fileManager.getLastFiles();
 
-  const locales = Object.keys(groupedCache).filter((l) => l !== "js-reserved");
+  const locales = result.messages.languages.filter((l: string) => l !== "js-reserved");
 
   logger.info(`✅ Generated types for ${locales.length} locale(s): ${locales.join(", ")}`);
   logger.info(`📁 Processed ${lastFiles.length} locale file(s)`);
@@ -181,12 +178,12 @@ export async function generateI18nTypes(
     ? config.typesPath
     : path.join(root, config.typesPath);
 
-  const generatedFiles = [path.relative(root, typesPath)];
+  const generatedFiles = [path.relative(root, typesPath).replace(/\\/g, '/')];
   if (config.virtualFilePath) {
     const virtualPath = path.isAbsolute(config.virtualFilePath)
       ? config.virtualFilePath
       : path.join(root, config.virtualFilePath);
-    generatedFiles.push(path.relative(root, virtualPath));
+    generatedFiles.push(path.relative(root, virtualPath).replace(/\\/g, '/'));
   }
 
   return {

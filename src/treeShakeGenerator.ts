@@ -53,7 +53,7 @@ export type HelperMethodsRecord = Record<SymbolEnum, string>;
 // type that has every key of SymbolEnum as ker
 // ys
 type HelperMethodsOrderKeys = keyof typeof HelperMethodsOrder;
-type HelperMethods = Record<HelperMethodsOrderKeys, SymbolEnum>;
+type _HelperMethods = Record<HelperMethodsOrderKeys, SymbolEnum>;
 /** Stable order for full-file serialization */
 export const HelperMethodsOrder: HelperMethodsRecord = {
 

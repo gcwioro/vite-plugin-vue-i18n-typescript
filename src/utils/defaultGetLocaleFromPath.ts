@@ -11,6 +11,4 @@ export function defaultGetLocaleFromPath(filePath: string): string | null {
     return null; // Not a JSON file
   }
   return parts?.[parts.length - 2] ?? null; // Return the locale code (second to last part)
-
-
 }

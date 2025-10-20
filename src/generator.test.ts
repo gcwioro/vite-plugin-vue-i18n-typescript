@@ -56,7 +56,7 @@ describe('toTypesContent', () => {
 
     const result = toTypesContent({
       combinedMessages,
-      banner: customBanner,
+      config: {banner: customBanner},
     })
 
     expect(result.startsWith(customBanner)).toBe(true)
