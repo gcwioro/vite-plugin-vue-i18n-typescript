@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Programmatic API integration tests with full coverage
 - Test fixtures and helpers for improved maintainability
 - Named export `vitePluginVueI18nTypes` alongside default export
-- New export path `vite-plugin-vue-i18n-types/plugin` for cleaner imports
+- New export path `vite-plugin-vue-i18n-typescript/plugin` for cleaner imports
 - `fast-glob` as production dependency for robust file pattern matching
 
 ### Changed
@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of vite-plugin-vue-i18n-types
+- Initial release of vite-plugin-vue-i18n-typescript
 - High-performance standalone Vite plugin for generating TypeScript definitions from Vue I18n JSON files
 - Type-safe translation keys with compile-time validation
 - Incremental updates for optimal performance
@@ -69,10 +69,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Debounced generation (300ms) with max wait (2000ms)
 - In-memory caching of parsed locale data
 
-[Unreleased]: https://github.com/your-repo/vite-plugin-vue-i18n-types/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/your-repo/vite-plugin-vue-i18n-typescript/compare/v1.0.2...HEAD
 
-[1.0.2]: https://github.com/your-repo/vite-plugin-vue-i18n-types/compare/v1.0.1...v1.0.2
+[1.0.2]: https://github.com/your-repo/vite-plugin-vue-i18n-typescript/compare/v1.0.1...v1.0.2
 
-[1.0.1]: https://github.com/your-repo/vite-plugin-vue-i18n-types/compare/v1.0.0...v1.0.1
+[1.0.1]: https://github.com/your-repo/vite-plugin-vue-i18n-typescript/compare/v1.0.0...v1.0.1
 
-[1.0.0]: https://github.com/your-repo/vite-plugin-vue-i18n-types/releases/tag/v1.0.0
+[1.0.0]: https://github.com/your-repo/vite-plugin-vue-i18n-typescript/releases/tag/v1.0.0

@@ -8,7 +8,7 @@ import type {GenerateTypesOptions} from "./api";
 import {generateI18nTypes} from "./api";
 
 const helpText = `
-vite-plugin-vue-i18n-types CLI
+vite-plugin-vue-i18n-typescript CLI
 
 Generate TypeScript definitions from Vue i18n locale files
 
@@ -17,8 +17,8 @@ Commands:
   merge-export              Export merged translation messages as JSON
 
 Usage:
-  npx vite-plugin-vue-i18n-types [generate] [options]
-  npx vite-plugin-vue-i18n-types merge-export [options]
+  npx vite-plugin-vue-i18n-typescript [generate] [options]
+  npx vite-plugin-vue-i18n-typescript merge-export [options]
 
 Generate Options:
   --root <path>              Root directory (default: current directory)
@@ -48,32 +48,32 @@ Merge-Export Options:
 
 Examples:
   # Generate TypeScript definitions (default command)
-  npx vite-plugin-vue-i18n-types
-  npx vite-plugin-vue-i18n-types generate
+  npx vite-plugin-vue-i18n-typescript
+  npx vite-plugin-vue-i18n-typescript generate
 
   # Specify custom paths and base locale
-  npx vite-plugin-vue-i18n-types generate --base-locale en --types-path src/types/i18n.d.ts
+  npx vite-plugin-vue-i18n-typescript generate --base-locale en --types-path src/types/i18n.d.ts
 
   # Multiple include patterns
-  npx vite-plugin-vue-i18n-types generate --include "src/locales/**/*.json" --include "src/i18n/**/*.json"
+  npx vite-plugin-vue-i18n-typescript generate --include "src/locales/**/*.json" --include "src/i18n/**/*.json"
 
   # Generate virtual file for debugging
-  npx vite-plugin-vue-i18n-types generate --virtual-file-path src/i18n/virtual.gen.ts --verbose
+  npx vite-plugin-vue-i18n-typescript generate --virtual-file-path src/i18n/virtual.gen.ts --verbose
 
   # Custom root directory
-  npx vite-plugin-vue-i18n-types generate --root ./packages/frontend --base-locale en
+  npx vite-plugin-vue-i18n-typescript generate --root ./packages/frontend --base-locale en
 
   # Watch mode - regenerate on file changes
-  npx vite-plugin-vue-i18n-types generate --watch --verbose
+  npx vite-plugin-vue-i18n-typescript generate --watch --verbose
 
   # Export all messages to a single JSON file
-  npx vite-plugin-vue-i18n-types merge-export --output ./export/messages.json
+  npx vite-plugin-vue-i18n-typescript merge-export --output ./export/messages.json
 
   # Export separate JSON files per locale (use {locale} placeholder in path)
-  npx vite-plugin-vue-i18n-types merge-export --split --output ./export/{locale}.json
+  npx vite-plugin-vue-i18n-typescript merge-export --split --output ./export/{locale}.json
 
   # Export with custom include patterns and verbose output
-  npx vite-plugin-vue-i18n-types merge-export --include "src/**/*.json" --output ./messages.json --verbose
+  npx vite-plugin-vue-i18n-typescript merge-export --include "src/**/*.json" --output ./messages.json --verbose
 `;
 
 async function mergeExportCommand(args: string[]) {
@@ -95,7 +95,7 @@ async function mergeExportCommand(args: string[]) {
 
   if (!values.output) {
     console.error("❌ Error: --output is required for merge-export command");
-    console.error("Example: npx vite-plugin-vue-i18n-types merge-export --output ./messages.json");
+    console.error("Example: npx vite-plugin-vue-i18n-typescript merge-export --output ./messages.json");
     process.exit(1);
   }
 

@@ -1,6 +1,6 @@
 # Release Notes - v1.0.2
 
-## 🎉 vite-plugin-vue-i18n-types v1.0.2
+## 🎉 vite-plugin-vue-i18n-typescript v1.0.2
 
 This patch release includes critical bug fixes, improved developer experience, and enhanced test coverage.
 
@@ -39,13 +39,13 @@ This patch release includes critical bug fixes, improved developer experience, a
 - You can now import the plugin in multiple ways:
   ```typescript
   // Default import (unchanged)
-  import i18nTypes from 'vite-plugin-vue-i18n-types'
+  import i18nTypes from 'vite-plugin-vue-i18n-typescript'
 
   // Named import (new)
-  import { vitePluginVueI18nTypes } from 'vite-plugin-vue-i18n-types'
+  import { vitePluginVueI18nTypes } from 'vite-plugin-vue-i18n-typescript'
 
   // Direct plugin import (new)
-  import { vitePluginVueI18nTypes } from 'vite-plugin-vue-i18n-types/plugin'
+  import { vitePluginVueI18nTypes } from 'vite-plugin-vue-i18n-typescript/plugin'
   ```
 
 ### Robust File Pattern Matching
@@ -82,19 +82,20 @@ Thanks to all contributors who helped identify issues and improve the plugin!
 
 ---
 
-**Full Changelog**: [v1.0.0...v1.0.2](https://github.com/your-repo/vite-plugin-vue-i18n-types/compare/v1.0.0...v1.0.2)
+**Full Changelog
+**: [v1.0.0...v1.0.2](https://github.com/your-repo/vite-plugin-vue-i18n-typescript/compare/v1.0.0...v1.0.2)
 
 ## Installation
 
 ```bash
 # npm
-npm install vite-plugin-vue-i18n-types@1.0.2
+npm install vite-plugin-vue-i18n-typescript@1.0.2
 
 # pnpm
-pnpm add vite-plugin-vue-i18n-types@1.0.2
+pnpm add vite-plugin-vue-i18n-typescript@1.0.2
 
 # bun
-bun add vite-plugin-vue-i18n-types@1.0.2
+bun add vite-plugin-vue-i18n-typescript@1.0.2
 ```
 
 ## Quick Start
@@ -102,7 +103,7 @@ bun add vite-plugin-vue-i18n-types@1.0.2
 ```typescript
 // vite.config.ts
 import {defineConfig} from 'vite'
-import {vitePluginVueI18nTypes} from 'vite-plugin-vue-i18n-types'
+import {vitePluginVueI18nTypes} from 'vite-plugin-vue-i18n-typescript'
 
 export default defineConfig({
     plugins: [

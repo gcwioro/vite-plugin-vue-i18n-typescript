@@ -2,12 +2,12 @@
 
 ## From @intlify/unplugin-vue-i18n
 
-Migrating to `vite-plugin-vue-i18n-types` takes just a few minutes and gives you better type safety and
+Migrating to `vite-plugin-vue-i18n-typescript` takes just a few minutes and gives you better type safety and
 performance.
 
 ### Why Migrate?
 
-| Feature         | vite-plugin-vue-i18n-types       | @intlify/unplugin-vue-i18n |
+| Feature         | vite-plugin-vue-i18n-typescript  | @intlify/unplugin-vue-i18n |
 |-----------------|----------------------------------|----------------------------|
 | **Type Safety** | ✅ Full autocomplete for all keys | ⚠️ Limited type inference  |
 | **Hot Reload**  | ✅ True HMR (no page refresh)     | ❌ Page reloads             |
@@ -26,7 +26,7 @@ npm uninstall @intlify/unplugin-vue-i18n
 #### 2. Install New Plugin
 
 ```bash
-npm install -D vite-plugin-vue-i18n-types
+npm install -D vite-plugin-vue-i18n-typescript
 ```
 
 #### 3. Update Vite Config
@@ -36,7 +36,7 @@ npm install -D vite-plugin-vue-i18n-types
 + /// <reference types="./vite-env-override" />
 
 - import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
-+ import i18nTypes from 'vite-plugin-vue-i18n-types'
++ import i18nTypes from 'vite-plugin-vue-i18n-typescript'
 
 export default defineConfig({
   plugins: [
@@ -214,4 +214,4 @@ i18nTypes({
 - 📚 [Configuration Guide](./configuration.md)
 - 🔨 [CLI Usage](./cli.md)
 - 🧩 [API Reference](./api.md)
-- 🐛 [GitHub Issues](https://github.com/gcwioro/vite-plugin-vue-i18n-types/issues)
+- 🐛 [GitHub Issues](https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/issues)

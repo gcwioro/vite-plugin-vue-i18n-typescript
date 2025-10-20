@@ -9,7 +9,7 @@ import vue from '@vitejs/plugin-vue'
 import {defineConfig} from 'vite'
 import viteTsChecker from 'vite-plugin-checker';
 import {viteSingleFile} from "vite-plugin-singlefile"
-import vitePluginVueI18nTypes from "vite-plugin-vue-i18n-types";
+import vitePluginVueI18nTypes from "vite-plugin-vue-i18n-typescript";
 // @xts-nocheck
 // import vitePluginVueI18nTypes from "../src/plugin.ts";
 

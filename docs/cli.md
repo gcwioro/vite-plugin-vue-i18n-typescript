@@ -8,20 +8,20 @@ hooks.
 The CLI comes bundled with the package:
 
 ```bash
-npm install -D vite-plugin-vue-i18n-types
+npm install -D vite-plugin-vue-i18n-typescript
 ```
 
 ## Basic Usage
 
 ```bash
 # Generate types once
-npx vite-plugin-vue-i18n-types generate
+npx vite-plugin-vue-i18n-typescript generate
 
 # Watch mode - regenerate on file changes
-npx vite-plugin-vue-i18n-types generate --watch
+npx vite-plugin-vue-i18n-typescript generate --watch
 
 # With custom options
-npx vite-plugin-vue-i18n-types generate \
+npx vite-plugin-vue-i18n-typescript generate \
   --base-locale en \
   --types-path src/types/i18n.d.ts \
   --verbose
@@ -32,7 +32,7 @@ npx vite-plugin-vue-i18n-types generate \
 ### Generate Command
 
 ```
-npx vite-plugin-vue-i18n-types generate [options]
+npx vite-plugin-vue-i18n-typescript generate [options]
 ```
 
 #### Options
@@ -59,7 +59,7 @@ npx vite-plugin-vue-i18n-types generate [options]
 ### Multiple Include Patterns
 
 ```bash
-npx vite-plugin-vue-i18n-types generate \
+npx vite-plugin-vue-i18n-typescript generate \
   --include "src/locales/**/*.json" \
   --include "src/modules/**/i18n/*.json" \
   --base-locale en
@@ -68,7 +68,7 @@ npx vite-plugin-vue-i18n-types generate \
 ### Custom Root Directory
 
 ```bash
-npx vite-plugin-vue-i18n-types generate \
+npx vite-plugin-vue-i18n-typescript generate \
   --root ./packages/frontend \
   --base-locale en \
   --verbose
@@ -77,7 +77,7 @@ npx vite-plugin-vue-i18n-types generate \
 ### Generate Debug File
 
 ```bash
-npx vite-plugin-vue-i18n-types generate \
+npx vite-plugin-vue-i18n-typescript generate \
   --virtual-file-path src/i18n/debug.gen.ts \
   --verbose
 ```
@@ -85,7 +85,7 @@ npx vite-plugin-vue-i18n-types generate \
 ### Watch Mode
 
 ```bash
-npx vite-plugin-vue-i18n-types generate --watch --verbose
+npx vite-plugin-vue-i18n-typescript generate --watch --verbose
 ```
 
 When watch mode is enabled:
@@ -102,10 +102,10 @@ Add these scripts to your `package.json`:
 ```json
 {
   "scripts": {
-    "i18n:generate": "vite-plugin-vue-i18n-types generate",
-    "i18n:watch": "vite-plugin-vue-i18n-types generate --watch",
-    "i18n:debug": "vite-plugin-vue-i18n-types generate --verbose --debug",
-    "precommit": "vite-plugin-vue-i18n-types generate"
+    "i18n:generate": "vite-plugin-vue-i18n-typescript generate",
+    "i18n:watch": "vite-plugin-vue-i18n-typescript generate --watch",
+    "i18n:debug": "vite-plugin-vue-i18n-typescript generate --verbose --debug",
+    "precommit": "vite-plugin-vue-i18n-typescript generate"
   }
 }
 ```
@@ -131,7 +131,7 @@ jobs:
       - run: npm ci
 
       - name: Generate i18n types
-        run: npx vite-plugin-vue-i18n-types generate --verbose
+        run: npx vite-plugin-vue-i18n-typescript generate --verbose
 
       - name: Type check
         run: npm run typecheck
@@ -144,7 +144,7 @@ typecheck:
   stage: test
   script:
     - npm ci
-    - npx vite-plugin-vue-i18n-types generate --verbose
+    - npx vite-plugin-vue-i18n-typescript generate --verbose
     - npm run typecheck
 ```
 
@@ -157,7 +157,7 @@ Using `husky`:
 npm install -D husky
 
 # Add pre-commit hook
-npx husky add .husky/pre-commit "npx vite-plugin-vue-i18n-types generate && git add ."
+npx husky add .husky/pre-commit "npx vite-plugin-vue-i18n-typescript generate && git add ."
 ```
 
 ## Export Command
@@ -166,10 +166,10 @@ Export merged translation messages to JSON files:
 
 ```bash
 # Export all messages to a single file
-npx vite-plugin-vue-i18n-types merge-export --output ./export/messages.json
+npx vite-plugin-vue-i18n-typescript merge-export --output ./export/messages.json
 
 # Export separate files per locale
-npx vite-plugin-vue-i18n-types merge-export --split --output ./export/{locale}.json
+npx vite-plugin-vue-i18n-typescript merge-export --split --output ./export/{locale}.json
 ```
 
 ### Export Options

@@ -11,8 +11,8 @@
     "preview": "vite preview",
     "build-only": "bun run vite build",
     "typecheck": "vue-tsc --build",
-    "i18n-generate-types": "bun x vite-plugin-vue-i18n-types generate --base-locale en --verbose",
-    "i18n-types:export-merged": "bun x vite-plugin-vue-i18n-types merge-export --split --output ./export/{locale}.json",
+    "i18n-generate-types": "bun x vite-plugin-vue-i18n-typescript generate --base-locale en --verbose",
+    "i18n-types:export-merged": "bun x vite-plugin-vue-i18n-typescript merge-export --split --output ./export/{locale}.json",
     "live:i18n-generate": "node.exe --import file:/C:/Users/gcwio/AppData/Local/Programs/WebStorm/plugins/nodeJS/js/ts-file-loader/node_modules/tsx/dist/loader.cjs ../src/cli.ts  merge-export --output src/i18n/all.json.ts",
     "lint": "eslint --cache --cache-location node_modules/.cache/eslint . --fix"
   },
@@ -21,7 +21,7 @@
     "@tailwindcss/vite": "^4.1.14",
     "tailwindcss": "^4.1.14",
     "vite-plugin-singlefile": "^2.3.0",
-    "vite-plugin-vue-i18n-types": "^1.0.0",
+    "vite-plugin-vue-i18n-typescript": "^1.0.0",
     "vue": "^3.5.22"
   },
   "devDependencies": {
