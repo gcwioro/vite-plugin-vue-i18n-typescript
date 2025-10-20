@@ -18,25 +18,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: 22
+          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: bun install --frozen-lockfile
+      - run: npm install
       #     - run: npm test
       - name: Lint
-        run: bun run lint
+        run: npm run lint
 
       - name: Type Check
-        run: bun run typecheck
+        run: npm run typecheck
 
       - name: Test
         run: npm test -- --run
 
       - name: Build
-        run: bun run build
+        run: npm run build
 
       - name: Publish (stable)
         run: npm publish --access public
@@ -56,19 +56,19 @@ jobs:
           bun-version: latest
           registry-url: 'https://registry.npmjs.org'
 
-      - run: bun install --frozen-lockfile
+      - run: npm install
       #     - run: npm test
       - name: Lint
-        run: bun run lint
+        run: npm run lint
 
       - name: Type Check
-        run: bun run typecheck
+        run: npm run typecheck
 
       - name: Test
         run: npm test -- --run
 
       - name: Build
-        run: bun run build
+        run: npm run build
 
       # Derive an alpha pre-release version from the base version in package.json
       # Example: 1.4.0 -> 1.4.0-alpha.123  (123 = GITHUB_RUN_NUMBER)
