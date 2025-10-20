@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-vue-i18n-typescript",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Type-safe Vue i18n translations. Auto-generates TypeScript types from JSON locale files. Catch translation errors at compile time with full IDE autocomplete.",
   "keywords": [
     "vite",
