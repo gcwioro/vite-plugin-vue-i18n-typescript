@@ -67,7 +67,7 @@ export function toTypesContent(params: {
 
 
     `  export {fallbackLocales} from '${sourceId}/fallbackLocales'`,
-    `  export {supportedLanguage} from '${sourceId}/supportedLanguage'`,
+    `  export {supportedLanguages} from '${sourceId}/supportedLanguages'`,
     `  export {messages} from '${sourceId}/messages'`,
 
     // `  export const supportedLanguages: typeof languages`,

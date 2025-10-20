@@ -152,13 +152,13 @@ export function vitePluginVueI18nTypes(
           return config.resolvedVirtualJsonId;
         }
 
-        if (id !== config.virtualId) {
-          infoLogger(`🔍 [resolveId] Resolved undefined virtual module: ${id} -> ${config.resolvedVirtualId}`);
-          // const method = id.replace(config.sourceId, "");
-          // const resolvedMethodId = "\0" + config.sourceId + method
-          // return resolvedMethodId;
-          // return config.resolvedVirtualId;
+        // Handle sub-modules like /supportedLanguages, /fallbackLocales
+        if (id !== config.virtualId && id.startsWith(config.sourceId + '/')) {
+          const resolvedId = '\0' + id;
+          infoLogger(`🔍 [resolveId] Resolved sub-module: ${id} -> ${resolvedId}`);
+          return resolvedId;
         }
+
         return config.resolvedVirtualId;
       }
       if (config.debug) {
@@ -194,10 +194,13 @@ export function vitePluginVueI18nTypes(
           infoLogger(`📄 [load] Loading virtual module: ${id}, isBuild: ${isBuild}`);
           return code.toFileContent()
         } else {
-          const method = id.replace(config.sourceId, "").replace("/", "").trim();
-          infoLogger(`📄 [load (Fallback)] Loading virtual module: ${method}, isBuild: ${isBuild}`);
-          const methodCode = code.getFileContentFor(method.replace("/", "").replace("\0", ""));
-          infoLogger(`📄 [load (Fallback)] Generated code for method: ${method.replace("/", "")}`);
+          // Handle sub-modules - extract the part after the sourceId
+          // id is like "\0virtual:vue-i18n-types/supportedLanguages"
+          const cleanId = id.replace('\0', '');
+          const method = cleanId.replace(config.sourceId + '/', '').trim();
+          infoLogger(`📄 [load (Sub-module)] Loading virtual sub-module: ${cleanId}, method: ${method}, isBuild: ${isBuild}`);
+          const methodCode = code.getFileContentFor(method);
+          infoLogger(`📄 [load (Sub-module)] Generated code for method: ${method}`);
           return methodCode;
 
         }

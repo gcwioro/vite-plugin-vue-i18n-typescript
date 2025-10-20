@@ -26,7 +26,7 @@ declare module 'virtual:vue-i18n-types' {
   function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>
   function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )
   export {fallbackLocales} from 'virtual:vue-i18n-types/fallbackLocales'
-  export {supportedLanguage} from 'virtual:vue-i18n-types/supportedLanguage'
+  export {supportedLanguages} from 'virtual:vue-i18n-types/supportedLanguages'
   export {messages} from 'virtual:vue-i18n-types/messages'
   export const useI18nApp: ()=> UseI18nTypesafeReturn
   function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>):UseI18nTypesafeReturn;
