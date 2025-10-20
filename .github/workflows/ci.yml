@@ -48,7 +48,7 @@ jobs:
         working-directory: example
         run: |
           bun install
-          bun link vite-plugin-vue-i18n-types
+          bun link vite-plugin-vue-i18n-typescript
 
       - name: Demo - Build
         working-directory: example

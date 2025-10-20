@@ -1,6 +1,6 @@
 {
-  "name": "vite-plugin-vue-i18n-types",
-  "version": "1.0.1",
+  "name": "vite-plugin-vue-i18n-typescript",
+  "version": "1.0.0",
   "description": "Type-safe Vue i18n translations. Auto-generates TypeScript types from JSON locale files. Catch translation errors at compile time with full IDE autocomplete.",
   "keywords": [
     "vite",
@@ -22,13 +22,13 @@
     "hmr",
     "hot-reload"
   ],
-  "homepage": "https://github.com/gcwioro/vite-plugin-vue-i18n-types#readme",
+  "homepage": "https://github.com/gcwioro/vite-plugin-vue-i18n-typescript#readme",
   "bugs": {
-    "url": "https://github.com/gcwioro/vite-plugin-vue-i18n-types/issues"
+    "url": "https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gcwioro/vite-plugin-vue-i18n-types.git"
+    "url": "git+https://github.com/gcwioro/vite-plugin-vue-i18n-typescript.git"
   },
   "license": "MIT",
   "author": "Günther Cwioro",
