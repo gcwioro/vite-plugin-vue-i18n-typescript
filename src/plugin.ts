@@ -2,7 +2,7 @@ import path from "node:path";
 import {promises as fs} from "node:fs";
 import {EnvironmentModuleNode, HotUpdateOptions, Logger, normalizePath, PluginOption,} from "vite";
 import type {VirtualKeysDtsOptions} from "./types";
-import {createVirtualModuleCode} from "./generator";
+import {createVirtualModuleCode} from "./generation/generator";
 import {normalizeConfig} from "./core/config";
 import {FileManager} from "./core/file-manager";
 import {GenerationCoordinator} from "./core/generation-coordinator";
@@ -175,7 +175,12 @@ export function vitePluginVueI18nTypes(
           infoLogger(`📄 [load] Loading virtual JSON module: ${id}, data size: ${combinedMessages.keys.length} bytes`);
           // Return as a JavaScript module, not JSON to avoid vite:json plugin
           return {
-            code: `export default ${combinedMessages.messagesJsonString}`,
+            code: `
+            export default ${combinedMessages.messagesJsonString}
+            export const supportedLanguages = ${combinedMessages.languagesTuple()}
+            export const fallbackLocales = ${JSON.stringify(combinedMessages.fallbackLocales)}
+
+            `,
             map: null
           };
         }

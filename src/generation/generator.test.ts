@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest'
 import {toTypesContent} from './generator'
-import {CombinedMessages} from './core/combined-messages'
+import {CombinedMessages} from '../core/combined-messages'
 
 describe('toTypesContent', () => {
   it('should generate basic type definitions', () => {

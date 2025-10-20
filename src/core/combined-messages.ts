@@ -10,6 +10,7 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
   public readonly languages: TLanguages[];
   public readonly contentId: string;
   public readonly keysId: string;
+  public readonly fallbackLocales: { [p: string]: string[] };
 
 
   public constructor(public messages: Record<TLanguages, TMessages>, public baseLocale: keyof typeof messages) {
@@ -25,9 +26,20 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
 
     this.contentId = fnv1a32(this.messagesJsonString);
     this.keysId = fnv1a32(this.keys.join('|'));
+    this.fallbackLocales = CombinedMessages.getFallBackLocales(this.languages);
   }
 
   public languagesTuple(): string {
     return `['${this.languages.join(`', '`)}']`
+  }
+
+  public static getFallBackLocales(langs: string[]) {
+    return langs.reduce((acc, locale) => {
+      acc[locale] = [locale, locale === 'en' ? undefined : 'en', locale === 'de' ? undefined : 'de'].filter(a => a !== undefined);
+      if (locale === 'en') acc[locale] = [...acc[locale], 'en-US'];
+      return acc;
+    }, {} as {
+      [locale in string]: string[];
+    });
   }
 }

@@ -1,8 +1,8 @@
 // HelperMethods.ts
-import {CombinedMessages} from "./core/combined-messages";
-import {GenerationOptions} from "./core/generation-coordinator";
+import {CombinedMessages} from "../core/combined-messages";
+import {GenerationOptions} from "../core/generation-coordinator";
 
-import translateWrapperFunction from "./generation/runtime/translateWrapperFunction.ts??inline";
+import translateWrapperFunction from "./runtime/translateWrapperFunction.ts??inline";
 
 /** String enum keeps runtime minimal and DX straightforward */
 export enum SymbolEnum {
@@ -12,7 +12,7 @@ export enum SymbolEnum {
 
   useI18nApp = "useI18nApp",
   supportedLanguages = "supportedLanguages",
-  fallBackLocales = "fallBackLocales",
+  fallbackLocales = "fallbackLocales",
   translationWrapper = "translationWrapper",
   createI18nInstance = "createI18nInstance",
   createI18nInstancePlugin = "createI18nInstancePlugin",
@@ -25,15 +25,18 @@ export const messages = SymbolEnum.messages;
 export const hrmHotUpdate = SymbolEnum.hrmHotUpdate;
 export const supportedLanguages = SymbolEnum.supportedLanguages;
 export const useI18nApp = SymbolEnum.useI18nApp;
-export const fallBackLocales = SymbolEnum.fallBackLocales;
+export const fallbackLocales = SymbolEnum.fallbackLocales;
 export const translationWrapper = SymbolEnum.translationWrapper;
 export const createI18nInstance = SymbolEnum.createI18nInstance;
 export const createI18nInstancePlugin = SymbolEnum.createI18nInstancePlugin;
 export const useI18nTypeSafe = SymbolEnum.useI18nTypeSafe;
 
 
-import deepMerge from './utils/merge.ts??inline';
-import hotUpdateCallback from "./generation/runtime/hrmHotUpdate.ts??raw";
+import deepMerge from '../utils/merge.ts??inline';
+import hotUpdateCallback from "./runtime/hrmHotUpdate.ts??inline";
+import codeCreateI18nInstance from "./runtime/createI18nInstance??inline";
+
+
 
 // HMR handling for live updates
 export const codeHrmHotUpdate = `
@@ -42,7 +45,6 @@ let cachedMessages = {};
 if (import.meta.hot) {
 ${deepMerge}
 ${hotUpdateCallback}
-
   import.meta.hot.on('i18n-update', (data) => {
  cachedMessages = hrmHotUpdate(cachedMessages,data, globalThis.i18nApp,deepMerge);
 
@@ -61,8 +63,9 @@ export const HelperMethodsOrder: HelperMethodsRecord = {
   [SymbolEnum.imports.toString()]: 'imports',
   [messages.toString()]: SymbolEnum.messages,
   useI18nApp: SymbolEnum.useI18nApp,
+  fallbackLocales: SymbolEnum.fallbackLocales,
   [supportedLanguages.toString()]: SymbolEnum.supportedLanguages,
-  fallBackLocales: SymbolEnum.fallBackLocales,
+
   translationWrapper: SymbolEnum.translationWrapper,
   createI18nInstance: SymbolEnum.createI18nInstance,
   createI18nInstancePlugin: SymbolEnum.createI18nInstancePlugin,
@@ -87,6 +90,7 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
       import messageJson from '${config.virtualJsonId}'
 
       export const messages = messageJson
+
       `
     } else if (ops.buildAssetRefId) {
       return 'export const messages = import.meta.ROLLUP_FILE_URL_${ops.buildAssetRefId}'
@@ -97,40 +101,18 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
 
   return {
     [imports]: "import { createI18n, useI18n } from 'vue-i18n';",
-    [messages]: getMessages(),
+    [messages]: `${getMessages()}
+     export const supportedLanguages = ${messagesCombined.languagesTuple()}
+     export const fallbackLocales = ${JSON.stringify(messagesCombined.fallbackLocales)}`,
+    // [supportedLanguages]: ``,
+    // [fallbackLocales]: `export const fallbackLocales = ${JSON.stringify(messagesCombined.fallbackLocales)};`,
     [hrmHotUpdate]: codeHrmHotUpdate,
     [useI18nApp]: "export const useI18nApp = () => globalThis.i18nApp.global;",
 
-    [supportedLanguages]:
-      `export const supportedLanguages = ${messagesCombined.languagesTuple()}`,
-    [fallBackLocales]:
-      `export const fallBackLocales = supportedLanguages.reduce((acc, locale) => {
-  acc[locale] = [locale, locale === 'en' ? undefined : 'en', locale === 'de' ? undefined : 'de'].filter(a => a !== undefined);
-  if (locale === 'en') acc[locale] = [...acc[locale], 'en-US'];
-  return acc;
-}, {});`,
+
     [translationWrapper]: translateWrapperFunction,
-    [createI18nInstance]:
-      `export function createI18nInstance(options) {
-  const i18Options = {
-    fallbackLocale: fallBackLocales,
-    // missingWarn: false,
-    // fallbackWarn: false,
-    locale: navigator?.language ?? '${config.baseLocale}',
-    legacy: false,
-    ...options,
-    messages: messages,
-  };
-  const i18nApp = createI18n(i18Options);
-  globalThis.i18nApp = i18nApp;
-  // i18nApp.global.locale = navigator?.language?.split("-")?.[0] ?? '${config.baseLocale}';
-  return i18nApp;
-}`,
-    [createI18nInstancePlugin]:
-      `export function createI18nInstancePlugin(options) {
-  const i18n = createI18nInstance(options);
-  return i18n;
-}`,
+    [createI18nInstance]: codeCreateI18nInstance,
+    [createI18nInstancePlugin]: 'export const createI18nInstancePlugin = createI18nInstance;',
     [useI18nTypeSafe]:
       `export function useI18nTypeSafe(options) {
   const { t: originalT, d, n, ...rest } = useI18n({

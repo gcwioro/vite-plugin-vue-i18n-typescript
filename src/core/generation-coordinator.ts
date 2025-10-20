@@ -2,7 +2,7 @@ import path from "node:path";
 import {promises as fs} from "node:fs";
 import type {Logger} from "vite";
 import {detectKeyConflicts, ensureDir, writeFileAtomic} from "../utils";
-import {toTypesContent, toVirtualModuleContent} from "../generator";
+import {toTypesContent, toVirtualModuleContent} from "../generation/generator";
 import type {JSONObject, JSONValue} from "../types";
 import {CombinedMessages} from "./combined-messages";
 import {NormalizedConfig} from "./config";

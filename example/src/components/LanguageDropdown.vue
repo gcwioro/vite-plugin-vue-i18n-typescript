@@ -22,10 +22,10 @@
 import {
   useI18nApp,
   useI18nTypeSafe,
-  supportedLanguages,
 
+  fallbackLocales,
 } from "virtual:vue-i18n-types";
-import {type  SupportedLanguage} from "virtual:vue-i18n-types/messages";
+import {type  SupportedLanguage, supportedLanguages} from "virtual:vue-i18n-types/messages";
 // import metaX from "virtual:vue-i18n-types/supportedLanguages";
 import {ref, watch, watchEffect} from "vue";
 
@@ -40,6 +40,10 @@ watch(selectedLanguage, locale => {
   }
 }, {immediate: true})
 
-watchEffect(() => console.log("Current locale:", i18n.locale.value, `Available locales: ${i18n.availableLocales.join(',')}`, `Found by plugin locales:${supportedLanguages.join(',')}`))
+watchEffect(() => {
+
+  console.log("Current locale:", i18n.locale.value, `Available locales: ${i18n.availableLocales.join(',')}`, `Found by plugin locales:${supportedLanguages.join(',')}`)
+  console.log("Fallback locales:", fallbackLocales)
+})
 
 </script>

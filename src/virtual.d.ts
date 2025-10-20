@@ -61,7 +61,7 @@ declare module 'virtual:unplug-i18n-dts-generation' {
   export type SupportedLanguage = AllSupportedLanguages[number] | string
 
 // Message structure types
-  export type MessageSchemaGen = Record<string, unknown>
+  export type MessageSchemaGen = Record<LocaleMessageValue<VueMessageType>>
   export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>
   export type AllTranslations = I18nMessages
   export type MessagesType = I18nMessages

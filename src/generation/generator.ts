@@ -1,7 +1,7 @@
-import type {JSONObject} from './types'
-import {CombinedMessages} from './core/combined-messages'
+import type {JSONObject} from '../types'
+import {CombinedMessages} from '../core/combined-messages'
 import {RuntimeGenerationParams, RuntimeMethods} from "./treeShakeGenerator";
-import {GenerationOptions} from "./core/generation-coordinator";
+import {GenerationOptions} from "../core/generation-coordinator";
 
 
 /**
@@ -39,10 +39,17 @@ export function toTypesContent(params: {
   const bodyLines = [
     '// types content',
     `declare module '${sourceId}' {`,
-    '  import {type Plugin, type WritableComputedRef} from \'vue\'',
-    '  import type {  Composer,  ComposerOptions as Options,  ComposerOptions,  I18n,  I18nOptions,  Locale, NamedValue, TranslateOptions, UseI18nOptions} from "vue-i18n"',
-    '  import type {MessageSchemaGen, MessagesType, AllTranslations, AllTranslationKeys, SupportedLanguage} from "virtual:vue-i18n-types/messages"',
+    `  import {type Plugin, type WritableComputedRef} from 'vue'`,
+    '  import type {  Composer, Locale, FallbackLocale, ComposerOptions as Options,  ComposerOptions,  I18n,  I18nOptions,  Locale, NamedValue, TranslateOptions, UseI18nOptions} from "vue-i18n"',
+    // '  import type {MessageSchemaGen, MessagesType, AllTranslations, AllTranslationKeys, SupportedLanguage} from "virtual:vue-i18n-types/messages"',
+    `  export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>`,
+    `  export type AllTranslations = I18nMessages`,
+    `  export type MessagesType = I18nMessages`,
     '  export type TranslateParams = (string | number | undefined | null) | Record<string, unknown>',
+        `  export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
+    `  export type AllSupportedLanguages = readonly [${AllSupportedLanguages.map(l => `'${l}'`).join(', ')}]`,
+    `  export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages)}`,
+
     `  export interface I18nCustom {  (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string
       (key: AllTranslationKeys, options?: TranslateOptions): string
       (key: AllTranslationKeys, defaultMsg?: string): string
@@ -60,15 +67,11 @@ export function toTypesContent(params: {
     '  function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )',
     '  export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages',
     '  export const languages: SupportedLanguage[] | AllSupportedLanguages',
-
+    '  export const fallbackLocales: { [locale in string]: Locale[];}',
     '  export type SupportedLanguage = AllSupportedLanguages[number]',
-    `  export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
-    `  export type AllSupportedLanguages = readonly [${AllSupportedLanguages.map(l => `'${l}'`).join(', ')}]`,
-    `  export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages)}`,
-    `  export type I18nMessages = Readonly<Record<SupportedLanguage, MessageSchemaGen>>`,
-    `  export type AllTranslations = I18nMessages`,
-    `  export type MessagesType = I18nMessages`,
-    `  export const supportedLanguages: typeof AllSupportedLanguages`,
+
+
+    `  export const supportedLanguages: typeof languages`,
     `  export const useI18nApp: ()=> UseI18nTypesafeReturn`,
     `  function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>):UseI18nTypesafeReturn;`,
     ` // export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages;`,
@@ -76,7 +79,8 @@ export function toTypesContent(params: {
     '  export {  createI18nInstance,  createI18nInstancePlugin, useI18nTypeSafe };',
     '}\n\n',
     `declare module '${sourceId}/messages' {`,
-    `  export * from 'virtual:vue-i18n-types';`,
+    `  export type * from 'virtual:vue-i18n-types';`,
+    `  export { supportedLanguages , fallbackLocales } from 'virtual:vue-i18n-types';`,
     '  export const messages: MessagesType;',
     '  export default messages;',
 
