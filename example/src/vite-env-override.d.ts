@@ -43,7 +43,7 @@ declare module 'virtual:vue-i18n-types' {
 
 
 declare module 'virtual:vue-i18n-types/messages' {
-  export * from 'virtual:vue-i18n-types/messages';
+  export * from 'virtual:vue-i18n-types';
   export const messages: MessagesType;
   export default messages;
 }

@@ -168,7 +168,7 @@ export function vitePluginVueI18nTypes(
     },
 
     load(id) {
-      logger.warn('xxxx' + id)
+
       if (id.includes(config.sourceId)) {
         // Handle JSON virtual module
         if (id === config.resolvedVirtualJsonId) {
@@ -196,22 +196,6 @@ export function vitePluginVueI18nTypes(
           return methodCode;
 
         }
-
-        // Handle main virtual module
-        // if (isBuild) {
-          // Reference the virtual JSON module instead of embedding or using assets
-        // const code = createVirtualModuleCode({
-        //   config,
-        //
-        //   buildAssetRefId: config.emit.emitJson ? emittedRefId : undefined,
-        //   baseLocale: config.baseLocale,
-        //   virtualJsonId: config.virtualJsonId,
-        // }, jsonTextCache);
-        // infoLogger(`📄 [load] Generated build code for virtual module, size: ${code.length} bytes`);
-        // return code;
-
-
-        // }
       }
 
       if (config.debug) {

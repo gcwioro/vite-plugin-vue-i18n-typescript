@@ -13,10 +13,7 @@
         {{ lang }}
       </option>
     </select>
-    <!--    {{metaX}}-->
-    <!--{{meta}}-->
 
-    {{ supportedLanguagess }}
   </div>
 </template>
 
@@ -26,7 +23,7 @@ import {
   useI18nApp,
   useI18nTypeSafe,
   supportedLanguages,
-  supportedLanguagess
+
 } from "virtual:vue-i18n-types";
 import {type  SupportedLanguage} from "virtual:vue-i18n-types/messages";
 // import metaX from "virtual:vue-i18n-types/supportedLanguages";
