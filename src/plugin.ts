@@ -153,10 +153,10 @@ export function vitePluginVueI18nTypes(
         }
 
         if (id !== config.virtualId) {
-          const method = id.replace(config.sourceId, "");
-          const resolvedMethodId = "\0" + config.sourceId + method
-          infoLogger(`🔍 [resolveId] Resolved undefined virtual module: ${id} -> ${config.resolvedVirtualId} ${resolvedMethodId}`);
-          return resolvedMethodId;
+          infoLogger(`🔍 [resolveId] Resolved undefined virtual module: ${id} -> ${config.resolvedVirtualId}`);
+          // const method = id.replace(config.sourceId, "");
+          // const resolvedMethodId = "\0" + config.sourceId + method
+          // return resolvedMethodId;
           // return config.resolvedVirtualId;
         }
         return config.resolvedVirtualId;

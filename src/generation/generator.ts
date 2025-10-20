@@ -64,7 +64,7 @@ export function toTypesContent(params: {
     // '  export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages',
     // '  export const languages: SupportedLanguage[] | AllSupportedLanguages',
     // '  export const fallbackLocales: { [locale in string]: Locale[];}',
-    '  export type SupportedLanguage = AllSupportedLanguages[number]',
+
 
     `  export {fallbackLocales} from '${sourceId}/fallbackLocales'`,
     `  export {supportedLanguage} from '${sourceId}/supportedLanguage'`,
@@ -84,18 +84,19 @@ export function toTypesContent(params: {
     `  export type MessagesType = I18nMessages`,
     `  export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages)}`,
     '  export const messages: MessagesType;',
-    '  export default messages;',
+    // '  export default messages;',
 
     '}',
     `declare module '${sourceId}/supportedLanguages' {`,
+        '  export type SupportedLanguage = AllSupportedLanguages[number]',
         `  export type AllSupportedLanguages = readonly [${supportedLanguages.map(l => `'${l}'`).join(', ')}]`,
    `  export const supportedLanguages: AllSupportedLanguages;`,
-   `  export default supportedLanguages;`,
+   // `  export default supportedLanguages;`,
     '}',
      `declare module '${sourceId}/fallbackLocales' {`,
      `  import type { Locale } from "vue-i18n";`,
      `  export const fallbackLocales: { [locale in string]: Locale[];}`,
-     `  export default fallbackLocales;`,
+     // `  export default fallbackLocales;`,
         '}',
 
   ];

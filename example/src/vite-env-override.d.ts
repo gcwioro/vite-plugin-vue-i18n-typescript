@@ -25,7 +25,6 @@ declare module 'virtual:vue-i18n-types' {
   export type UseI18nTypesafeReturn = Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>,'t'> & { t: I18nCustom};
   function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>
   function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )
-  export type SupportedLanguage = AllSupportedLanguages[number]
   export {fallbackLocales} from 'virtual:vue-i18n-types/fallbackLocales'
   export {supportedLanguage} from 'virtual:vue-i18n-types/supportedLanguage'
   export {messages} from 'virtual:vue-i18n-types/messages'
@@ -43,15 +42,13 @@ declare module 'virtual:vue-i18n-types/messages' {
   export type MessagesType = I18nMessages
   export type MessageSchemaGen = {"App":{"fruits":{"apple":"apple | apples","banana":"banana | bananas","label":"You have no {fruit} | You have one {fruit} | You have {count} {fruit}"},"menu":["Home","About","Contact","Term"]},"FileMergingDemo":{"description":"This component demonstrates how translation keys from multiple files are automatically merged together","feature":{"autoMerge":"Files are discovered and merged automatically by the plugin","hotReload":"Changes to any translation file trigger hot module replacement","typeCheck":"All merged keys maintain full TypeScript type checking"},"merged":{"success":"Successfully merged {count} top-level translation namespaces!","typeSafety":"Every key has autocomplete support in your IDE"},"title":"Multi-File Translation Support"},"Greeting":{"greetings":"vite-plugin-vue-i18n-typescript - Demo Project","message":"Hello TypeScript friends!"},"InterpolationDemo":{"birthday":"Next year you'll be {age}!","profile":"{name} is {age} years old","welcome":"Welcome, {name}!"},"LanguageDropdown":{"label":"Language:"},"NestedKeysDemo":{"settings":{"notifications":{"description":"Email and push alerts","label":"Notifications"},"privacy":{"description":"Who can see your data","label":"Privacy Controls"},"theme":{"description":"Dark or light mode","label":"Theme Settings"}},"status":{"error":"An error occurred. Please try again.","success":"Operation completed successfully!","warning":"Please review your changes before proceeding."}},"PluralizationDemo":{"cart":{"status":"Your cart is empty | You have one item in your cart | You have {count} items in your cart"},"explanation":{"format":"Format: 'zero | one | many'","note":"The {count} value determines which form is used: 0=first, 1=second, 2+=third","parameter":"Pass {count} parameter matching the count value"},"files":{"uploaded":"no files uploaded | one file uploaded | {count} files uploaded"},"items":"no items | one item | {count} items","messages":"no messages | one message | {count} message","notifications":{"unread":"no unread notifications | one unread notification | {n} unread notifications"},"people":"nobody | one person | {count} people","title":"Pluralization Examples"},"TestHotUpdate":{"message":"This is a test for hot module replacement"}}
   export const messages: MessagesType;
-  export default messages;
 }
 declare module 'virtual:vue-i18n-types/supportedLanguages' {
+  export type SupportedLanguage = AllSupportedLanguages[number]
   export type AllSupportedLanguages = readonly ['de', 'en']
   export const supportedLanguages: AllSupportedLanguages;
-  export default supportedLanguages;
 }
 declare module 'virtual:vue-i18n-types/fallbackLocales' {
   import type { Locale } from "vue-i18n";
   export const fallbackLocales: { [locale in string]: Locale[];}
-  export default fallbackLocales;
 }

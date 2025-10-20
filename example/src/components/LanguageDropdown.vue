@@ -23,7 +23,7 @@ import {
   useI18nApp,
   useI18nTypeSafe
 } from "virtual:vue-i18n-types";
-import fallbackLocales from "virtual:vue-i18n-types/fallbackLocales";
+import {fallbackLocales} from "virtual:vue-i18n-types/fallbackLocales";
 
 // import metaX from "virtual:vue-i18n-types/supportedLanguages";
 import {
