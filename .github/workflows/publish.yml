@@ -6,14 +6,23 @@ on:
       - 'release/**'     # publish alpha on pushes to git-flow release branches
     tags:
       - 'v*.*.*'         # publish stable on semver tags (e.g., v1.2.3)
-  workflow_dispatch:      # manual trigger
-
-
-
+  workflow_dispatch: # manual trigger with version parameter
+    inputs:
+      npm_version:
+        description: 'Version to publish (e.g., 1.2.3 or 1.2.3-alpha.1)'
+        required: true
+      #channel
+      release_channel:
+        description: 'Release channel (stable or alpha)'
+        required: true
+        default: 'stable'
+permissions:
+  contents: read
 jobs:
   release:
     name: Publish stable (tagged release)
-    if: startsWith(github.ref, 'refs/tags/v')
+    #    // if ref is a tag or release channel is stable
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_channel == 'stable'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +44,14 @@ jobs:
       - name: Test
         run: npm test -- --run
 
+      - name: Set version if npm_version input is provided
+        if: ${{ github.event.inputs.npm_version != '' }}
+        shell: bash
+        run: |
+          BASE_VERSION="${{ github.event.inputs.npm_version }}"
+          echo "Setting release version to ${PRERELEASE_VERSION}"
+          npm --no-git-tag-version version "${PRERELEASE_VERSION}"
+
       - name: Build
         run: npm run build
 
@@ -45,15 +62,15 @@ jobs:
 
   alpha-release:
     name: Publish alpha (git-flow release/*)
-    if: startsWith(github.ref, 'refs/heads/release/')
+    if: startsWith(github.ref, 'refs/heads/release/') || github.event.inputs.release_channel == 'alpha'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: 22
+          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm install
