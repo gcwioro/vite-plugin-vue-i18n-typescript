@@ -58,7 +58,8 @@ export function toTypesContent(params: {
     "  export type UseI18nTypesafeReturn = Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>,'t'> & { t: I18nCustom};",
     '  function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>',
     '  function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T): Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )',
-    '  export const languages: SupportedLanguage[] | AllSupportedLanguages' ,
+    '  export const supportedLanguages: SupportedLanguage[] | AllSupportedLanguages',
+    '  export const languages: SupportedLanguage[] | AllSupportedLanguages',
 
     '  export type SupportedLanguage = AllSupportedLanguages[number]',
     `  export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}`,
