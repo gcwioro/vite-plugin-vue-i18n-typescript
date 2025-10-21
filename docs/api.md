@@ -24,24 +24,37 @@ console.log(`Locales: ${result.locales.join(', ')}`)
 
 ## Virtual Module Structure
 
-The plugin generates TypeScript declarations for two virtual modules:
+The plugin generates TypeScript declarations for virtual modules with modular imports:
 
-### `virtual:vue-i18n-types/messages`
+### Main Module: `virtual:vue-i18n-types`
 
-Exports the translation messages and related types:
+Exports helper functions and re-exports from sub-modules:
 
-- `messages` - The complete messages object for all locales
-- `AllTranslationKeys` - Union type of all translation keys
-- `AvailableLocale` - Union type of supported locales
-- `MessageSchemaGen` - Structure of the message schema
-
-### `virtual:vue-i18n-types`
-
-Exports helper functions for creating i18n instances:
-
+- `useI18nTypeSafe()` - Type-safe composable for components
+- `useI18nApp()` - App-level i18n composable
 - `createI18nInstance()` - Creates a standard i18n instance
 - `createI18nInstancePlugin()` - Creates a Vue plugin with i18n
-- `useI18nTypeSafe()` - Type-safe composable for components
+- `availableLocales` - Array of available locale codes
+- `fallbackLocales` - Object with locale fallback chains
+- `messages` - The complete messages object for all locales
+
+### Sub-modules (for tree-shaking)
+
+#### `virtual:vue-i18n-types/messages`
+- `messages` - The complete messages object for all locales
+- `AllTranslationKeys` - Union type of all translation keys
+- `MessageSchemaGen` - Structure of the message schema
+- Type exports for i18n messages
+
+#### `virtual:vue-i18n-types/availableLocales`
+
+- `availableLocales` - Array of supported locale codes
+- `AvailableLocale` - Union type of supported locales
+- `AvailableLocales` - Readonly tuple type of locales
+
+#### `virtual:vue-i18n-types/fallbackLocales`
+
+- `fallbackLocales` - Object mapping locales to their fallback chains
 
 ## API Reference
 
@@ -350,6 +363,79 @@ async function generateAllTypes() {
 generateAllTypes()
 ```
 
+## Using the Generated Virtual Modules
+
+After generating types, you can import and use the virtual modules in your application:
+
+### Basic Component Usage
+
+```typescript
+import { useI18nTypeSafe } from 'virtual:vue-i18n-types'
+
+export default defineComponent({
+  setup() {
+    const { t } = useI18nTypeSafe()
+
+    // Full type safety and autocomplete
+    const message = t('welcome.message')
+
+    return { message }
+  }
+})
+```
+
+### Creating i18n Instances
+
+```typescript
+import { createI18nInstance, availableLocales } from 'virtual:vue-i18n-types'
+
+// Create a standalone instance
+const i18n = createI18nInstance({
+  locale: 'en',
+  fallbackLocale: 'en'
+})
+
+// Check available locales
+console.log('Available languages:', availableLocales)
+```
+
+### Vue Plugin Setup
+
+```typescript
+import { createApp } from 'vue'
+import { createI18nInstancePlugin } from 'virtual:vue-i18n-types'
+import App from './App.vue'
+
+const app = createApp(App)
+
+// Auto-configured i18n plugin
+app.use(createI18nInstancePlugin({
+  locale: 'en',
+  fallbackLocale: 'en'
+}))
+
+app.mount('#app')
+```
+
+### Tree-shaking with Sub-modules
+
+```typescript
+// Import only what you need
+import { messages } from 'virtual:vue-i18n-types/messages'
+import { availableLocales } from 'virtual:vue-i18n-types/availableLocales'
+import { fallbackLocales } from 'virtual:vue-i18n-types/fallbackLocales'
+
+// Use with external i18n setup
+import { createI18n } from 'vue-i18n'
+
+const i18n = createI18n({
+  locale: 'en',
+  fallbackLocale: fallbackLocales['en'] || 'en',
+  messages,
+  availableLocales
+})
+```
+
 ## Tips
 
 1. **Use in build scripts** to ensure types are always generated before builds
@@ -357,3 +443,5 @@ generateAllTypes()
 3. **Use verbose mode** during development for detailed logs
 4. **Generate debug files** with `virtualFilePath` when troubleshooting
 5. **Cache results** when processing multiple packages in sequence
+6. **Import sub-modules** for better tree-shaking when you don't need all features
+7. **Use `useI18nApp()`** for app-level i18n access outside components
