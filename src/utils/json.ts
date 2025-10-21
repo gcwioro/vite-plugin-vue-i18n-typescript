@@ -93,7 +93,7 @@ export function getJsonLeafPaths(obj: Record<string, unknown>): string[] {
     if (isPlainObject(value)) {
       const entries = Object.entries(value);
       if (entries.length === 0) {
-        // Empty object – no leaves to add (even if nested)
+        if (currentPath) paths.push(currentPath);
         return;
       }
       for (const [k, v] of entries) {
