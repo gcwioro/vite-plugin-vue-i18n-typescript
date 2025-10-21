@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite",
     "dev:debug": "vite",
-    "build": "bun x vite-plugin-vue-i18n-types generate --base-locale en --verbose && run-p typecheck \"build-only {@}\" --",
+    "build": "run-p typecheck \"build-only {@}\" --",
+    "build:generate": "bun x vite-plugin-vue-i18n-types generate --base-locale en --verbose && run-p typecheck \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "bun run vite build",
     "typecheck": "vue-tsc --build",
@@ -25,6 +26,7 @@
     "vue": "^3.5.22"
   },
   "devDependencies": {
+    "@intlify/devtools-types": "^11.1.12",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^24.8.1",
     "@vitejs/plugin-vue": "^6.0.1",

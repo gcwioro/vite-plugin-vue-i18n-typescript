@@ -13,29 +13,28 @@
         {{ lang }}
       </option>
     </select>
+    {{ virtualModuleInline }}
+    {{ vavailableLocalesInline }}
+    {{ fallbackModuleInline }}
 
   </div>
 </template>
 
 <script setup lang="ts">
-
-import {
-  useI18nApp,
-  useI18nTypeSafe
-} from "virtual:vue-i18n-types";
+import moduleInline, {useI18nApp, useI18nTypeSafe} from "virtual:vue-i18n-types";
+import {type  AvailableLocale, availableLocales} from "virtual:vue-i18n-types/availableLocales";
+import vavailableLocalesInline from "virtual:vue-i18n-types/availableLocales??inline";
+import virtualModuleInline from "virtual:vue-i18n-types/createI18nInstance??raw";
 import {fallbackLocales} from "virtual:vue-i18n-types/fallbackLocales";
+import fallbackModuleInline from "virtual:vue-i18n-types/fallbackLocales??raw";
 
-// import metaX from "virtual:vue-i18n-types/supportedLanguages";
-import {
-  type  SupportedLanguage,
-  supportedLanguages
-} from "virtual:vue-i18n-types/supportedLanguages";
+// import metaX from "virtual:vue-i18n-types/availableLocales";
 import {ref, watch, watchEffect} from "vue";
 
 const i18n = useI18nApp()
 const {t} = useI18nTypeSafe()
 
-const selectedLanguage = ref<SupportedLanguage>('en')
+const selectedLanguage = ref<AvailableLocale>('en')
 
 watch(selectedLanguage, locale => {
   if (locale) {
@@ -45,7 +44,7 @@ watch(selectedLanguage, locale => {
 
 watchEffect(() => {
 
-  console.log("Current locale:", i18n.locale.value, `Available locales: ${i18n.availableLocales.join(',')}`, `Found by plugin locales:${supportedLanguages.join(',')}`)
+  console.log("Current locale:", i18n.locale.value, `Available locales: ${i18n.availableLocales.join(',')}`, `Found by plugin locales:${availableLocales.join(',')}`)
   console.log("Fallback locales:", fallbackLocales)
 })
 

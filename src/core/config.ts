@@ -81,7 +81,7 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): Normal
     resolvedVirtualId: "\0" + sourceId,
     virtualJsonId: sourceId + '/messages',
     // resolvedLanguagesVirtualId: "\0" + sourceId,
-    // virtualLanguagesId: sourceId + '/supportedLanguages',
+    // virtualLanguagesId: sourceId + '/availableLocales',
     resolvedVirtualJsonId: "\0" + sourceId + '/messages',
   };
 

@@ -143,7 +143,8 @@ export function vitePluginVueI18nTypes(
       }
     },
 
-    resolveId(id) {
+    resolveId(idResolve) {
+      const id = idResolve.replaceAll(/\?\?.*/g, '');
       if (id.includes(config.sourceId)) {
 
 
@@ -152,13 +153,13 @@ export function vitePluginVueI18nTypes(
           return config.resolvedVirtualJsonId;
         }
 
-        // Handle sub-modules like /supportedLanguages, /fallbackLocales
+        // Handle sub-modules like /availableLocales, /fallbackLocales
         if (id !== config.virtualId && id.startsWith(config.sourceId + '/')) {
           const resolvedId = '\0' + id;
           infoLogger(`🔍 [resolveId] Resolved sub-module: ${id} -> ${resolvedId}`);
           return resolvedId;
         }
-
+        infoLogger(`🔍 [resolveId] Resolved module: ${id} -> ${config.resolvedVirtualId}`);
         return config.resolvedVirtualId;
       }
       if (config.debug) {
@@ -167,8 +168,8 @@ export function vitePluginVueI18nTypes(
       return null;
     },
 
-    load(id) {
-
+    load(idLoad) {
+      const id = idLoad.replaceAll(/\?\?.*/g, '');
       if (id.includes(config.sourceId)) {
         // Handle JSON virtual module
         if (id === config.resolvedVirtualJsonId) {
@@ -177,7 +178,7 @@ export function vitePluginVueI18nTypes(
           return {
             code: `
             export default ${combinedMessages.messagesJsonString}
-            // export const supportedLanguages = ${combinedMessages.languagesTuple()}
+            // export const availableLocales = ${combinedMessages.languagesTuple()}
             // export const fallbackLocales = ${JSON.stringify(combinedMessages.fallbackLocales)}
 
             `,
@@ -188,14 +189,14 @@ export function vitePluginVueI18nTypes(
           config: {...config, logger},
           buildAssetRefId: config.emit.emitJson ? emittedRefId : undefined,
         }, combinedMessages);
-        infoLogger(`📄 [load] Generated dev code for virtual module`);
+        infoLogger(`📄 [load] Generated dev code for virtual module: ${id}`);
 
         if (id === config.resolvedVirtualId) {
           infoLogger(`📄 [load] Loading virtual module: ${id}, isBuild: ${isBuild}`);
           return code.toFileContent()
         } else {
           // Handle sub-modules - extract the part after the sourceId
-          // id is like "\0virtual:vue-i18n-types/supportedLanguages"
+          // id is like "\0virtual:vue-i18n-types/availableLocales"
           const cleanId = id.replace('\0', '');
           const method = cleanId.replace(config.sourceId + '/', '').trim();
           infoLogger(`📄 [load (Sub-module)] Loading virtual sub-module: ${cleanId}, method: ${method}, isBuild: ${isBuild}`);

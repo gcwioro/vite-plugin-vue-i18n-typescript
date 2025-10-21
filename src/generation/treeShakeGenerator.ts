@@ -11,7 +11,7 @@ export enum SymbolEnum {
   hrmHotUpdate = "_hrmHotUpdate",
 
   useI18nApp = "useI18nApp",
-  supportedLanguages = "supportedLanguages",
+  availableLocales = "availableLocales",
   fallbackLocales = "fallbackLocales",
   translationWrapper = "translationWrapper",
   createI18nInstance = "createI18nInstance",
@@ -23,7 +23,7 @@ export enum SymbolEnum {
 export const imports = SymbolEnum.imports;
 export const messages = SymbolEnum.messages;
 export const hrmHotUpdate = SymbolEnum.hrmHotUpdate;
-export const supportedLanguages = SymbolEnum.supportedLanguages;
+export const availableLocales = SymbolEnum.availableLocales;
 export const useI18nApp = SymbolEnum.useI18nApp;
 export const fallbackLocales = SymbolEnum.fallbackLocales;
 export const translationWrapper = SymbolEnum.translationWrapper;
@@ -64,7 +64,7 @@ export const HelperMethodsOrder: HelperMethodsRecord = {
   [messages.toString()]: SymbolEnum.messages,
   useI18nApp: SymbolEnum.useI18nApp,
   fallbackLocales: SymbolEnum.fallbackLocales,
-  [supportedLanguages.toString()]: SymbolEnum.supportedLanguages,
+  [availableLocales.toString()]: SymbolEnum.availableLocales,
 
   translationWrapper: SymbolEnum.translationWrapper,
   createI18nInstance: SymbolEnum.createI18nInstance,
@@ -102,14 +102,14 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
   return {
     [imports]: "import { createI18n, useI18n } from 'vue-i18n';",
     [messages]: getMessages(),
-    [supportedLanguages]: `export const supportedLanguages = ${messagesCombined.languagesTuple()};`,
+    [availableLocales]: `export const availableLocales = ${messagesCombined.languagesTuple()};`,
     [fallbackLocales]: `export const fallbackLocales = ${JSON.stringify(messagesCombined.fallbackLocales)};`,
     [hrmHotUpdate]: codeHrmHotUpdate,
     [useI18nApp]: "export const useI18nApp = () => globalThis.i18nApp.global;",
 
 
-    [translationWrapper]: translateWrapperFunction,
-    [createI18nInstance]: codeCreateI18nInstance,
+    [translationWrapper]: 'export ' + translateWrapperFunction,
+    [createI18nInstance]: 'export ' + codeCreateI18nInstance,
     [createI18nInstancePlugin]: 'export const createI18nInstancePlugin = createI18nInstance;',
     [useI18nTypeSafe]:
       `export function useI18nTypeSafe(options) {
@@ -166,6 +166,8 @@ export class RuntimeMethods {
 
 
   getFileContentFor(target: string | SymbolEnum, separator = "\n\n"): string {
+    // remove "??*" from target
+
     const resolved = this.parseSymbolEnumKey(target);
 
     const resolvedCode = resolved;//? this._data?.[resolved] : this._data?.[target];

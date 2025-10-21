@@ -13,11 +13,8 @@
     "allowImportingTsExtensions": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "skipLibCheck": true,
+    "isolatedModules": true,
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "types": [
-      "node",
-      "vite/client"
-    ]
+    "moduleResolution": "Bundler"
   }
 }

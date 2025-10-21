@@ -32,7 +32,7 @@ Exports the translation messages and related types:
 
 - `messages` - The complete messages object for all locales
 - `AllTranslationKeys` - Union type of all translation keys
-- `SupportedLanguage` - Union type of supported locales
+- `AvailableLocale` - Union type of supported locales
 - `MessageSchemaGen` - Structure of the message schema
 
 ### `virtual:vue-i18n-types`

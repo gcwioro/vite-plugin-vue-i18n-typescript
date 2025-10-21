@@ -80,7 +80,7 @@ export type JSONArray = JSONValue[]
 export interface DtsContentParams<TMessages extends JSONValue = JSONValue> {
   messages: Record<string, TMessages>
   baseLocale: string
-  AllSupportedLanguages: string[]
+  AvailableLocales: string[]
   banner?: string
   sourceId?: string
 }
