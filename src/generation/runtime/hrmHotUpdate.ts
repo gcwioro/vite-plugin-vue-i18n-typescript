@@ -1,17 +1,21 @@
 import {CombinedMessages} from "../../core/combined-messages";
 
-import {ComposerOptions} from "vue-i18n";
+import {Composer} from "vue-i18n";
 import {JSONObject} from "../../types";
+import {MessagesType} from "virtual:unplug-i18n-dts-generation";
 
-// import deepMergeFunction from './../../utils/merge.ts??inline';
+export type  I18nGlobalApp = Composer<MessagesType, Record<string, unknown>, Record<string, unknown>, object, false>
+export type I18nApptype = { global: I18nGlobalApp }
+declare type globalThisType = { i18nModule: I18nApptype }
+
+declare const globalThis: globalThisType;
 
 
 export function hrmHotUpdate(messages: Record<string, JSONObject>, data: {
   messages: CombinedMessages,
-  timestamp: number
-}, app?: Partial<ComposerOptions>, deepMerge: (a: any, b: any) => any) {
-// @ts-expect-error globalThis i18nModule not typed
-  const i18nModule = app || globalThis.i18nModule;
+  timestamp: I18nApptype
+}, app: I18nGlobalApp, deepMerge: (a: any, b: any) => any) {
+  const i18nModule = app ?? globalThis?.i18nModule?.global;
   console.log('[i18n] Received hot update with new messages', data.messages.languages, data.messages.messages[data.messages.languages[0]]);
 
   // Update the exported messages
@@ -24,13 +28,13 @@ export function hrmHotUpdate(messages: Record<string, JSONObject>, data: {
     // Update messages for all locales
     data.messages.languages.forEach(locale => {
 
-      i18nModule.global.setLocaleMessage(locale, data.messages.messages[locale]);
+      i18nModule.setLocaleMessage(locale, data.messages.messages[locale]);
 
     });
 
     // Force re-render by updating a reactive property
-    const currentLocale = i18nModule.global.locale.value;
-    i18nModule.global.locale.value = currentLocale;
+    const currentLocale = i18nModule.locale.value;
+    i18nModule.locale.value = currentLocale;
 
     console.log('[i18n] Messages updated successfully');
   }

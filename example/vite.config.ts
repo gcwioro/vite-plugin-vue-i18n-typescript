@@ -2,7 +2,7 @@
 /// <reference types="vite/client" />
 
 import {join} from "path";
-import {fileURLToPath, URL} from "url";
+import {URL, fileURLToPath} from "url";
 
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
@@ -33,7 +33,7 @@ export default defineConfig({
       baseLocale: 'en',
       // virtualFilePath: 'src/i18n/i18n.virtual.gen.js',
       debug: true,
-      virtualFilePath: './src/i18n/virtual.js',
+      // virtualFilePath: './src/i18n/virtual.js',
       emit: {emitJson: false, inlineDataInBuild: true}
     }),
     tailwindcss(),

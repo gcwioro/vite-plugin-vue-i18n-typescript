@@ -46,7 +46,7 @@ if (import.meta.hot) {
 ${deepMerge}
 ${hotUpdateCallback}
   import.meta.hot.on('i18n-update', (data) => {
- cachedMessages = hrmHotUpdate(cachedMessages,data, globalThis.i18nApp,deepMerge);
+ cachedMessages = hrmHotUpdate(cachedMessages,data, globalThis.i18nApp.global,deepMerge);
 
   });
 }`
@@ -85,7 +85,11 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
   const {config} = ops;
 
   function getMessages() {
-    if (config.virtualJsonId) {
+    // When inlineDataInBuild is true, always inline the data directly
+    // This avoids issues with virtual JSON modules in library builds
+    if (config.inlineDataInBuild) {
+      return `export const messages = ${messagesCombined.messagesJsonString};`
+    } else if (config.virtualJsonId) {
       return `
       import messageJson from '${config.virtualJsonId}'
 
@@ -176,6 +180,18 @@ export class RuntimeMethods {
       console.error(`getFileContentFor: No code found for target "${target}". Available keys: ${Object.entries(this._data).join(", ")}`);
       return this.toFileContent(target);
     }
-    return [this._data[imports], resolvedCode, `export default ${target}`].join(separator);
+
+    // For sub-modules, we only need the specific export, not vue-i18n imports
+    // unless the module needs them (like useI18nTypeSafe)
+    const needsVueI18nImports = ['useI18nTypeSafe', 'createI18nInstance', 'createI18nInstancePlugin'].includes(target);
+    const importsCode = needsVueI18nImports ? this._data[imports] : '';
+
+    // Messages, availableLocales, and fallbackLocales are already exported in resolvedCode
+    // so we don't need to add 'export default'
+    const needsDefaultExport = !['messages', 'availableLocales', 'fallbackLocales', 'useI18nApp', 'translationWrapper', 'useI18nTypeSafe', 'createI18nInstance', 'createI18nInstancePlugin'].includes(target);
+    const defaultExportCode = needsDefaultExport ? `export default ${target}` : '';
+
+    const parts = [importsCode, resolvedCode, defaultExportCode].filter(Boolean);
+    return parts.join(separator);
   }
 }

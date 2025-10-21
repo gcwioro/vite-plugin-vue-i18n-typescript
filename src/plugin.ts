@@ -147,18 +147,22 @@ export function vitePluginVueI18nTypes(
       const id = idResolve.replaceAll(/\?\?.*/g, '');
       if (id.includes(config.sourceId)) {
 
-
-        if (id === config.virtualJsonId) {
-          infoLogger(`🔍 [resolveId] Resolved virtual JSON module: ${id} -> ${config.resolvedVirtualJsonId}`);
-          return config.resolvedVirtualJsonId;
-        }
-
-        // Handle sub-modules like /availableLocales, /fallbackLocales
+        // Handle sub-modules FIRST, before checking virtualJsonId
+        // This ensures 'virtual:vue-i18n-types/messages' is treated as a sub-module
+        // not as the raw JSON virtualJsonId
         if (id !== config.virtualId && id.startsWith(config.sourceId + '/')) {
+          // Special case: if this is actually requesting the raw JSON, use virtualJsonId
+          // (This would only happen if someone explicitly imports with a different path)
+          if (id === config.virtualJsonId && id.endsWith('/messages.json')) {
+            infoLogger(`🔍 [resolveId] Resolved virtual JSON module: ${id} -> ${config.resolvedVirtualJsonId}`);
+            return config.resolvedVirtualJsonId;
+          }
+
           const resolvedId = '\0' + id;
           infoLogger(`🔍 [resolveId] Resolved sub-module: ${id} -> ${resolvedId}`);
           return resolvedId;
         }
+
         infoLogger(`🔍 [resolveId] Resolved module: ${id} -> ${config.resolvedVirtualId}`);
         return config.resolvedVirtualId;
       }
