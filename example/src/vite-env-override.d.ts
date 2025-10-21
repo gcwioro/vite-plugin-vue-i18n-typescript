@@ -57,3 +57,18 @@ declare module 'virtual:vue-i18n-types/fallbackLocales' {
   export const fallbackLocales: { [locale in string]: Locale[];}
   export default fallbackLocales;
 }
+declare module 'virtual:vue-i18n-types/createI18nInstance' {
+  import type {createI18nInstance as ImportedType} from 'virtual:vue-i18n-types'
+  export const createI18nInstance: ImportedType
+  export default createI18nInstance;
+}
+declare module 'virtual:vue-i18n-types/createI18nInstancePlugin' {
+  import type {createI18nInstancePlugin as ImportedType} from 'virtual:vue-i18n-types'
+  export const createI18nInstancePlugin: ImportedType
+  export default createI18nInstancePlugin;
+}
+declare module 'virtual:vue-i18n-types/useI18nTypeSafe' {
+  import type {useI18nTypeSafe as ImportedType} from 'virtual:vue-i18n-types'
+  export const useI18nTypeSafe: ImportedType
+  export default useI18nTypeSafe;
+}

@@ -89,6 +89,21 @@ declare module '${sourceId}/fallbackLocales' {
   export const fallbackLocales: { [locale in string]: Locale[];}
   export default fallbackLocales;
 }
+declare module '${sourceId}/createI18nInstance' {
+  import type {createI18nInstance as ImportedType} from '${sourceId}'
+  export const createI18nInstance: ImportedType
+  export default createI18nInstance;
+}
+declare module '${sourceId}/createI18nInstancePlugin' {
+  import type {createI18nInstancePlugin as ImportedType} from '${sourceId}'
+  export const createI18nInstancePlugin: ImportedType
+  export default createI18nInstancePlugin;
+}
+declare module '${sourceId}/useI18nTypeSafe' {
+  import type {useI18nTypeSafe as ImportedType} from '${sourceId}'
+  export const useI18nTypeSafe: ImportedType
+  export default useI18nTypeSafe;
+}
 `,
 
 
