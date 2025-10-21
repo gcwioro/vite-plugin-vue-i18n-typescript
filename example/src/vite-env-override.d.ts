@@ -26,9 +26,9 @@ declare module 'virtual:vue-i18n-types' {
   }
   export type UseI18nTypesafeReturn = Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>,'t'> & { t: I18nCustom};
   export function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T):
-      I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>
+      I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] :  Record<string, unknown>, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]:  Record<string, unknown>, T["locale"] extends string ? T["locale"] : Locale, false>
   export function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T):
-      Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )
+      Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] :  Record<string, unknown>, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )
 
   export {fallbackLocales} from 'virtual:vue-i18n-types/fallbackLocales'
   export {availableLocales} from 'virtual:vue-i18n-types/availableLocales'
