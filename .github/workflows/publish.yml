@@ -114,7 +114,7 @@ jobs:
         run: printf "//registry.npmjs.org/:_authToken={{ secrets.NPM_TOKEN }}\n" >> .npmrc
       - name: Publish (alpha dist-tag)
         continue-on-error: true
-        run: bun x npm publish --tag alpha
+        run: bun publish --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish (alpha dist-tag)
