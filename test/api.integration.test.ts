@@ -38,10 +38,10 @@ describe('generateI18nTypes API', () => {
     )
 
     expect(typesContent).toContain("'App.fruits.apple'")
-    expect(typesContent).toMatch(/export type AllSupportedLanguages = readonly \['de', 'en'\]/)
+    expect(typesContent).toMatch(/export type AvailableLocales = readonly \['de', 'en'\]/)
     expect(typesContent).toContain('export type MessageSchemaGen = {"App"')
 
-    expect(virtualContent).toMatch(/export const supportedLanguages = \['de', 'en'\];/)
+    expect(virtualContent).toMatch(/export const availableLocales = \['de', 'en'\];/)
     expect(virtualContent).toContain('export const messages =')
   })
 
@@ -117,7 +117,7 @@ describe('generateI18nTypes API', () => {
 
     expect(typesContent).not.toContain("'App.fruits.apple'")
     expect(typesContent).toContain("'Transformed.value'")
-    expect(typesContent).toMatch(/export type AllSupportedLanguages = readonly \['de', 'en'\]/)
+    expect(typesContent).toMatch(/export type AvailableLocales = readonly \['de', 'en'\]/)
     expect(typesContent).toContain('Override from transform')
   })
 })

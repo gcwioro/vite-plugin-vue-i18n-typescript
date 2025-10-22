@@ -3,6 +3,7 @@ import {promises as fs} from "node:fs";
 import type {Logger} from "vite";
 import {toArray} from "../utils";
 import {parseJSONWithLocation, wrapErrorWithFile} from "../utils/error-formatter";
+import {CustomLogger} from "../createConsoleLogger";
 
 export interface FileManagerOptions {
   include: string | string[];
@@ -11,7 +12,7 @@ export interface FileManagerOptions {
   getLocaleFromPath: (absPath: string, root: string) => string | null;
   transformJson?: (json: unknown, absPath: string) => unknown;
   merge: (a: any, b: any) => any;
-  logger?: Logger;
+  logger?: CustomLogger;
   debug?: boolean;
 }
 

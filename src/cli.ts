@@ -4,8 +4,9 @@ import path from "node:path";
 import {parseArgs} from "node:util";
 import {watch} from "chokidar";
 import {mkdir, writeFile} from "node:fs/promises";
-import type {GenerateTypesOptions} from "./api";
 import {generateI18nTypes} from "./api";
+import {createColoredLogger} from "./createConsoleLogger";
+import {GenerationOptions, normalizeConfig} from "./core/config";
 
 const helpText = `
 vite-plugin-vue-i18n-typescript CLI
@@ -101,7 +102,7 @@ async function mergeExportCommand(args: string[]) {
 
   const debugEnabled = values.debug ?? values.verbose ?? false;
   const verbose = debugEnabled;
-  const rootDir = path.resolve(values.root || process.cwd());
+  const rootDir = path.resolve(values.root ?? process.cwd());
 
   if (verbose) {
     console.log("🚀 Exporting merged translation messages...\n");
@@ -113,13 +114,15 @@ async function mergeExportCommand(args: string[]) {
   // Import FileManager to read and merge locale files
   const {FileManager} = await import("./core/file-manager");
   const {normalizeConfig} = await import("./core/config");
-
+  const {createColoredLogger} = await import('./createConsoleLogger')
+  const logger = createColoredLogger(debugEnabled ? 'debug' : 'info', {prefix: 'merge-export'})
   const config = normalizeConfig({
     include: values.include,
     exclude: values.exclude,
+    root: rootDir,
     merge: values.merge as "deep" | "shallow" | undefined,
     debug: debugEnabled,
-  });
+  }, logger, {root: rootDir});
 
   const fileManager = new FileManager({
     include: config.include,
@@ -128,16 +131,7 @@ async function mergeExportCommand(args: string[]) {
     getLocaleFromPath: config.getLocaleFromPath,
     transformJson: config.transformJson,
     merge: config.mergeFunction,
-    logger: {
-      info: (msg: string) => verbose && console.log(`[info] ${msg}`),
-      warn: (msg: string) => console.warn(`[warn] ${msg}`),
-      error: (msg: string) => console.error(`[error] ${msg}`),
-      warnOnce: (msg: string) => console.warn(`[warn] ${msg}`),
-      clearScreen: () => {
-      },
-      hasErrorLogged: () => false,
-      hasWarned: false,
-    },
+    logger,
     debug: debugEnabled,
   });
 
@@ -256,49 +250,22 @@ async function main() {
     });
 
     debugEnabled = values.debug ?? values.verbose ?? false;
+    const logger = createColoredLogger(debugEnabled ? 'debug' : 'info', {prefix: 'merge-export'})
 
     // Build options
-    const options: GenerateTypesOptions = {
+    const options = normalizeConfig({
+      ...values,
       root: values.root,
-      verbose: debugEnabled,
+      include: values.include,
       debug: debugEnabled,
-    };
+      baseLocale: values["base-locale"],
+      typesPath: values["types-path"],
+      virtualFilePath: values["virtual-file-path"],
+      sourceId: values["source-id"],
+      banner: values.banner,
+      merge: values.merge as "deep" | "shallow" | undefined,
 
-    if (values.include) {
-      options.include = values.include;
-    }
-
-    if (values.exclude) {
-      options.exclude = values.exclude;
-    }
-
-    if (values["base-locale"]) {
-      options.baseLocale = values["base-locale"];
-    }
-
-    if (values["types-path"]) {
-      options.typesPath = values["types-path"];
-    }
-
-    if (values["virtual-file-path"]) {
-      options.virtualFilePath = values["virtual-file-path"];
-    }
-
-    if (values["source-id"]) {
-      options.sourceId = values["source-id"];
-    }
-
-    if (values.banner) {
-      options.banner = values.banner;
-    }
-
-    if (values.merge) {
-      if (values.merge !== "deep" && values.merge !== "shallow") {
-        console.error(`❌ Error: --merge must be either "deep" or "shallow"`);
-        process.exit(1);
-      }
-      options.merge = values.merge;
-    }
+    }, logger, {root: values.root});
 
     // Run generation
     let lastResult: Awaited<ReturnType<typeof generateI18nTypes>> | undefined;
@@ -349,7 +316,7 @@ async function main() {
         process.exit(1);
       }
 
-      const rootDir = path.resolve(options.root || process.cwd());
+      const rootDir = path.resolve(options.root);
       const includePatterns = options.include || ['src/**/locales/*.json'];
 
       if (options.debug) {

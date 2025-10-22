@@ -19,15 +19,12 @@
     "allowImportingTsExtensions": true,
     "useDefineForClassFields": true,
     "target": "esnext",
-    "module": "esnext",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "noImplicitAny": false,
     "sourceMap": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": [
-      "vite/client"
-    ],
     "esModuleInterop": true,
     "lib": [
       "esnext",

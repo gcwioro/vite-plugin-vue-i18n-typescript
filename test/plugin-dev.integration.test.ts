@@ -92,10 +92,10 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
 
         expect(updatePayload?.type).toBe('custom')
         expect(updatePayload?.event).toBe('i18n-update')
-        expect(updatePayload?.data?.messages?.en?.App?.fruits?.blueberry).toBe(
+        expect(updatePayload?.data?.messages?.messages?.en?.App?.fruits?.blueberry).toBe(
           'blueberry | blueberries'
         )
-        expect(updatePayload?.data?.messages?.de?.App?.fruits?.apple).toBe(
+        expect(updatePayload?.data?.messages?.messages?.de?.App?.fruits?.apple).toBe(
           'Apfel | Äpfel'
         )
         expect(typeof updatePayload?.data?.timestamp).toBe('number')

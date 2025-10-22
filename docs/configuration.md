@@ -175,17 +175,6 @@ i18nTypes({
 import messages from 'virtual:my-i18n/messages'
 ```
 
-#### `devUrlPath`
-
-- **Type:** `string`
-- **Default:** `'/_virtual_locales.json'`
-- **Description:** Dev server endpoint for serving locale data
-
-```typescript
-i18nTypes({
-  devUrlPath: '/__i18n__/messages.json'
-})
-```
 
 ### Runtime Options
 
@@ -274,7 +263,6 @@ export default defineConfig({
 
       // Virtual Module
       sourceId: 'virtual:i18n-messages',
-      devUrlPath: '/__i18n__/locales.json',
 
       // Runtime
       emit: {

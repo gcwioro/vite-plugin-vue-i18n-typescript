@@ -28,6 +28,7 @@ import {useI18nTypeSafe} from "virtual:vue-i18n-types";
 import messages from "virtual:vue-i18n-types/messages";
 import {computed} from "vue";
 
+
 const {tm, locale} = useI18nTypeSafe()
 
 // Get all messages for the current locale
