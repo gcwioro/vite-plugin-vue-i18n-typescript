@@ -111,9 +111,14 @@ jobs:
           echo "Setting pre-release version to ${PRERELEASE_VERSION}"
           npm --no-git-tag-version version "${PRERELEASE_VERSION}"
       - name: Configure npm for publishing
-        run: printf "//registry.npmjs.org/:_authToken={{ secrets.NPM_TOKEN }}\n" >> ~/.npmrc
-
+        run: printf "//registry.npmjs.org/:_authToken={{ secrets.NPM_TOKEN }}\n" >> .npmrc
       - name: Publish (alpha dist-tag)
-        run: bun publish --tag alpha
+        continue-on-error: true
+        run: bun x npm publish --tag alpha
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish (alpha dist-tag)
+        continue-on-error: true
+        run: npm publish --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
