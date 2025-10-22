@@ -1,12 +1,22 @@
 import path from "node:path";
 import {promises as fs} from "node:fs";
-import {EnvironmentModuleNode, HotUpdateOptions, Logger, normalizePath, PluginOption,} from "vite";
+import {
+  createLogger,
+  EnvironmentModuleNode,
+  HotUpdateOptions,
+  normalizePath,
+  PluginOption,
+  ViteDevServer,
+} from "vite";
 import type {VirtualKeysDtsOptions} from "./types";
-import {createVirtualModuleCode} from "./generator";
-import {normalizeConfig} from "./core/config";
+import {createVirtualModuleCode} from "./generation/generator";
+import {normalizeConfig, GenerationOptions, Consts} from "./core/config";
 import {FileManager} from "./core/file-manager";
 import {GenerationCoordinator} from "./core/generation-coordinator";
 import {RebuildManager} from "./core/rebuild-manager";
+import {CombinedMessages} from "./core/combined-messages";
+import {createColoredLogger} from "./createConsoleLogger";
+import pc from "picocolors";
 
 /**
  * Vite plugin for generating TypeScript definitions from Vue i18n locale files
@@ -15,22 +25,24 @@ export function vitePluginVueI18nTypes(
   userOptions: VirtualKeysDtsOptions = {}
 ): PluginOption {
   // Normalize configuration
-  const config = normalizeConfig(userOptions);
+
 
   // Plugin state
   let root = "";
-  let logger: Logger;
-  let infoLogger: (message: string) => void = () => {};
+  let pluginLogger = createColoredLogger(userOptions.debug ? 'debug' : 'info', {customLogger: createLogger(userOptions.debug ? 'info' : 'warn')});
+
+  let config: GenerationOptions = normalizeConfig(userOptions, pluginLogger);
+
   let isBuild = false;
   let emittedRefId: string | undefined;
-  let groupedCache: Record<string, any> = {};
-  let jsonTextCache = "{}";
+  let combinedMessages: CombinedMessages = new CombinedMessages({['en-US']: {}}, 'en-US');
   let lastFiles: string[] = [];
 
   // Core managers (initialized in configResolved)
   let fileManager: FileManager;
   let generationCoordinator: GenerationCoordinator;
   let rebuildManager: RebuildManager;
+  let server: ViteDevServer;
 
   /**
    * Check if types file exists and is accessible
@@ -42,10 +54,10 @@ export function vitePluginVueI18nTypes(
 
     try {
       await fs.access(typesOutPath, fs.constants.W_OK);
-      infoLogger(`Types file is accessible at: ${typesOutPath}`);
+      pluginLogger.info(`Types file is accessible at: ${typesOutPath}`);
     } catch (e: unknown) {
       const err = e as Error;
-      logger.warn(
+      pluginLogger.warn(
         `Types file does not exist at: ${typesOutPath}. Will be created during buildStart. ${err.message}`
       );
     }
@@ -62,28 +74,26 @@ export function vitePluginVueI18nTypes(
     // const rel = normalizePath(path.relative(root, abs));
     // if (rel.startsWith("..")) return false;
 
-    if (config.debug) {
-      infoLogger(`Checking file change: ${abs}`);
-    }
+
+    pluginLogger.debug(`Checking file change: ${abs}`);
+
 
     return true;
   }
+
 
   return {
     name: "vite-plugin-locale-json",
     enforce: "pre",
 
     async configResolved(cfg) {
+      config = normalizeConfig(userOptions, pluginLogger, cfg);
       root = cfg.root;
       isBuild = cfg.command === "build";
-      logger = cfg.logger;
-      infoLogger = config.debug
-        ? (message: string) => {
-            logger.info(message);
-          }
-        : () => {};
+      // logger = cfg.logger;
+      pluginLogger = createColoredLogger(config.debug ? "debug" : cfg.logLevel, {customLogger: cfg.logger});
 
-      infoLogger(`🔧 [configResolved] Hook triggered. Root: ${root}, Command: ${cfg.command}, isBuild: ${isBuild}`);
+      pluginLogger.info(`🔧 [configResolved] Hook triggered. Root: ${root}, Command: ${cfg.command}, isBuild: ${isBuild}`);
 
       // Initialize core managers
       fileManager = new FileManager({
@@ -93,27 +103,24 @@ export function vitePluginVueI18nTypes(
         getLocaleFromPath: config.getLocaleFromPath,
         transformJson: config.transformJson,
         merge: config.mergeFunction,
-        logger,
+        logger: pluginLogger,
         debug: config.debug,
       });
 
       generationCoordinator = new GenerationCoordinator({
-        typesPath: config.typesPath,
-        virtualFilePath: config.virtualFilePath,
-        baseLocale: config.baseLocale,
-        banner: config.banner,
-        sourceId: config.sourceId,
-        logger,
+        ...config,
+        logger: pluginLogger,
       });
 
       rebuildManager = new RebuildManager({
         fileManager,
         generationCoordinator,
         root,
-        logger,
+        logger: pluginLogger,
+        config: {...config, logger: pluginLogger},
         onRebuildComplete: (cache) => {
-          groupedCache = cache.grouped;
-          jsonTextCache = cache.jsonText;
+
+          combinedMessages = cache.messages;
           lastFiles = fileManager.getLastFiles();
         },
       });
@@ -122,195 +129,212 @@ export function vitePluginVueI18nTypes(
     },
 
     async buildStart() {
-      infoLogger(`🚀 [buildStart] Hook triggered. isBuild: ${isBuild}`);
+      pluginLogger.info(`🚀 [buildStart] Hook triggered. isBuild: ${isBuild}`);
 
       // Perform initial rebuild
       const result = await rebuildManager.rebuild("buildStart", []);
-      groupedCache = result.grouped;
-      jsonTextCache = result.jsonText;
 
-      infoLogger(`📊 [buildStart] Initial rebuild complete. Locales: ${Object.keys(groupedCache).join(", ")}`);
+      combinedMessages = result.messages;
+
+      pluginLogger.info(`📊 [buildStart] Initial rebuild complete. Locales: ${combinedMessages
+        .languages.join(", ")}`);
 
       // Emit asset file in build mode if emitJson is enabled
-      if (isBuild && config.emit.emitJson) {
+      if (isBuild && !config.emit.inlineDataInBuild && config.emit.emitJson) {
         emittedRefId = this.emitFile({
           type: "asset",
           name: config.emit.fileName,
-          source: jsonTextCache,
+          source: combinedMessages.messagesJsonString,
         });
-        infoLogger(`📦 [buildStart] Emitted asset: ${config.emit.fileName}, refId: ${emittedRefId}`);
+        pluginLogger.info(`📦 [buildStart] Emitted asset: ${config.emit.fileName}, refId: ${pc.yellow(emittedRefId)}`);
+      }
+
+      if (!isBuild) {
+        const url = `http://localhost:${server.config.server.port}`;
+        pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + Consts.debugUrlPath)}`);
+        pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + Consts.devUrlPath)}`);
+
       }
     },
 
-    resolveId(id) {
-      if (id.includes(config.sourceId)) {
+    resolveId(idResolve) {
+      if (idResolve === Consts.devUrlPath) {
 
+        pluginLogger.debug(`🔍 [${pc.blueBright('resolveId')}]  Resolved dev JSON endpoint: ${idResolve}`);
+        return "\0" + Consts.devUrlPath
 
-        if (id === config.virtualJsonId) {
-          infoLogger(`🔍 [resolveId] Resolved virtual JSON module: ${id} -> ${config.resolvedVirtualJsonId}`);
-          return config.resolvedVirtualJsonId;
-        }
-
-        if (id !== config.virtualId) {
-          logger.warn(`🔍 [resolveId] Resolved undefined virtual module: ${id} -> ${config.resolvedVirtualId}`);
-          return config.resolvedVirtualId;
-        }
-        return config.resolvedVirtualId;
       }
-      return null;
+      const id = idResolve.replaceAll(/\?\?.*/g, '');
+      if (!id.startsWith(config.sourceId)) {
+        return
+      }
+
+      const moduletoResolve = id.replace(config.sourceId, "")
+
+      if (moduletoResolve === "") {
+        return "\0" + config.sourceId;
+      }
+
+
+      pluginLogger.debug(`🔍 [${pc.blueBright('resolveId')}]  Resolved module: ${id} [${pc.yellow(moduletoResolve)}]`);
+      return '\0' + id;
+
     },
 
-    load(id) {
-      // Handle JSON virtual module
-      if (id === config.resolvedVirtualJsonId) {
-        infoLogger(`📄 [load] Loading virtual JSON module: ${id}, data size: ${jsonTextCache.length} bytes`);
-        // Return as a JavaScript module, not JSON to avoid vite:json plugin
-        return {
-          code: `export default ${jsonTextCache}`,
-          map: null
-        };
+    load(idLoad) {
+
+
+      if (!idLoad.startsWith("\0")) {
+        return
       }
 
-      // Handle main virtual module
-      if (id === config.resolvedVirtualId) {
-        infoLogger(`📄 [load] Loading virtual module: ${id}, isBuild: ${isBuild}`);
-        if (isBuild) {
-          // Reference the virtual JSON module instead of embedding or using assets
-          const code = createVirtualModuleCode({
-            jsonText: jsonTextCache,
-            buildAssetRefId: config.emit.emitJson ? emittedRefId : undefined,
-            baseLocale: config.baseLocale,
-            virtualJsonId: config.virtualJsonId,
-          });
-          infoLogger(`📄 [load] Generated build code for virtual module, size: ${code.length} bytes`);
-          return code;
-        }
+      if (idLoad.includes(Consts.devUrlPath)) {
+        // return
+        return `export default ${combinedMessages.messagesJsonString}'`;
 
-        const code = createVirtualModuleCode({
-          jsonText: jsonTextCache,
-          devUrlPath: config.devUrlPath,
-          baseLocale: config.baseLocale,
-          virtualJsonId: config.virtualJsonId,
-        });
-        infoLogger(`📄 [load] Generated dev code for virtual module, size: ${code.length} bytes`);
-        return code;
+      }
+      if (!idLoad.includes(config.sourceId)) {
+
+        pluginLogger.debug(`📄 [${pc.green('load')}] Skipping non-virtual module load: ${pc.blue(idLoad)}`);
+        return
       }
 
-      return null;
-    },
+      const id = idLoad.replaceAll(/\?\?.*/g, '')
+        // replace '\0' at start wit
+        .replace("\0", '')
+      const moduletoResolve = id.replace(config.sourceId, "")
+        .replace(/^\//, '')
 
-    configureServer(server) {
-      infoLogger(`🌐 [configureServer] Hook triggered. Setting up dev server...`);
+      pluginLogger.debug(`📄 [${pc.green('load')}] [${id}] loading [${pc.yellow(moduletoResolve)}]`);
+
+      const code = createVirtualModuleCode({
+        config: config,
+        buildAssetRefId: config.emit.emitJson ? emittedRefId : undefined,
+      }, combinedMessages);
+      if (moduletoResolve === "") {
+
+        pluginLogger.info(`📄 [${pc.green('load')}] Generated dev code for virtual module: ${id}`);
+        return code.toFileContent()
+
+      }
+
+      const methodCode = code.getFileContentFor(moduletoResolve);
+      pluginLogger.info(`📄 [${pc.green('load')}] Loading virtual sub-module: ${pc.yellow(moduletoResolve)}, length: ${methodCode.length}`);
+
+      // pluginLogger.debug(`📄 [load (Sub-module)] Generated code for method: ${method} [${methodCode.substring(0, 30)}`);
+      return methodCode;
+
+
+    }
+    ,
+
+    configureServer(viteServer) {
+      server = viteServer
+      pluginLogger.info(`🌐 [configureServer] Hook triggered. Setting up dev server...`);
 
       // Set server reference for hot updates (use virtualId for module graph lookups)
-      rebuildManager.setServer(server, config.virtualId);
-      infoLogger(`🌐 [configureServer] Server reference set for virtual module: ${config.virtualId}`);
+      rebuildManager.setServer(server);
+      pluginLogger.info(`🌐 [configureServer] Server reference set for virtual module: ${config.sourceId}`);
 
-      const resolvePattern = (pattern: string): string | undefined => {
-        if (!pattern) return undefined;
-        const isNegated = pattern.startsWith("!");
-        const rawPattern = isNegated ? pattern.slice(1) : pattern;
-        const trimmedPattern = rawPattern.startsWith("./") ? rawPattern.slice(2) : rawPattern;
-        const absolutePattern = path.isAbsolute(rawPattern)
-          ? rawPattern
-          : path.join(root, trimmedPattern);
-        const normalized = normalizePath(absolutePattern);
-        return isNegated ? `!${normalized}` : normalized;
-      };
 
-      const includePatterns = config.include
-        .map(resolvePattern)
-        .filter((pattern): pattern is string => Boolean(pattern));
-      const excludePatterns = config.exclude
-        .map((pattern) => {
-          const resolved = resolvePattern(pattern);
-          if (!resolved) return undefined;
-          return resolved.startsWith("!") ? resolved : `!${resolved}`;
-        })
-        .filter((pattern): pattern is string => Boolean(pattern));
+      const includePatterns = config.include;
+      const excludePatterns = config.exclude;
 
       const watcherPatterns = [...includePatterns, ...excludePatterns];
 
       if (watcherPatterns.length > 0) {
         server.watcher.add(watcherPatterns);
-        if (config.debug) {
-          infoLogger(
-            `🌐 [configureServer] Registered watcher patterns: ${watcherPatterns.join(", ")}`
-          );
-        }
+
+        pluginLogger.debug(
+          `🌐 [configureServer] Registered watcher patterns: ${watcherPatterns.join(", ")}`
+        );
+
       }
 
       // Initial rebuild
-      infoLogger(`🌐 [configureServer] Triggering initial rebuild...`);
+      pluginLogger.info(`🌐 [configureServer] Triggering initial rebuild...`);
       rebuildManager.rebuild("initial", []).catch((e) => {
-        server.config.logger.error(`Initial rebuild failed: ${String(e)}`);
+        pluginLogger.error(`Initial rebuild failed: ${String(e)}`);
       });
 
-      // Serve locales JSON endpoint
-      server.middlewares.use((req, res, next) => {
-        if (!req.url) return next();
-        if (req.url === config.devUrlPath) {
-          infoLogger(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${jsonTextCache.length} bytes`);
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json; charset=utf-8");
-          res.end(jsonTextCache);
-          return;
-        }
-        next();
-      });
 
       // Debug endpoint
       if (config.debug) {
+        // Serve locales JSON endpoint
         server.middlewares.use((req, res, next) => {
-          if (req.url === "/__locales_debug__") {
-            res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify({files: lastFiles, grouped: groupedCache}, null, 2));
+          if (!req.url) return next();
+
+          if (req.url === Consts.devUrlPath) {
+            pluginLogger.info(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${combinedMessages.keys.length} bytes`);
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify(combinedMessages.messages, null, 2))
             return;
           }
           next();
         });
-      }
-    },
+        server.middlewares.use((req, res, next) => {
+          if (req.url === Consts.debugUrlPath) {
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({
+              files: lastFiles,
+              all: combinedMessages.keys.length,
+              grouped: combinedMessages.messages,
+              base: combinedMessages.baseLocale
+            }, null, 2));
+            return;
+          }
+          next();
+        });
 
-    async hotUpdate({server, timestamp, type, modules, ...ctx}: HotUpdateOptions): Promise<
-      Array<EnvironmentModuleNode> | void
-    > {
-      infoLogger(`🔥 [hotUpdate] Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`);
-      infoLogger(`🔥 [hotUpdate] Environment: ${this.environment?.name}, modules count: ${modules.length}`);
+      }
+    }
+    ,
+
+    async hotUpdate(hotUpdateOptions: HotUpdateOptions):
+      Promise<
+        EnvironmentModuleNode[] | void
+      > {
+      const {server, timestamp, type, modules, ...ctx} = hotUpdateOptions
+// hotUpdateOptions.
 
       if (!isWatchedFile(ctx.file)) {
-        infoLogger(`🔥 [hotUpdate] File not watched, skipping: ${ctx.file}`);
+        pluginLogger.debug(`🔥 [hotUpdate] File not watched, skipping: ${ctx.file} for ${modules}`);
         return;
       }
+      pluginLogger.info(`🔥 [hotUpdate] Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`)
 
-      if (config.debug) {
-        infoLogger(`🔥 [hotUpdate] Debug: Module details for ${type}:`);
-        modules.forEach((m, i) => {
-          infoLogger(`  Module ${i}: id=${m.id}, url=${m.url}, type=${m.type}`);
-        });
-      }
+      pluginLogger.debug(`🔥 [hotUpdate] Environment: ${this.environment?.name}, modules count: ${modules.length}`);
+
+
+      pluginLogger.debug(`🔥 [hotUpdate] Debug: Module details for ${type}:`);
+      modules.forEach((m, i) => {
+        pluginLogger.debug(`  Module ${i}: id=${m.id}, url=${m.url}, type=${m.type}`);
+      });
+
 
       // Only process in client environment to avoid duplicate rebuilds
       if (this.environment?.name !== 'client') {
-        infoLogger(`🔥 [hotUpdate] Skipping for non-client environment: ${this.environment?.name}`);
+        pluginLogger.debug(`🔥 [hotUpdate] Skipping for non-client environment: ${this.environment?.name}`);
         return;
       }
 
-      infoLogger(`🔥 [hotUpdate] Triggering rebuild for file change...`);
-      await rebuildManager.setEnv(this.environment);
+      pluginLogger.debug(`🔥 [hotUpdate] Triggering rebuild for file change...`);
+      rebuildManager.setEnv(this.environment);
 
       // Perform rebuild immediately (no debouncing needed in Vite 7)
       const result = await rebuildManager.rebuild("change", modules);
 
       // Send custom HMR event to update i18n messages directly
-      infoLogger(`🔥 [hotUpdate] Sending custom i18n-update event with new messages`);
-
+      pluginLogger.info(`🔥 [hotUpdate] Sending custom i18n-update event with new messages`);
+      // todo use await ctx.read() to get changed file content
+// pluginLogger.debug(`${JSON.stringify(await ctx.read())} vs ${JSON.stringify(result.messages)}`);
       // Send the updated messages to the client
       server.ws.send({
         type: 'custom',
         event: 'i18n-update',
         data: {
-          messages: result.grouped,
+          messages: result.messages,
           timestamp
         }
       });

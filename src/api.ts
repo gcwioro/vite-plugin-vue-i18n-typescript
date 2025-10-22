@@ -1,10 +1,10 @@
 import path from "node:path";
-import type {Logger} from "vite";
 import type {VirtualKeysDtsOptions} from "./types";
 import {normalizeConfig} from "./core/config";
 import {FileManager} from "./core/file-manager";
 import {GenerationCoordinator} from "./core/generation-coordinator";
 import {RebuildManager} from "./core/rebuild-manager";
+import {createColoredLogger} from "./createConsoleLogger";
 
 /**
  * Options for standalone type generation
@@ -66,37 +66,6 @@ export interface GenerateTypesResult {
 }
 
 /**
- * Create a simple console logger compatible with Vite's Logger interface
- */
-function createLogger(debugEnabled: boolean = false): Logger {
-  const warnedMessages = new Set<string>();
-
-  return {
-    info: (msg: string) => {
-      if (debugEnabled) {
-        console.log(`[vue-i18n-dts] ${msg}`);
-      }
-    },
-    warn: (msg: string) => {
-      console.warn(`[vue-i18n-dts] ${msg}`);
-    },
-    error: (msg: string) => {
-      console.error(`[vue-i18n-dts] ${msg}`);
-    },
-    warnOnce: (msg: string) => {
-      if (!warnedMessages.has(msg)) {
-        warnedMessages.add(msg);
-        console.warn(`[vue-i18n-dts] ${msg}`);
-      }
-    },
-    clearScreen: () => {
-    },
-    hasErrorLogged: () => false,
-    hasWarned: false,
-  };
-}
-
-/**
  * Generate TypeScript definitions from Vue i18n locale files
  *
  * @param options - Configuration options for generation
@@ -121,11 +90,11 @@ export async function generateI18nTypes(
 ): Promise<GenerateTypesResult> {
   const root = options.root ? path.resolve(options.root) : process.cwd();
   const debugEnabled = options.debug ?? options.verbose ?? false;
+  const logger = createColoredLogger(options.debug ? "debug" : "info");
   const config = normalizeConfig({
     ...options,
-    debug: debugEnabled,
-  });
-  const logger = createLogger(config.debug);
+    debug: debugEnabled
+  }, logger);
 
   logger.info(`Starting type generation in: ${root}`);
 
@@ -145,25 +114,17 @@ export async function generateI18nTypes(
     debug: config.debug,
   });
 
-  const generationCoordinator = new GenerationCoordinator({
-    typesPath: config.typesPath,
-    virtualFilePath: config.virtualFilePath,
-    baseLocale: config.baseLocale,
-    banner: config.banner,
-    sourceId: config.sourceId,
-    logger,
-  });
+  const generationCoordinator = new GenerationCoordinator(config);
 
-  let groupedCache: Record<string, any> = {};
   let lastFiles: string[] = [];
 
   const rebuildManager = new RebuildManager({
+    config: config,
     fileManager,
     generationCoordinator,
     root,
     logger,
-    onRebuildComplete: (cache) => {
-      groupedCache = cache.grouped;
+    onRebuildComplete: (_cache) => {
       lastFiles = fileManager.getLastFiles();
     },
   });
@@ -171,10 +132,9 @@ export async function generateI18nTypes(
   // Perform generation
   const result = await rebuildManager.rebuild("api", []);
 
-  groupedCache = result.grouped;
   lastFiles = fileManager.getLastFiles();
 
-  const locales = Object.keys(groupedCache).filter((l) => l !== "js-reserved");
+  const locales = result.messages.languages.filter((l: string) => l !== "js-reserved");
 
   logger.info(`✅ Generated types for ${locales.length} locale(s): ${locales.join(", ")}`);
   logger.info(`📁 Processed ${lastFiles.length} locale file(s)`);
@@ -184,12 +144,12 @@ export async function generateI18nTypes(
     ? config.typesPath
     : path.join(root, config.typesPath);
 
-  const generatedFiles = [path.relative(root, typesPath)];
+  const generatedFiles = [path.relative(root, typesPath).replace(/\\/g, '/')];
   if (config.virtualFilePath) {
     const virtualPath = path.isAbsolute(config.virtualFilePath)
       ? config.virtualFilePath
       : path.join(root, config.virtualFilePath);
-    generatedFiles.push(path.relative(root, virtualPath));
+    generatedFiles.push(path.relative(root, virtualPath).replace(/\\/g, '/'));
   }
 
   return {

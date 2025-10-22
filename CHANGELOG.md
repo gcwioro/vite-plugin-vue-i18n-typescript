@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-01-22
+
+### Added
+
+- **Modular Virtual Modules** for improved tree-shaking support
+    - Split into sub-modules: `/messages`, `/availableLocales`, `/fallbackLocales`
+    - Import only what you need for smaller bundle sizes
+    - New dedicated `treeShakeGenerator.ts` for optimized builds
+- **New Runtime Helper Functions**
+    - `createI18nInstance()` - Factory for creating standalone i18n instances with type safety
+    - `createI18nInstancePlugin()` - Factory for creating Vue plugin instances
+    - `useI18nApp()` - App-level composable for accessing i18n outside components
+- **Fallback Locale Support**
+    - Export `fallbackLocales` object with locale fallback chain mappings
+    - Automatic fallback chain configuration in helper functions
+- **Enhanced Developer Experience**
+    - Better console logging with new `createConsoleLogger` utility
+    - Improved TypeScript type definitions throughout
+    - Cleaner import statements and better code organization
+
+### Changed
+
+- Reorganized generator code into modular components under `src/generation/`
+- Improved HMR hot update handling for better development experience
+- Enhanced TypeScript configuration and ESLint settings
+- Simplified imports and removed redundant code paths
+
+### Removed
+
+- Removed legacy generator code in favor of modular architecture
+
+### Fixed
+
+- Type definition improvements for better IDE support
+- Import path consistency across the codebase
+- Build process optimizations for faster compilation
+
 ## [1.0.2] - 2024-10-20
 
 ### Fixed
@@ -69,10 +106,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Debounced generation (300ms) with max wait (2000ms)
 - In-memory caching of parsed locale data
 
-[Unreleased]: https://github.com/your-repo/vite-plugin-vue-i18n-typescript/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/compare/v1.1.0...HEAD
 
-[1.0.2]: https://github.com/your-repo/vite-plugin-vue-i18n-typescript/compare/v1.0.1...v1.0.2
+[1.1.0]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/compare/v1.0.2...v1.1.0
 
-[1.0.1]: https://github.com/your-repo/vite-plugin-vue-i18n-typescript/compare/v1.0.0...v1.0.1
+[1.0.2]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/compare/v1.0.1...v1.0.2
 
-[1.0.0]: https://github.com/your-repo/vite-plugin-vue-i18n-typescript/releases/tag/v1.0.0
+[1.0.1]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/compare/v1.0.0...v1.0.1
+
+[1.0.0]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/releases/tag/v1.0.0

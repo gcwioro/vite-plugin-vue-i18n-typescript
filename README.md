@@ -72,7 +72,7 @@ Use in components:
 
 ```vue
 <script setup lang="ts">
-import { useI18nTypeSafe } from '@/i18n/i18n.gen'
+import { useI18nTypeSafe } from 'virtual:vue-i18n-types'
 
 const {t} = useI18nTypeSafe()
 
@@ -112,31 +112,40 @@ await generateI18nTypes({baseLocale: 'en'})
 
 ## Virtual Module Imports
 
-The plugin provides two virtual modules for different use cases:
+The plugin provides virtual modules with everything you need:
 
-### `virtual:vue-i18n-types/messages`
-
-Import just the translation messages:
+### Main Module: `virtual:vue-i18n-types`
 
 ```typescript
-import messages from 'virtual:vue-i18n-types/messages'
+import {
+  useI18nTypeSafe,           // Type-safe composable
+  createI18nInstance,         // Create i18n instance
+  createI18nInstancePlugin,   // Create Vue plugin
+  availableLocales,          // Array of locale codes
+  fallbackLocales,           // Fallback mappings
+  messages                   // All translations
+} from 'virtual:vue-i18n-types'
 
-// Use with createI18n
-const i18n = createI18n({
-    locale: 'en',
-    messages
-})
+// Use in components
+const {t} = useI18nTypeSafe()
+
+// Or create a plugin
+app.use(createI18nInstancePlugin())
 ```
 
-### `virtual:vue-i18n-types`
+### Sub-modules for Tree-shaking
 
-Import helper functions for creating i18n instances:
+Import only what you need:
 
 ```typescript
-import { createI18nInstancePlugin } from 'virtual:vue-i18n-types'
+// Just the messages
+import { messages } from 'virtual:vue-i18n-types/messages'
 
-// Auto-configured plugin
-app.use(createI18nInstancePlugin())
+// Just the available locales
+import { availableLocales } from 'virtual:vue-i18n-types/availableLocales'
+
+// Just the fallback chains
+import { fallbackLocales } from 'virtual:vue-i18n-types/fallbackLocales'
 ```
 
 ## Common Configuration
@@ -182,6 +191,22 @@ Your JSON files work without changes!
 | True HMR       | ✅ No page reload      | ❌ Page reloads             |
 | Setup          | ✅ Zero config         | ⚠️ Requires configuration  |
 | Performance    | ✅ Incremental updates | ⚠️ Full rebuilds           |
+
+## What's New (v1.1.0)
+
+### New Features 🎉
+
+- **Modular imports** - Import only what you need for better tree-shaking
+- **Helper functions** - `createI18nInstance()` and `createI18nInstancePlugin()`
+- **Fallback locales** - Export and use locale fallback chains
+- **Better architecture** - Improved code organization and performance
+
+### Breaking Changes ⚠️
+
+- `supportedLanguages` renamed to `availableLocales`
+- Imports now from `virtual:vue-i18n-types` instead of generated files
+
+See [CLAUDE.md](./CLAUDE.md#changes-since-v101) for full details.
 
 ## FAQ
 

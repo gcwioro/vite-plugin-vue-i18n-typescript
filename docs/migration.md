@@ -76,13 +76,26 @@ After running `npm run dev`, the plugin will generate type-safe helpers:
 
 ```typescript
 // In your Vue components
-import { useI18nTypeSafe } from '@/i18n/i18n.gen'
+import { useI18nTypeSafe } from 'virtual:vue-i18n-types'
 
 const { t } = useI18nTypeSafe()
 
 // Now you get full type safety!
 t('welcome')     // ✅ Autocomplete shows all keys
 t('welcom')      // ❌ TypeScript error: typo detected
+```
+
+Or use the new helper functions:
+
+```typescript
+// In main.ts
+import { createI18nInstancePlugin } from 'virtual:vue-i18n-types'
+
+// Auto-configured i18n plugin
+app.use(createI18nInstancePlugin({
+  locale: 'en',
+  fallbackLocale: 'en'
+}))
 ```
 
 ### That's It!

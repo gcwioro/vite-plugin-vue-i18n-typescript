@@ -20,6 +20,7 @@ export default defineConfig({
     rollupOptions: {
       external: ['vite', 'node:path', 'node:fs', 'node:fs/promises', 'node:crypto'],
       output: {
+
         globals: {
           vite: 'Vite',
         },

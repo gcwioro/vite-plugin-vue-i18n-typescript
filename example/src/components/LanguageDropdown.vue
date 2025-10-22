@@ -13,20 +13,24 @@
         {{ lang }}
       </option>
     </select>
+    <!--    {{ virtualModuleInline }}-->
+    <!--    {{ vavailableLocalesInline }}-->
+    <!--    {{ fallbackModuleInline }}-->
+
   </div>
 </template>
 
 <script setup lang="ts">
-
 import {useI18nApp, useI18nTypeSafe} from "virtual:vue-i18n-types";
-import type {SupportedLanguage} from "virtual:vue-i18n-types/messages";
-import {ref, watch} from "vue";
+import availableLocales, {type AvailableLocale} from "virtual:vue-i18n-types/availableLocales";
+import {fallbackLocales} from "virtual:vue-i18n-types/fallbackLocales";
+import {ref, watch, watchEffect} from "vue";
+
 
 const i18n = useI18nApp()
 const {t} = useI18nTypeSafe()
 
-
-const selectedLanguage = ref<SupportedLanguage>('en')
+const selectedLanguage = ref<AvailableLocale>('en')
 
 watch(selectedLanguage, locale => {
   if (locale) {
@@ -34,5 +38,10 @@ watch(selectedLanguage, locale => {
   }
 }, {immediate: true})
 
+watchEffect(() => {
+  console.log(availableLocales)
+  console.log("Current locale:", i18n.locale.value, `Available locales: ${i18n?.availableLocales?.join(',')}`, `Found by plugin locales:`, availableLocales)
+  console.log("Fallback locales:", fallbackLocales)
+})
 
 </script>

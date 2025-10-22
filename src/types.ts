@@ -4,13 +4,13 @@
  * This plugin generates TypeScript definitions from JSON locale files,
  * providing type-safe i18n keys for your Vue application.
  */
-export type VirtualKeysDtsOptions = {
+export interface VirtualKeysDtsOptions {
+  root?: string;
   include?: string | string[];
   exclude?: string | string[];
   getLocaleFromPath?: (absFilePath: string, root: string) => string | null;
   merge?: "deep" | "shallow";
   transformJson?: (json: unknown, absFilePath: string) => unknown;
-  devUrlPath?: string;
   emit?: {
     /**
      * Flag to inline locale data file in the build output.
@@ -80,7 +80,7 @@ export type JSONArray = JSONValue[]
 export interface DtsContentParams<TMessages extends JSONValue = JSONValue> {
   messages: Record<string, TMessages>
   baseLocale: string
-  AllSupportedLanguages: string[]
+  AvailableLocales: string[]
   banner?: string
   sourceId?: string
 }

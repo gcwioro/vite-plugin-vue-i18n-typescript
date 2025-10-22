@@ -2,7 +2,7 @@
 export { extractJson, getJsonLeafPaths } from './utils/json'
 export type { VirtualKeysDtsOptions } from './types'
 export type { JSONValue, JSONObject, JSONArray } from './types'
-export {toTypesContent} from './generator'
+export {toTypesContent} from './generation/generator'
 export {default, vitePluginVueI18nTypes} from './plugin'
 
 // Export programmatic API
