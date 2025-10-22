@@ -6,6 +6,7 @@ import {watch} from "chokidar";
 import {mkdir, writeFile} from "node:fs/promises";
 import type {GenerateTypesOptions} from "./api";
 import {generateI18nTypes} from "./api";
+
 import type {Logger} from "vite";
 
 const helpText = `
