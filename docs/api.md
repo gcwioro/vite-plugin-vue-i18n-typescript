@@ -96,7 +96,6 @@ interface GenerateTypesOptions {
 
   // Virtual Module
   sourceId?: string                // Virtual module ID (default: 'virtual:vue-i18n-types')
-  devUrlPath?: string              // Dev server endpoint for locale data (default: '/_virtual_locales.json')
 
   // Build Output
   emit?: {

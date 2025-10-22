@@ -10,7 +10,7 @@ import {
 } from "vite";
 import type {VirtualKeysDtsOptions} from "./types";
 import {createVirtualModuleCode} from "./generation/generator";
-import {normalizeConfig, NormalizedConfig} from "./core/config";
+import {normalizeConfig, NormalizedConfig, Consts} from "./core/config";
 import {FileManager} from "./core/file-manager";
 import {GenerationCoordinator} from "./core/generation-coordinator";
 import {RebuildManager} from "./core/rebuild-manager";
@@ -139,27 +139,27 @@ export function vitePluginVueI18nTypes(
         .languages.join(", ")}`);
 
       // Emit asset file in build mode if emitJson is enabled
-      if (config.emit.emitJson || (!isBuild && !config.emit.inlineDataInBuild)) {
+      if (isBuild && !config.emit.inlineDataInBuild && config.emit.emitJson) {
         emittedRefId = this.emitFile({
           type: "asset",
           name: config.emit.fileName,
           source: combinedMessages.messagesJsonString,
         });
-        pluginLogger.info(`📦 [buildStart] Emitted asset: ${config.emit.fileName}, refId: ${emittedRefId}`);
+        pluginLogger.info(`📦 [buildStart] Emitted asset: ${config.emit.fileName}, refId: ${pc.yellow(emittedRefId)}`);
       }
 
       if (!isBuild) {
         const url = `http://localhost:${server.config.server.port}`;
-        pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + '/__locales_debug__')}`);
-        pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + config.devUrlPath)}`);
+        pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + Consts.debugUrlPath)}`);
+        pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + Consts.devUrlPath)}`);
 
       }
     },
 
     resolveId(idResolve) {
-      if (idResolve === config.devUrlPath) {
+      if (idResolve === Consts.devUrlPath) {
 
-        return "\0" + config.devUrlPath
+        return "\0" + Consts.devUrlPath
 
       }
       const id = idResolve.replaceAll(/\?\?.*/g, '');
@@ -185,7 +185,7 @@ export function vitePluginVueI18nTypes(
         return
       }
 
-      if (idLoad.includes(config.devUrlPath)) {
+      if (idLoad.includes(Consts.devUrlPath)) {
 
         return combinedMessages.messagesJsonString;
 
@@ -273,27 +273,28 @@ export function vitePluginVueI18nTypes(
         pluginLogger.error(`Initial rebuild failed: ${String(e)}`);
       });
 
-      // Serve locales JSON endpoint
-      server.middlewares.use((req, res, next) => {
-        if (!req.url) return next();
-        pluginLogger.info(req.url)
-        if (req.url === config.devUrlPath) {
-          pluginLogger.info(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${combinedMessages.keys.length} bytes`);
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json; charset=utf-8");
-          res.end(combinedMessages.messagesJsonString);
-          return;
-        }
-        next();
-      });
 
       // Debug endpoint
       if (config.debug) {
+        // Serve locales JSON endpoint
         server.middlewares.use((req, res, next) => {
-          if (req.url === "/__locales_debug__") {
+          if (!req.url) return next();
+          pluginLogger.info(req.url)
+          if (req.url === Consts.devUrlPath) {
+            pluginLogger.info(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${combinedMessages.keys.length} bytes`);
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify(combinedMessages.messages, null, 2))
+            return;
+          }
+          next();
+        });
+        server.middlewares.use((req, res, next) => {
+          if (req.url === Consts.debugUrlPath) {
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify({
               files: lastFiles,
+              all: combinedMessages.keys.length,
               grouped: combinedMessages.messages,
               base: combinedMessages.baseLocale
             }, null, 2));
@@ -308,7 +309,7 @@ export function vitePluginVueI18nTypes(
 
     async hotUpdate(hotUpdateOptions: HotUpdateOptions):
       Promise<
-        Array<EnvironmentModuleNode> | void
+        EnvironmentModuleNode[] | void
       > {
       const {server, timestamp, type, modules, ...ctx} = hotUpdateOptions
 // hotUpdateOptions.

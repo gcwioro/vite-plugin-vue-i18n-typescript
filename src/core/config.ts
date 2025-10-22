@@ -2,7 +2,16 @@ import type {VirtualKeysDtsOptions} from "../types";
 import {deepMerge, defaultGetLocaleFromPath, shallowMerge} from "../utils";
 import type {CustomLogger} from "../createConsoleLogger";
 
+
+export const Consts = {
+  //devUrlPath
+  devUrlPath: "/_virtual_locales.json",
+  debugUrlPath: "/__locales_debug__",
+} as const;
+
 export interface NormalizedConfig {
+
+
   sourceId: string;
   typesPath: string;
   virtualFilePath?: string;
@@ -14,7 +23,6 @@ export interface NormalizedConfig {
   mergeFunction: (a: any, b: any) => any;
   banner?: string;
   debug: boolean;
-  devUrlPath: string;
   emit: {
     inlineDataInBuild: boolean;
     fileName: string;
@@ -67,7 +75,6 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}, logger:
     mergeFunction: (userOptions.merge ?? 'deep') === 'deep' ? deepMerge : shallowMerge,
     banner: userOptions.banner,
     debug: userOptions.debug ?? false,
-    devUrlPath: userOptions.devUrlPath ?? "/_virtual_locales.json",
     emit: {
       fileName: "assets/locales.json",
       inlineDataInBuild: userOptions.emit?.inlineDataInBuild ?? false,

@@ -75,10 +75,10 @@ export type HelperMethodsRecord = Record<SymbolEnum, string>;
 /** All sections resolve to strings */
 
 
-export type RuntimeGenerationParams = {
+export interface RuntimeGenerationParams {
   config: GenerationOptions,
   buildAssetRefId?: string,
-};
+}
 
 /** Builder: produces the enum-keyed record */
 function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: CombinedMessages): HelperMethodsRecord {
@@ -103,7 +103,7 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
       //   `
     } else {
 
-      const messagesImportedFromServer = `export const messages = ${messagesCombined.messagesJsonString}; //import('${config.devUrlPath || "_virtual_locales.json"}');`
+      const messagesImportedFromServer = `export const messages = ${messagesCombined.messagesJsonString};');`
       config.logger.warn(messagesImportedFromServer)
       return messagesImportedFromServer
     }
@@ -138,14 +138,14 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
 }
 
 /** Options for file output */
-export type ToFileOptions = {
+export interface ToFileOptions {
   /** Join string between sections (default: "\n\n") */
   separator?: string;
   /** Optional banner/header comment */
   banner?: string;
   /** Ensure directory exists (mkdir -p), default true */
   ensureDir?: boolean;
-};
+}
 
 
 /** Typed, compact class with ergonomic helpers */
@@ -158,7 +158,7 @@ export class RuntimeMethods {
 
 
   /** Deterministic full-file content (all sections in HelperMethodsOrder) */
-  toFileContent(defaultExport: string = 'messages'): string {
+  toFileContent(defaultExport = 'messages'): string {
     return Object.values(this._data).join("\n\n") + 'export default ' + defaultExport;
   }
 

@@ -17,6 +17,8 @@ export default tseslint.config(
     name: 'app/files-to-lint',
     files: ['src/**/*.{ts,mts,tsx,vue}'],
   },
+  {extends: [vueTsConfigs.stylisticTypeChecked.toConfigArray()]},
+
 // eslint load env-override.d.ts even if not imported directly
 
   globalIgnores(['**/dist/**', 'eslint.config.ts', '**/dist-ssr/**', '**/coverage/**']),
@@ -27,7 +29,15 @@ export default tseslint.config(
 
   {
     rules: {
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', {
+        "args": "all",
+        "argsIgnorePattern": "*",
+        "caughtErrors": "all",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "varsIgnorePattern": "*",
+        "ignoreRestSiblings": true
+      }],
       '@typescript-eslint/no-unsafe-argument': 'warn',
       '@typescript-eslint/no-unsafe-return': 'warn',
       '@typescript-eslint/no-unsafe-member-access': 'warn',
