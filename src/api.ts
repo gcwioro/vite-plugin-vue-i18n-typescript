@@ -4,7 +4,7 @@ import {normalizeConfig} from "./core/config";
 import {FileManager} from "./core/file-manager";
 import {GenerationCoordinator} from "./core/generation-coordinator";
 import {RebuildManager} from "./core/rebuild-manager";
-import {createConsoleLogger} from "./createConsoleLogger";
+import {createColoredLogger} from "./createConsoleLogger";
 
 /**
  * Options for standalone type generation
@@ -90,7 +90,7 @@ export async function generateI18nTypes(
 ): Promise<GenerateTypesResult> {
   const root = options.root ? path.resolve(options.root) : process.cwd();
   const debugEnabled = options.debug ?? options.verbose ?? false;
-  const logger = createConsoleLogger(options.debug);
+  const logger = createColoredLogger(options.debug ? "debug" : "info");
   const config = normalizeConfig({
     ...options,
     debug: debugEnabled
@@ -114,15 +114,12 @@ export async function generateI18nTypes(
     debug: config.debug,
   });
 
-  const generationCoordinator = new GenerationCoordinator({
-    ...config,
-    logger,
-  });
+  const generationCoordinator = new GenerationCoordinator(config);
 
   let lastFiles: string[] = [];
 
   const rebuildManager = new RebuildManager({
-    config: {...config, logger},
+    config: config,
     fileManager,
     generationCoordinator,
     root,

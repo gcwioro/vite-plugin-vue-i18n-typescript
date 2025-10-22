@@ -1,6 +1,6 @@
 // HelperMethods.ts
 import {CombinedMessages} from "../core/combined-messages";
-import {GenerationOptions} from "../core/generation-coordinator";
+import type {GenerationOptions} from "../core/config";
 
 import translateWrapperFunction from "./runtime/translateWrapperFunction.ts??inline";
 
@@ -92,7 +92,7 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
 
       return `export const messages = import.meta.ROLLUP_FILE_URL_${ops.buildAssetRefId}`
     } else if (config.emit.inlineDataInBuild) {
-      return `export const messages = ${messagesCombined.messagesJsonString};`
+      return `export const messages = ${messagesCombined.messagesJsonString}`
 
       // } else if (config.virtualJsonId) {
       //   return `
@@ -103,8 +103,8 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
       //   `
     } else {
 
-      const messagesImportedFromServer = `export const messages = ${messagesCombined.messagesJsonString};');`
-      config.logger.warn(messagesImportedFromServer)
+      const messagesImportedFromServer = `export const messages = ${messagesCombined.messagesJsonString};`
+      // config.logger.warn(messagesImportedFromServer)
       return messagesImportedFromServer
     }
   }

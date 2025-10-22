@@ -1,7 +1,7 @@
 import type {JSONObject} from '../types'
 import {CombinedMessages} from '../core/combined-messages'
 import {RuntimeGenerationParams, RuntimeMethods} from "./treeShakeGenerator";
-import {GenerationOptions} from "../core/generation-coordinator";
+import {type GenerationOptions} from "../core/config";
 
 
 /**

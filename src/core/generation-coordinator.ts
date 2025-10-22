@@ -5,11 +5,8 @@ import {detectKeyConflicts, ensureDir, writeFileAtomic} from "../utils";
 import {toTypesContent, toVirtualModuleContent} from "../generation/generator";
 import type {JSONObject, JSONValue} from "../types";
 import {CombinedMessages} from "./combined-messages";
-import {NormalizedConfig} from "./config";
+import {type GenerationOptions} from "./config";
 
-export interface GenerationOptions extends NormalizedConfig {
-  logger: Logger;
-}
 
 interface GenerationResult {
   filesWritten: number;

@@ -31,11 +31,11 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-unused-vars': ['warn', {
         "args": "all",
-        "argsIgnorePattern": "*",
+        "argsIgnorePattern": "^_",
         "caughtErrors": "all",
         "caughtErrorsIgnorePattern": "^_",
         "destructuredArrayIgnorePattern": "^_",
-        "varsIgnorePattern": "*",
+        "varsIgnorePattern": "^_",
         "ignoreRestSiblings": true
       }],
       '@typescript-eslint/no-unsafe-argument': 'warn',

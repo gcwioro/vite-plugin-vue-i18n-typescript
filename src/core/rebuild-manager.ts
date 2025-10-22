@@ -2,7 +2,9 @@ import {DevEnvironment, EnvironmentModuleNode, Logger, ViteDevServer} from "vite
 import {canonicalize} from "../utils";
 import type {JSONValue} from "../types";
 import {FileManager} from "./file-manager";
-import {GenerationCoordinator, GenerationOptions} from "./generation-coordinator";
+import {GenerationCoordinator,} from "./generation-coordinator";
+import type {GenerationOptions} from "./config";
+
 import {CombinedMessages} from "./combined-messages";
 
 

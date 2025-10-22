@@ -10,7 +10,7 @@ import {
 } from "vite";
 import type {VirtualKeysDtsOptions} from "./types";
 import {createVirtualModuleCode} from "./generation/generator";
-import {normalizeConfig, NormalizedConfig, Consts} from "./core/config";
+import {normalizeConfig, GenerationOptions, Consts} from "./core/config";
 import {FileManager} from "./core/file-manager";
 import {GenerationCoordinator} from "./core/generation-coordinator";
 import {RebuildManager} from "./core/rebuild-manager";
@@ -31,7 +31,7 @@ export function vitePluginVueI18nTypes(
   let root = "";
   let pluginLogger = createColoredLogger(userOptions.debug ? 'debug' : 'info', {customLogger: createLogger(userOptions.debug ? 'info' : 'warn')});
 
-  const config: NormalizedConfig = normalizeConfig(userOptions, pluginLogger);
+  let config: GenerationOptions = normalizeConfig(userOptions, pluginLogger);
 
   let isBuild = false;
   let emittedRefId: string | undefined;
@@ -87,6 +87,7 @@ export function vitePluginVueI18nTypes(
     enforce: "pre",
 
     async configResolved(cfg) {
+      config = normalizeConfig(userOptions, pluginLogger, cfg);
       root = cfg.root;
       isBuild = cfg.command === "build";
       // logger = cfg.logger;
@@ -159,6 +160,7 @@ export function vitePluginVueI18nTypes(
     resolveId(idResolve) {
       if (idResolve === Consts.devUrlPath) {
 
+        pluginLogger.debug(`🔍 [${pc.blueBright('resolveId')}]  Resolved dev JSON endpoint: ${idResolve}`);
         return "\0" + Consts.devUrlPath
 
       }
@@ -166,6 +168,7 @@ export function vitePluginVueI18nTypes(
       if (!id.startsWith(config.sourceId)) {
         return
       }
+
       const moduletoResolve = id.replace(config.sourceId, "")
 
       if (moduletoResolve === "") {
@@ -186,8 +189,8 @@ export function vitePluginVueI18nTypes(
       }
 
       if (idLoad.includes(Consts.devUrlPath)) {
-
-        return combinedMessages.messagesJsonString;
+        // return
+        return `export default ${combinedMessages.messagesJsonString}'`;
 
       }
       if (!idLoad.includes(config.sourceId)) {
@@ -205,7 +208,7 @@ export function vitePluginVueI18nTypes(
       pluginLogger.debug(`📄 [${pc.green('load')}] [${id}] loading [${pc.yellow(moduletoResolve)}]`);
 
       const code = createVirtualModuleCode({
-        config: {...config, logger: pluginLogger},
+        config: config,
         buildAssetRefId: config.emit.emitJson ? emittedRefId : undefined,
       }, combinedMessages);
       if (moduletoResolve === "") {
@@ -233,28 +236,9 @@ export function vitePluginVueI18nTypes(
       rebuildManager.setServer(server);
       pluginLogger.info(`🌐 [configureServer] Server reference set for virtual module: ${config.sourceId}`);
 
-      const resolvePattern = (pattern: string): string | undefined => {
-        if (!pattern) return undefined;
-        const isNegated = pattern.startsWith("!");
-        const rawPattern = isNegated ? pattern.slice(1) : pattern;
-        const trimmedPattern = rawPattern.startsWith("./") ? rawPattern.slice(2) : rawPattern;
-        const absolutePattern = path.isAbsolute(rawPattern)
-          ? rawPattern
-          : path.join(root, trimmedPattern);
-        const normalized = normalizePath(absolutePattern);
-        return isNegated ? `!${normalized}` : normalized;
-      };
 
-      const includePatterns = config.include
-        .map(resolvePattern)
-        .filter((pattern): pattern is string => Boolean(pattern));
-      const excludePatterns = config.exclude
-        .map((pattern) => {
-          const resolved = resolvePattern(pattern);
-          if (!resolved) return undefined;
-          return resolved.startsWith("!") ? resolved : `!${resolved}`;
-        })
-        .filter((pattern): pattern is string => Boolean(pattern));
+      const includePatterns = config.include;
+      const excludePatterns = config.exclude;
 
       const watcherPatterns = [...includePatterns, ...excludePatterns];
 

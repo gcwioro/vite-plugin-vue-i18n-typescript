@@ -5,6 +5,7 @@
  * providing type-safe i18n keys for your Vue application.
  */
 export interface VirtualKeysDtsOptions {
+  root?: string;
   include?: string | string[];
   exclude?: string | string[];
   getLocaleFromPath?: (absFilePath: string, root: string) => string | null;
