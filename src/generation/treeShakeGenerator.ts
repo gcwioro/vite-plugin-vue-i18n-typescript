@@ -54,23 +54,23 @@ ${hotUpdateCallback}
 export type HelperMethodsRecord = Record<SymbolEnum, string>;
 // type that has every key of SymbolEnum as ker
 // ys
-type HelperMethodsOrderKeys = keyof typeof HelperMethodsOrder;
-type _HelperMethods = Record<HelperMethodsOrderKeys, SymbolEnum>;
+// type HelperMethodsOrderKeys = keyof typeof HelperMethodsOrder;
+// type _HelperMethods = Record<HelperMethodsOrderKeys, SymbolEnum>;
 /** Stable order for full-file serialization */
-export const HelperMethodsOrder: HelperMethodsRecord = {
-
-
-  [SymbolEnum.imports.toString()]: 'imports',
-  [messages.toString()]: SymbolEnum.messages,
-  useI18nApp: SymbolEnum.useI18nApp,
-  fallbackLocales: SymbolEnum.fallbackLocales,
-  [availableLocales.toString()]: SymbolEnum.availableLocales,
-
-  translationWrapper: SymbolEnum.translationWrapper,
-  createI18nInstance: SymbolEnum.createI18nInstance,
-  createI18nInstancePlugin: SymbolEnum.createI18nInstancePlugin,
-  useI18nTypeSafe: SymbolEnum.useI18nTypeSafe,
-} as HelperMethodsRecord;
+// export const HelperMethodsOrder: HelperMethodsRecord = {
+//
+//
+//   [SymbolEnum.imports.toString()]: 'imports',
+//   [messages.toString()]: SymbolEnum.messages,
+//   useI18nApp: SymbolEnum.useI18nApp,
+//   fallbackLocales: SymbolEnum.fallbackLocales,
+//   [availableLocales.toString()]: SymbolEnum.availableLocales,
+//
+//   translationWrapper: SymbolEnum.translationWrapper,
+//   createI18nInstance: SymbolEnum.createI18nInstance,
+//   createI18nInstancePlugin: SymbolEnum.createI18nInstancePlugin,
+//   useI18nTypeSafe: SymbolEnum.useI18nTypeSafe,
+// } as HelperMethodsRecord;
 
 /** All sections resolve to strings */
 
@@ -87,19 +87,25 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
   function getMessages() {
     // When inlineDataInBuild is true, always inline the data directly
     // This avoids issues with virtual JSON modules in library builds
-    if (config.inlineDataInBuild) {
+    if (ops.buildAssetRefId) {
+      ops.config.logger.info(`buildAssetRefId: ${ops.buildAssetRefId}`)
+
+      return `export const messages = import.meta.ROLLUP_FILE_URL_${ops.buildAssetRefId}`
+    } else if (config.emit.inlineDataInBuild) {
       return `export const messages = ${messagesCombined.messagesJsonString};`
-    } else if (config.virtualJsonId) {
-      return `
-      import messageJson from '${config.virtualJsonId}'
 
-      export const messages = messageJson
-
-      `
-    } else if (ops.buildAssetRefId) {
-      return 'export const messages = import.meta.ROLLUP_FILE_URL_${ops.buildAssetRefId}'
+      // } else if (config.virtualJsonId) {
+      //   return `
+      //   import messageJson from '${config.virtualJsonId}'
+      //
+      //   export const messages = messageJson
+      //
+      //   `
     } else {
-      return `export const messages = ${JSON.stringify(config.devUrlPath || "/_virtual_locales.json")};`
+
+      const messagesImportedFromServer = `export const messages = ${messagesCombined.messagesJsonString}; //import('${config.devUrlPath || "_virtual_locales.json"}');`
+      config.logger.warn(messagesImportedFromServer)
+      return messagesImportedFromServer
     }
   }
 
@@ -188,7 +194,7 @@ export class RuntimeMethods {
 
     // Messages, availableLocales, and fallbackLocales are already exported in resolvedCode
     // so we don't need to add 'export default'
-    const needsDefaultExport = !['messages', 'availableLocales', 'fallbackLocales', 'useI18nApp', 'translationWrapper', 'useI18nTypeSafe', 'createI18nInstance', 'createI18nInstancePlugin'].includes(target);
+    const needsDefaultExport = true;//!['messages', 'availableLocales', 'fallbackLocales', 'useI18nApp', 'translationWrapper', 'useI18nTypeSafe', 'createI18nInstance', 'createI18nInstancePlugin'].includes(target);
     const defaultExportCode = needsDefaultExport ? `export default ${target}` : '';
 
     const parts = [importsCode, resolvedCode, defaultExportCode].filter(Boolean);

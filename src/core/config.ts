@@ -1,5 +1,6 @@
 import type {VirtualKeysDtsOptions} from "../types";
 import {deepMerge, defaultGetLocaleFromPath, shallowMerge} from "../utils";
+import type {CustomLogger} from "../createConsoleLogger";
 
 export interface NormalizedConfig {
   sourceId: string;
@@ -14,31 +15,27 @@ export interface NormalizedConfig {
   banner?: string;
   debug: boolean;
   devUrlPath: string;
-
-
-
-  inlineDataInBuild: boolean;
   emit: {
+    inlineDataInBuild: boolean;
     fileName: string;
     emitJson: boolean;
   };
   transformJson?: (json: unknown, absPath: string) => unknown;
-  virtualId: string;
-  resolvedVirtualId: string;
-  virtualJsonId: string;
-  resolvedVirtualJsonId: string;
+
+  logger: CustomLogger,
 }
 
 /**
  * Normalize and validate plugin configuration
  */
-export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): NormalizedConfig {
+export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}, logger: CustomLogger): NormalizedConfig {
   const baseLocale = userOptions.baseLocale ?? 'de';
 
   const sourceId = userOptions.sourceId ?? 'virtual:vue-i18n-types';
 
   const config: NormalizedConfig = {
     sourceId,
+
     typesPath: userOptions.typesPath ?? './src/vite-env-override.d.ts',
     virtualFilePath: userOptions.virtualFilePath,
     getLocaleFromPath: userOptions.getLocaleFromPath ?? defaultGetLocaleFromPath,
@@ -71,19 +68,21 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}): Normal
     banner: userOptions.banner,
     debug: userOptions.debug ?? false,
     devUrlPath: userOptions.devUrlPath ?? "/_virtual_locales.json",
-    inlineDataInBuild: userOptions.emit?.inlineDataInBuild ?? false,
     emit: {
       fileName: "assets/locales.json",
-      emitJson: userOptions.emit?.emitJson ?? false,
+      inlineDataInBuild: userOptions.emit?.inlineDataInBuild ?? false,
+
+      emitJson: userOptions.emit?.emitJson ?? true,
     },
     transformJson: userOptions.transformJson,
-    virtualId: sourceId,
-    resolvedVirtualId: "\0" + sourceId,
-    virtualJsonId: sourceId + '/messages.json',
-    // resolvedLanguagesVirtualId: "\0" + sourceId,
-    // virtualLanguagesId: sourceId + '/availableLocales',
-    resolvedVirtualJsonId: "\0" + sourceId + '/messages.json',
+    logger,
   };
+
+  // Validate config
+  if (!config.emit.emitJson && !config.emit.inlineDataInBuild) {
+    logger.error(`'emit.emitJson' and 'emit.inlineDataInBuild' are both 'false'.`);
+  }
+
 
   return config;
 }

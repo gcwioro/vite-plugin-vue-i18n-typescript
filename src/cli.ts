@@ -6,6 +6,7 @@ import {watch} from "chokidar";
 import {mkdir, writeFile} from "node:fs/promises";
 import type {GenerateTypesOptions} from "./api";
 import {generateI18nTypes} from "./api";
+import type {Logger} from "vite";
 
 const helpText = `
 vite-plugin-vue-i18n-typescript CLI
@@ -113,13 +114,14 @@ async function mergeExportCommand(args: string[]) {
   // Import FileManager to read and merge locale files
   const {FileManager} = await import("./core/file-manager");
   const {normalizeConfig} = await import("./core/config");
-
+  const {createConsoleLogger} = await import('./createConsoleLogger')
+  const logger = createConsoleLogger(debugEnabled)
   const config = normalizeConfig({
     include: values.include,
     exclude: values.exclude,
     merge: values.merge as "deep" | "shallow" | undefined,
     debug: debugEnabled,
-  });
+  }, logger);
 
   const fileManager = new FileManager({
     include: config.include,

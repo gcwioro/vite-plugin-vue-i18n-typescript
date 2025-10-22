@@ -1,10 +1,10 @@
 import path from "node:path";
-import type {Logger} from "vite";
 import type {VirtualKeysDtsOptions} from "./types";
 import {normalizeConfig} from "./core/config";
 import {FileManager} from "./core/file-manager";
 import {GenerationCoordinator} from "./core/generation-coordinator";
 import {RebuildManager} from "./core/rebuild-manager";
+import {createConsoleLogger} from "./createConsoleLogger";
 
 /**
  * Options for standalone type generation
@@ -66,37 +66,6 @@ export interface GenerateTypesResult {
 }
 
 /**
- * Create a simple console logger compatible with Vite's Logger interface
- */
-function createLogger(debugEnabled: boolean = false): Logger {
-  const warnedMessages = new Set<string>();
-
-  return {
-    info: (msg: string) => {
-      if (debugEnabled) {
-        console.log(`[vue-i18n-dts] ${msg}`);
-      }
-    },
-    warn: (msg: string) => {
-      console.warn(`[vue-i18n-dts] ${msg}`);
-    },
-    error: (msg: string) => {
-      console.error(`[vue-i18n-dts] ${msg}`);
-    },
-    warnOnce: (msg: string) => {
-      if (!warnedMessages.has(msg)) {
-        warnedMessages.add(msg);
-        console.warn(`[vue-i18n-dts] ${msg}`);
-      }
-    },
-    clearScreen: () => {
-    },
-    hasErrorLogged: () => false,
-    hasWarned: false,
-  };
-}
-
-/**
  * Generate TypeScript definitions from Vue i18n locale files
  *
  * @param options - Configuration options for generation
@@ -121,11 +90,11 @@ export async function generateI18nTypes(
 ): Promise<GenerateTypesResult> {
   const root = options.root ? path.resolve(options.root) : process.cwd();
   const debugEnabled = options.debug ?? options.verbose ?? false;
+  const logger = createConsoleLogger(options.debug);
   const config = normalizeConfig({
     ...options,
-    debug: debugEnabled,
-  });
-  const logger = createLogger(config.debug);
+    debug: debugEnabled
+  }, logger);
 
   logger.info(`Starting type generation in: ${root}`);
 

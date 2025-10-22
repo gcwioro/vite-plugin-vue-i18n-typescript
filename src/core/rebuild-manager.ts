@@ -5,8 +5,6 @@ import {FileManager} from "./file-manager";
 import {GenerationCoordinator, GenerationOptions} from "./generation-coordinator";
 import {CombinedMessages} from "./combined-messages";
 
-const DEBOUNCE_MS = 300;
-const MAX_WAIT_MS = 2000;
 
 export interface RebuildManagerOptions {
   fileManager: FileManager;
@@ -27,7 +25,7 @@ export class RebuildManager {
   private rebuildTimer?: ReturnType<typeof setTimeout>;
   private lastRebuildCall = 0;
   private serverRef?: ViteDevServer;
-  private resolvedVirtualId?: string;
+
   private environment?: DevEnvironment;
 
   constructor(private options: RebuildManagerOptions) {
@@ -36,36 +34,10 @@ export class RebuildManager {
   /**
    * Set the Vite dev server reference for hot updates
    */
-  setServer(server: ViteDevServer, resolvedVirtualId: string): void {
+  setServer(server: ViteDevServer): void {
     this.serverRef = server;
-    this.resolvedVirtualId = resolvedVirtualId;
-    this.options.logger?.info(`🔧 [RebuildManager] Server reference set. Virtual ID: ${resolvedVirtualId}`);
-  }
 
-  /**
-   * Perform debounced rebuild
-   */
-  async debouncedRebuild(reason: string, modules: EnvironmentModuleNode[]) {
-    const now = Date.now();
-    if (!this.lastRebuildCall) this.lastRebuildCall = now;
-
-    if (this.rebuildTimer) clearTimeout(this.rebuildTimer);
-
-    // If we've been waiting too long, rebuild immediately
-    if (now - this.lastRebuildCall >= MAX_WAIT_MS) {
-      this.lastRebuildCall = 0;
-      return await this.rebuild(reason, modules);
-
-    }
-
-    // Otherwise, schedule a debounced rebuild
-    return new Promise((resolve) => {
-      this.rebuildTimer = setTimeout(async () => {
-        this.lastRebuildCall = 0;
-        return resolve(await this.rebuild(reason, modules));
-
-      }, DEBOUNCE_MS);
-    });
+    this.options.logger?.info(`🔧 [RebuildManager] Server reference set. Virtual ID: ${this.options.config.sourceId}`);
   }
 
   /**
@@ -110,7 +82,7 @@ export class RebuildManager {
     const totalRebuildDuration = Math.round(performance.now() - startRebuild);
 
     // Invalidate hot module
-    const modulesResult = await this.invalidateModule(modules);
+    const modulesResult = modules;
 
     // Notify listeners
     this.options.onRebuildComplete?.({
@@ -129,17 +101,7 @@ export class RebuildManager {
     };
   }
 
-  /**
-   * Invalidate virtual module (simplified for Vite 7)
-   * Module invalidation is now handled in the hotUpdate hook
-   */
-  private async invalidateModule(modules: EnvironmentModuleNode[]) {
-    this.options.logger?.info(`🔄 [invalidateModule] Module invalidation completed`);
-    // In Vite 7, module invalidation is handled per-environment in the hotUpdate hook
-    return modules;
-  }
-
-  async setEnv(environment: DevEnvironment) {
+  public setEnv(environment: DevEnvironment) {
     this.environment = environment;
     this.options.logger?.info(`🔧 [RebuildManager] Environment set: ${environment.name}`);
   }
