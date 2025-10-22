@@ -263,7 +263,7 @@ export function vitePluginVueI18nTypes(
         // Serve locales JSON endpoint
         server.middlewares.use((req, res, next) => {
           if (!req.url) return next();
-          pluginLogger.info(req.url)
+
           if (req.url === Consts.devUrlPath) {
             pluginLogger.info(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${combinedMessages.keys.length} bytes`);
             res.statusCode = 200;
@@ -299,7 +299,7 @@ export function vitePluginVueI18nTypes(
 // hotUpdateOptions.
 
       if (!isWatchedFile(ctx.file)) {
-        // pluginLogger.info(`🔥 [hotUpdate] File not watched, skipping: ${ctx.file} for ${modules}`);
+        pluginLogger.debug(`🔥 [hotUpdate] File not watched, skipping: ${ctx.file} for ${modules}`);
         return;
       }
       pluginLogger.info(`🔥 [hotUpdate] Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`)
