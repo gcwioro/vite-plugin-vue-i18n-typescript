@@ -89,7 +89,7 @@ declare module '${sourceId}' {
    import type { AvailableLocale,AvailableLocales} from '${sourceId}/availableLocales';
 
    export interface I18nCustom {
-     (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string
+     (key: AllTranslationKeys, plural: number, options: TranslateOptions): string
       (key: AllTranslationKeys): string
       (key: AllTranslationKeys, options?: TranslateOptions): string
       (key: AllTranslationKeys, defaultMsg?: string): string

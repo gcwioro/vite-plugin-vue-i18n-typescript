@@ -257,13 +257,13 @@ function vitePluginVueI18nTypescript(
     }
     ,
 
-    async moduleParsed(module) {
-      pluginLogger.info(`Module parsed: ${module.id}`);
-      const grouped = fileManager.getGrouped();
-      const messagesCached = new CombinedMessages(grouped, config)
-      await messagesCached.writeFiles(emittedRefId);
-
-    },
+    // async moduleParsed(module) {
+    //   pluginLogger.info(`Module parsed: ${module.id}`);
+    //   const grouped = fileManager.getGrouped();
+    //   const messagesCached = new CombinedMessages(grouped, config)
+    //   await messagesCached.writeFiles(emittedRefId);
+    //
+    // },
     //
     // async transform(src, id) {
     //   let hotUpdatePrefix = `🔧 [${pc.magenta('transform')}] - ${normalizePath(id)}`;
