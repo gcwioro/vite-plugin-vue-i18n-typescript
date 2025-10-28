@@ -17,7 +17,10 @@ import {RebuildManager} from "./core/rebuild-manager";
 import {CombinedMessages} from "./core/combined-messages";
 import {createColoredLogger} from "./createConsoleLogger";
 import pc from "picocolors";
-import {CustomHotModuleUpdatePayload} from "./generation/runtime/hrmHotUpdate.ts";
+import {
+  CustomHotFileChangedPayload,
+  CustomHotReplaceI18nPayload
+} from "./generation/runtime/hrmHotUpdate.ts";
 
 
 /**
@@ -103,34 +106,37 @@ function vitePluginVueI18nTypescript(
       fileManager = new FileManager(config);
 
       await fileManager.findFiles();
-      await fileManager.processFile();
-      rebuildManager = new RebuildManager({
-        fileManager,
 
-        root,
-        logger: pluginLogger,
-        config: {...config, logger: pluginLogger},
-        onRebuildComplete: (cache) => {
 
-          const grouped = fileManager.getGrouped();
-          combinedMessages = new CombinedMessages(grouped, config)
-          if (!isBuild) {
-            server.ws.send({
-              type: 'custom',
-              event: 'i18n-update',
-              data: {
-                locale: undefined,
-                messages: combinedMessages,
-                timestamp: new Date().getTime(),
-              } as CustomHotModuleUpdatePayload
-            });
-          }
-        }
-
+      fileManager.addOnFileChanged(async file => {
+        // todo merge only changed file
+        pluginLogger.info(`File changed: ${file.localeKey}, updating emitted asset...`);
+        const messagesCached = new CombinedMessages(fileManager.getGrouped(), config)
+        await messagesCached.writeFiles(emittedRefId);
       });
+      fileManager.addOnAllFilesProcessed(async (result) => {
+        combinedMessages = result;
 
+        await combinedMessages.writeFiles(emittedRefId);
+        pluginLogger.info(`🚀 [buildStart] Rebuild complete. Locales: ${combinedMessages.languages.join(", ")}, Total Keys: ${combinedMessages.keys.length}`);
+        combinedMessages.validateMessages()
+      })
+
+      fileManager.addOnAllFilesProcessed(async () => {
+        const errors = await fileManager.validateMessages()
+        if (errors.length > 0) {
+          pluginLogger.error(`🚀 [buildStart] Validation errors found in locale messages:`);
+        }
+      })
+      const buildPromise = fileManager.readAndGroup()
+
+      // if (isBuild) {
+      await buildPromise;
+
+      // }
       if (isBuild) {
-        await rebuildManager.rebuild("initial", emittedRefId);
+
+        // await rebuildManager.rebuild("initial", emittedRefId);
       }
       // let update = await fileManager.fileUpdated(id, () => src, Date.now())
       // cfg.server.warmup()
@@ -138,6 +144,7 @@ function vitePluginVueI18nTypescript(
     },
 
     async buildStart() {
+
       pluginLogger.info(`🚀 [buildStart] Hook triggered. isBuild: ${isBuild}`);
 
 
@@ -147,40 +154,34 @@ function vitePluginVueI18nTypescript(
         pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + Consts.devUrlPath)}`);
 
       }
-
-      combinedMessages = new CombinedMessages(fileManager.getGrouped(), config)
-      await combinedMessages.writeFiles(emittedRefId);
-
-      const buildPromise = rebuildManager.rebuild("buildStart", emittedRefId).then(async result => {
-
-        combinedMessages = result.messages;
-        if (isBuild)
-          this.emitFile({
+      const self = this;
+      fileManager.addOnAllFilesProcessed(messages => {
+        if (isBuild) {
+          self.emitFile({
             originalFileName: config.emit.fileName,
             fileName: config.emit.fileName,
             type: "asset",
 
             name: config.emit.fileName,
-            source: combinedMessages.messagesJsonString,
+            source: messages.messagesJsonString,
           })
-        combinedMessages.validateMessages()
-        await combinedMessages.writeFiles(emittedRefId);
-        pluginLogger.info(`🚀 [buildStart] Rebuild complete. Locales: ${combinedMessages.languages.join(", ")}, Total Keys: ${combinedMessages.keys.length}`);
+        }
       })
 
-      if (isBuild) {
-        await buildPromise;
 
-        emittedRefId = this.emitFile({
-          originalFileName: config.emit.fileName,
-          fileName: config.emit.fileName,
-          type: "asset",
-
-          name: config.emit.fileName,
-          source: combinedMessages.messagesJsonString,
-        });
-
-      }
+      // if (isBuild) {
+      //
+      //
+      //   emittedRefId = this.emitFile({
+      //     originalFileName: config.emit.fileName,
+      //     fileName: config.emit.fileName,
+      //     type: "asset",
+      //
+      //     name: config.emit.fileName,
+      //     source: combinedMessages.messagesJsonString,
+      //   });
+      //
+      // }
     },
 
 
@@ -319,10 +320,30 @@ function vitePluginVueI18nTypescript(
 // },
     async configureServer(viteServer) {
       server = viteServer
-      pluginLogger.info(`🌐 [configureServer] Hook triggered. Setting up dev server...`);
+      fileManager.addOnFileChanged(file => {
+        viteServer.ws.send({
+          type: 'custom',
+          event: 'i18n-update',
+          data: {
+            messages: null,
+            update: file.prepared as JSONObject,
+            locale: file.localeKey,
+            timestamp: Date.now()
+          } as CustomHotFileChangedPayload
+        });
+      })
+      fileManager.addOnAllFilesProcessed((result) => {
+        viteServer.ws.send({
+          type: 'custom',
+          event: 'i18n-update',
+          data: {
+            locale: undefined,
+            messages: result,
+            timestamp: new Date().getTime(),
+          } as CustomHotReplaceI18nPayload
+        });
+      });
 
-      // Set server reference for hot updates (use virtualId for module graph lookups)
-      rebuildManager.setServer(server);
       pluginLogger.info(`🌐 [configureServer] Server reference set for virtual module: ${config.sourceId}`);
 
       const watcherPatterns = [...(config.include), ...(config.exclude)];
@@ -339,12 +360,6 @@ function vitePluginVueI18nTypescript(
 
       // Initial rebuild
       pluginLogger.info(`🌐 [configureServer] Triggering initial rebuild...`);
-      // rebuildManager.rebuild("initial", []).catch((e) => {
-      //   pluginLogger.error(`Initial rebuild failed: ${String(e)}`);
-      // });
-// rebuildManager.rebuild("initial", []).catch((e) => {
-//         pluginLogger.error(`Initial rebuild failed: ${String(e)}`);
-//       });
 
       // Debug endpoint
       if (config.debug) {
@@ -356,6 +371,7 @@ function vitePluginVueI18nTypescript(
             pluginLogger.info(`🔗 [middleware] Serving JSON endpoint: ${req.url}, size: ${combinedMessages.keys.length} bytes`);
             res.statusCode = 200;
             res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
             res.end(JSON.stringify({
               ...combinedMessages.messages,
 
@@ -367,20 +383,21 @@ function vitePluginVueI18nTypescript(
         server.middlewares.use((req, res, next) => {
           if (req.url === Consts.debugUrlPath) {
             res.setHeader("Content-Type", "application/json");
+            res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
             res.end(JSON.stringify({
-
-              files: fileManager.getLastFiles(),
               all: combinedMessages.keys.length,
-              grouped: combinedMessages.messages,
-              base: combinedMessages.config.baseLocale
+              base: combinedMessages.config.baseLocale,
+              hash: combinedMessages.contentId,
+              filesToProcess: fileManager.filesToProcess.size,
+              files: fileManager.getLastFiles(),
+
+              grouped: combinedMessages.messages
             }, null, 2));
             return;
           }
           next();
         });
-
       }
-
     }
     ,
 
@@ -412,7 +429,7 @@ function vitePluginVueI18nTypescript(
         pluginLogger.debug(`  Module ${i}: id=${m.id}, url=${m.url}, type=${m.type}`);
       });
 
-      rebuildManager.setEnv(this.environment);
+
       try {
         // Perform rebuild immediately (no debouncing needed in Vite 7)
         let update: ParsedFile | undefined | null = null
@@ -424,6 +441,7 @@ function vitePluginVueI18nTypescript(
 
         if (!update) {
           pluginLogger.warn(`${hotUpdatePrefix} No update information returned for file: ${ctx.file}`);
+          await fileManager.readAndGroup()
           return;
         }
         pluginLogger.info(`${hotUpdatePrefix} File processed: ${ctx.file}, locale: ${update.localeKey} keys: ${Object.keys(update.prepared).length}`);
@@ -434,19 +452,7 @@ function vitePluginVueI18nTypescript(
 // pluginLogger.debug(`${JSON.stringify(await ctx.read())} vs ${JSON.stringify(result.messages)}`);
         // Send the updated messages to the client
 
-        server.ws.send({
-          type: 'custom',
-          event: 'i18n-update',
-          data: {
-            messages: null,
-            update: update.prepared as JSONObject,
-            locale: update.localeKey,
-            timestamp
-          } as CustomHotModuleUpdatePayload
-        });
-        const grouped = fileManager.getGrouped();
-        const messagesCached = new CombinedMessages(grouped, config)
-        await messagesCached.writeFiles(emittedRefId);
+
         // Return empty array to prevent default HMR behavior
         return [];
       } catch (e) {

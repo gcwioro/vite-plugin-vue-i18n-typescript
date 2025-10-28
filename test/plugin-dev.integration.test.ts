@@ -54,8 +54,10 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
       async (server) => {
         const sendSpy = vi.spyOn(server.ws, 'send')
 
-        await waitForFile(dtsPath)
-        const initialContent = await fs.readFile(dtsPath, 'utf-8')
+        const initialContent = await waitForFileContent(
+          dtsPath,
+          (content) => content.includes("'App.menu'")
+        )
 
         expect(initialContent).toContain("'App.menu'")
 
@@ -75,15 +77,20 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
 
         expect(updatedContent).toContain("'App.fruits.blueberry'")
 
-        await expect
-          .poll(
-            () =>
-              sendSpy.mock.calls
-                .map((call) => call[0])
-                .filter((payload) => payload?.event === 'i18n-update').length,
-            {interval: 200, timeout: 5000}
-          )
-          .toBeGreaterThan(0)
+        // Wait for i18n-update event to be sent
+        const startTime = Date.now()
+        while (Date.now() - startTime < 5000) {
+          const i18nUpdates = sendSpy.mock.calls
+            .map((call) => call[0])
+            .filter((payload) => payload?.event === 'i18n-update')
+          if (i18nUpdates.length > 0) break
+          await new Promise(resolve => setTimeout(resolve, 200))
+        }
+
+        const i18nUpdateCount = sendSpy.mock.calls
+          .map((call) => call[0])
+          .filter((payload) => payload?.event === 'i18n-update').length
+        expect(i18nUpdateCount).toBeGreaterThan(0)
 
         const updatePayload = [...sendSpy.mock.calls]
           .map((call) => call[0] as any)

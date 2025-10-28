@@ -76,7 +76,7 @@ describe('i18n type generation', () => {
 
       await waitForFileContent(
         dtsPath,
-        (content) => content.includes("AvailableLocales = readonly ['de', 'en', 'fr']")
+        (content) => content.includes("Readonly<['de', 'en', 'fr']>")
       )
     })
   }, 20000)

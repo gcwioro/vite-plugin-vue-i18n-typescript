@@ -41,6 +41,7 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}, logger:
     ...userOptions,
     sourceId,
     root,
+    fileBatchSize: userOptions.fileBatchSize ?? 100,
     verbose: userOptions.debug ?? false,
     typesPath: userOptions.typesPath ?? './src/vite-env-override.d.ts',
     virtualFilePath: userOptions.virtualFilePath,

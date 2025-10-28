@@ -86,12 +86,12 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
   function getMessages() {
     // When inlineDataInBuild is true, always inline the data directly
     // This avoids issues with virtual JSON modules in library builds
-    if (ops.buildAssetRefId) {
+    if (config.emit.inlineDataInBuild) {
+      return `export const messages = ${messagesCombined.messagesJsonString}`
+    } else if (ops.buildAssetRefId) {
       ops.config.logger.info(`buildAssetRefId: ${ops.buildAssetRefId}`)
 
       return `export const messages = import.meta.ROLLUP_FILE_URL_${ops.buildAssetRefId}`
-    } else if (config.emit.inlineDataInBuild) {
-      return `export const messages = ${messagesCombined.messagesJsonString}`
 
       // } else if (config.virtualJsonId) {
       //   return `

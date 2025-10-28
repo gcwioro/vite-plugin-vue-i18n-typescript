@@ -20,9 +20,9 @@ describe('toTypesContent', () => {
       combinedMessages,
     })
 
-    expect(result).toContain("export type AllTranslationKeys = 'hello' | 'world'")
-    expect(result).toContain('export type AvailableLocales = readonly')
-    expect(result).toContain('export type AvailableLocale = AvailableLocales[number]')
+    expect(result).toMatch(/export type AllTranslationKeys = TranslationsPaths<AllMessages> \| 'hello' \| 'world'/)
+    expect(result).toContain('export type AvailableLocales =')
+    expect(result).toContain('export type AvailableLocale = PickupLocales<AllMessages>')
     expect(result).toContain('export type I18nMessages =')
   })
 
@@ -103,7 +103,8 @@ describe('toTypesContent', () => {
       combinedMessages,
     })
 
-    expect(result).toContain('export type AllTranslationKeys = never')
+    expect(result).toMatch(/export type AllTranslationKeys = TranslationsPaths<AllMessages> \| ''/)
+
   })
 
   it('should maintain language order as provided', () => {
@@ -120,7 +121,7 @@ describe('toTypesContent', () => {
     })
 
     // Languages should be in the same order as provided (sorted alphabetically by CombinedMessages)
-    expect(result).toContain("AvailableLocales = readonly ['de', 'en', 'fr', 'zh']")
+    expect(result).toContain("AvailableLocales =  Readonly<['de', 'en', 'fr', 'zh']>")
   })
 
   it('should handle arrays in messages', () => {

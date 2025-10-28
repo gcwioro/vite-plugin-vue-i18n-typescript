@@ -9,6 +9,12 @@ import './vite-env-override-components.ts'
  */
 export interface VirtualKeysDtsOptions {
   root?: string;
+
+  /*
+  * Number of files to process in each batch.
+  * @default 100
+   */
+  fileBatchSize?: number;
   include?: string | string[];
   exclude?: string | string[];
   getLocaleFromPath?: (absFilePath: string, root: string) => string | null;

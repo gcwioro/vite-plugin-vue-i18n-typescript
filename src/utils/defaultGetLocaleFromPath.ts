@@ -10,5 +10,15 @@ export function defaultGetLocaleFromPath(filePath: string): string | null {
   if (parts.length < 2 || parts[parts.length - 1] !== 'json') {
     return null; // Not a JSON file
   }
-  return parts?.[parts.length - 2] ?? null; // Return the locale code (second to last part)
+
+  const regex = /^(?=.*(?:^|\.)(?<locale>[a-z]{2}(?:-[A-Z]{2})?(?=\.|$))).*\.json$/
+  const regexValid = fileName.match(regex);
+  if (!regexValid) {
+    return null; // Filename does not contain a valid locale code
+  }
+  // console.log('defaultGetLocaleFromPath', regexValid?.groups?.locale);
+  if (fileName.startsWith('.')) {
+    return null;
+  }
+  return regexValid.groups?.locale?.length > 0 ? regexValid.groups.locale : null
 }
