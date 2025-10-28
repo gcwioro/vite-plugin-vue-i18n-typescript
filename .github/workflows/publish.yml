@@ -59,7 +59,12 @@ jobs:
         run: printf "//registry.npmjs.org/:_authToken={{ secrets.NPM_TOKEN }}\n" >> ~/.npmrc
       - name: Publish (alpha dist-tag)
         continue-on-error: true
-        run: bun publish
+        run: bun publish --tag latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish (stable)
+        continue-on-error: true
+        run: npm publish --tag latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish (stable)

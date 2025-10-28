@@ -27,6 +27,7 @@
           <span>All keys are available with full type safety across the application</span>
         </li>
       </ul>
+
     </div>
 
     <div class="space-y-3">
@@ -127,13 +128,31 @@
     └── FileMergingDemo.de.json  ← Component-specific (merged)</pre>
     </div>
   </section>
+  {{ $t('App.fruits.banana') }}
+  {{ t('App.fruits.banana') }}
+  {{ $t('App.fruits.bananaa') }}
+  {{ t('App.fruits.banana') }}
+  {{ x }}
 </template>
 
 <script setup lang="ts">
-import {useI18nTypeSafe} from "virtual:vue-i18n-types";
+/// <reference types="vite-plugin-vue-i18n-typescript" />
 import {computed} from "vue";
 
+// import {CombinedMessages} from "vite-plugin-vue-i18n-typescript";
+// import {createColoredLogger,normalizeConfig, createConsoleLogger} from "../../../../dist/index";
+// import {CombinedMessages,createColoredLogger,normalizeConfig} from "vite-plugin-vue-i18n-typescript/api";
+
+// @ts-ignore
+// window.globalThis.messagesX= new CombinedMessages({}, normalizeConfig({
+// baseLocale: 'en',
+//    },createColoredLogger('debug'),{}))
+import {useI18n} from "vue-i18n";
+import {useI18nTypeSafe} from "virtual:vue-i18n-types";
+
+const a = useI18n()
 const {t, tm} = useI18nTypeSafe()
+const x = tm('FileMergingDemo')
 
 // Count all available translation keys to show merging worked
 const allKeysCount = computed(() => {

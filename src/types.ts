@@ -1,3 +1,6 @@
+import type {createColoredLogger} from "./api.ts";
+import './vite-env-override-components.ts'
+
 /**
  * Options for the unplugin-vue-i18n-dts-generation Vite plugin.
  *
@@ -73,14 +76,93 @@ export type JSONValue = string | number | boolean | null | JSONObject | JSONArra
 export interface JSONObject { [key: string]: JSONValue }
 export type JSONArray = JSONValue[]
 
+
+export type CustomLogger = ReturnType<typeof createColoredLogger>;
+
+
 /**
- * Parameters for generating TypeScript definition content
- * @internal
+ * Options for standalone type generation
  */
-export interface DtsContentParams<TMessages extends JSONValue = JSONValue> {
-  messages: Record<string, TMessages>
-  baseLocale: string
-  AvailableLocales: string[]
-  banner?: string
-  sourceId?: string
+export interface GenerateTypesOptions extends VirtualKeysDtsOptions {
+  /**
+   * Root directory for the project (defaults to current working directory)
+   */
+  root?: string;
+
+  /**
+   * Enable verbose logging
+   */
+  verbose?: boolean;
 }
+
+/**
+ * Result of type generation
+ */
+export interface GenerateTypesResult {
+  /**
+   * Number of files written
+   */
+  filesWritten: number;
+
+  /**
+   * Total files that were checked
+   */
+  totalFiles: number;
+
+  /**
+   * List of generated file paths (relative to root)
+   */
+  generatedFiles: string[];
+
+  /**
+   * Performance metrics
+   */
+  durations: {
+    content: number;
+    write: number;
+    total: number;
+  };
+
+  /**
+   * Detected locales
+   */
+  locales: string[];
+
+  /**
+   * Number of locale files processed
+   */
+  localeFilesCount: number;
+
+  /**
+   * Absolute paths of all locale files that were processed
+   */
+  localeFiles: string[];
+}
+
+export interface GenerationOptions extends Omit<VirtualKeysDtsOptions, 'exclude' | 'extends'> {
+
+  root: string;
+  sourceId: string;
+  typesPath: string;
+  getLocaleFromPath: (absPath: string, root: string) => string | null;
+  baseLocale: string;
+
+  merge: "deep" | "shallow";
+
+  virtualFilePath?: string,
+
+  mergeFunction: (a: any, b: any) => any;
+  emit: {
+    inlineDataInBuild: boolean;
+    fileName: string;
+    emitJson: boolean;
+  };
+  include: string[];
+  exclude: string[];
+  debug: boolean;
+  transformJson?: (json: unknown, absPath: string) => unknown;
+  verbose: boolean;
+  logger: CustomLogger,
+}
+
+import './vite-env-override-components.ts'

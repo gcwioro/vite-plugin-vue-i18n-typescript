@@ -15,24 +15,23 @@
     ".cache"
   ],
   "compilerOptions": {
-    "rootDir": "./src",
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": false,
     "allowImportingTsExtensions": true,
-    "useDefineForClassFields": true,
+    "allowArbitraryExtensions": true,
+    "allowSyntheticDefaultImports": true,
     "target": "esnext",
     "moduleResolution": "bundler",
-    "skipLibCheck": true,
     "noImplicitAny": false,
     "sourceMap": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "esModuleInterop": true,
     "lib": [
       "esnext",
       "dom"
     ],
     "strict": true,
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@/*": [
         "src/*"
@@ -40,6 +39,10 @@
       //      "I18Plugin": [
       //        "../src/**"
       //      ],
-    }
+    },
+    "types": [
+      "vite/client",
+      "vite-plugin-vue-i18n-typescript"
+    ]
   }
 }

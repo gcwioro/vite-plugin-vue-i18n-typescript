@@ -1,5 +1,6 @@
 {
   "private": true,
+
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
@@ -7,7 +8,7 @@
   "scripts": {
     "dev": "vite",
     "dev:debug": "vite",
-    "build": "run-p typecheck \"build-only {@}\" --",
+    "build": "bun run 'build-only' && bun run typecheck --",
     "build:generate": "bun x vite-plugin-vue-i18n-types generate --base-locale en --verbose && run-p typecheck \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "bun run vite build",
@@ -21,11 +22,12 @@
     "@babel/code-frame": "^7.27.1",
     "@tailwindcss/vite": "^4.1.14",
     "tailwindcss": "^4.1.14",
+    "vite-plugin-vue-i18n-typescript": "link:vite-plugin-vue-i18n-typescript",
     "vite-plugin-singlefile": "^2.3.0",
-    "vite-plugin-vue-i18n-typescript": "*",
     "vue": "^3.5.22"
   },
   "devDependencies": {
+    "@vue/language-server": "^3.1.1",
     "@intlify/devtools-types": "^11.1.12",
     "@tsconfig/node22": "^22.0.2",
     "@types/node": "^24.8.1",
@@ -34,9 +36,6 @@
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/tsconfig": "^0.8.1",
     "eslint": "^9.37.0",
-    "eslint-import-resolver-typescript": "^4.4.4",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-vue": "~10.4.0",
     "jiti": "^2.6.1",
     "npm-run-all2": "^8.0.4",
     "typescript": "~5.9.3",

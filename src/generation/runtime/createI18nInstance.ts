@@ -1,18 +1,17 @@
-import type {ComposerOptions, I18n, Locale, LocaleMessageValue, VueMessageType} from "vue-i18n"
+// import type {MessagesType} from "virtual:unplug-i18n-dts-generation";
+import type {ComposerOptions, DefaultLocaleMessageSchema, I18n, Locale} from "vue-i18n"
 import {createI18n} from "vue-i18n"
-import type {MessagesType} from "virtual:unplug-i18n-dts-generation";
-
 
 declare global {
   export const fallbackLocales: string[];
-  export const messages: Readonly<Record<string, Record<string, LocaleMessageValue<VueMessageType>>>>;
+  export const messages: DefaultLocaleMessageSchema;
 }
 
 
-export function createI18nInstance<T extends ComposerOptions>(options?: T): I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : Record<string, unknown>, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : Record<string, unknown>, T["locale"] extends string ? T["locale"] : Locale, false> {
+export function createI18nInstance<T extends ComposerOptions>(options?: T): I18n<DefaultLocaleMessageSchema, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : Record<string, unknown>, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : Record<string, unknown>, T["locale"] extends string ? T["locale"] : Locale, false> {
 
 //I18n<Messages, DateTimeFormats, NumberFormats, OptionLocale, false>
-  const i18nApp = createI18n({
+  const i18nApp = createI18n<{ messages: DefaultLocaleMessageSchema }, string, false>({
     fallbackLocale: fallbackLocales,
     // missingWarn: false,
     // fallbackWarn: false,

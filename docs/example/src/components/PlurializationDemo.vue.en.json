@@ -1,0 +1,69 @@
+{
+  "App": {
+    "fruitsLabel": "Es gibt keine Früchte | Es gibt eine Frucht | Es gibt {count} Früchte",
+    "fruits": {
+      "label": "Du hast keine {fruit} | Du hast eine {fruit} | Du hast {count} {fruit}",
+      "apple": "kein Apfel | ein Apfel | {n} Äpfel",
+      "banana": "keine Banane | eine Banane | {count} Bananen"
+    },
+    "menu": [
+      "ddStadrteite",
+      "Über uns",
+      "Kontakt",
+      "Hilzsffe",
+      "dd"
+    ]
+  },
+  "Pluralidzaodesds": {
+    "items": "keidne Artikel | ein Artikel | {n} Artikel",
+    "people": "niemand | {n} Person | {n} Personen",
+    "messages": "keine Nachrichten | eine Nachricht | {n} Nachrichten",
+    "files": {
+      "uploaded": "keine Dateien hochgeladen | {n} Datei hochgeladen | {n} Dateien hochgeladen"
+    },
+    "cart": {
+      "status": "Ihr Warenkorb ist leer | Sie haben einen Artikel im Warenkorb | Sie haben {n} Artikel im Warenkorb"
+    },
+    "notifications": {
+      "unread": "keine ungelesenen Benachrichtigungen | eine ungelesene Benachrichtigung | {n} ungelesene Benachrichtigungen"
+    },
+    "explanation": {
+      "format": "Format: 'null | eins | viele'",
+      "parameter": "Übergeben Sie den Parameter {n} mit dem Zählwert",
+      "note": "Der {n}-Wert bestimmt welche Form verwendet wird: 0=erste, 1=zweite, 2+=dritte"
+    }
+  },
+  "LanguageDropdown": {
+    "label": "Sprache:"
+  },
+  "Greeting": {
+    "message": "Hallo TypeScript Freunde!",
+    "greetings": "unplug-i18n-dts-generation Plugin - Demo Projekt"
+  },
+  "InterpolationDemo": {
+    "welcome": "Willkommen, {name}!",
+    "profile": "{name} ist {age} Jahre alt",
+    "birthday": "Nächstes Jahr wirst du {age}!"
+  },
+  "NestedKeysDemo": {
+    "settings": {
+      "theme": {
+        "label": "Design-Einstellungen",
+        "description": "Dunkler oder heller Modus"
+      },
+      "notifications": {
+        "label": "Benachrichtigungen",
+        "description": "E-Mail- und Push-Benachrichtigungen"
+      },
+      "privacy": {
+        "label": "Datenschutz-Kontrollen",
+        "description": "Wer kann Ihre Daten sehen"
+      }
+    },
+    "status": {
+      "success": "Operation erfolgreich abgeschlossen!",
+      "warning": "Bitte überprüfen Sie Ihre Änderungen, bevor Sie fortfahren.",
+      "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+    }
+  }
+}

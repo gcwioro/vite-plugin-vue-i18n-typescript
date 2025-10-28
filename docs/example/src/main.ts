@@ -1,3 +1,4 @@
+/// <reference types="./vite-env-override.d.ts" />
 import {createI18nInstancePlugin} from "virtual:vue-i18n-types";
 import {createApp} from "vue";
 

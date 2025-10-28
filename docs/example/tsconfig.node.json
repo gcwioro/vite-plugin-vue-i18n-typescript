@@ -13,6 +13,7 @@
     "allowImportingTsExtensions": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "skipLibCheck": true,
+    "skipDefaultLibCheck": false,
     "isolatedModules": true,
     "module": "ESNext",
     "moduleResolution": "Bundler"

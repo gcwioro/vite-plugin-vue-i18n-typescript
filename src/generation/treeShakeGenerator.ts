@@ -1,8 +1,11 @@
 // HelperMethods.ts
 import {CombinedMessages} from "../core/combined-messages";
-import type {GenerationOptions} from "../core/config";
 
 import translateWrapperFunction from "./runtime/translateWrapperFunction.ts??inline";
+import deepMerge from './runtime/deepMerge.ts??inline';
+import hotUpdateCallback from "./runtime/hrmHotUpdate.ts??inline";
+import codeCreateI18nInstance from "./runtime/createI18nInstance??inline";
+import {GenerationOptions} from "../types.ts";
 
 /** String enum keeps runtime minimal and DX straightforward */
 export enum SymbolEnum {
@@ -31,10 +34,6 @@ export const createI18nInstance = SymbolEnum.createI18nInstance;
 export const createI18nInstancePlugin = SymbolEnum.createI18nInstancePlugin;
 export const useI18nTypeSafe = SymbolEnum.useI18nTypeSafe;
 
-
-import deepMerge from '../utils/merge.ts??inline';
-import hotUpdateCallback from "./runtime/hrmHotUpdate.ts??inline";
-import codeCreateI18nInstance from "./runtime/createI18nInstance??inline";
 
 
 
@@ -110,7 +109,10 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
   }
 
   return {
-    [imports]: "import { createI18n, useI18n } from 'vue-i18n';",
+    [imports]: `
+    import {isReactive, ref, toValue} from "vue";
+    import { createI18n, useI18n } from 'vue-i18n';
+    `,
     [messages]: getMessages(),
     [availableLocales]: `export const availableLocales = ${messagesCombined.languagesTuple()};`,
     [fallbackLocales]: `export const fallbackLocales = ${JSON.stringify(messagesCombined.fallbackLocales)};`,
@@ -135,6 +137,35 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
   };
 }`,
   } as const;
+  /*     `
+     let useTranslation;
+
+export function useI18nTypeSafe(options) {
+if(!useTranslation){
+useTranslation={
+     ...globalThis.i18nApp.global,
+     t: globalThis.i18nApp.global.t,
+     d: globalThis.i18nApp.global.t,
+     n: globalThis.i18nApp.global.n,
+};
+ const { t: originalT, d, n, ...rest } = useI18n({
+
+   ...(options ?? {}),
+ });
+ if(!options){
+   return useTranslation;
+ }
+
+ const all = useI18n({
+
+   ...(options ?? {}),
+ });
+ return {
+   ...all,
+   t: translateWrapperFunction(all.t),
+ };
+
+}`,*/
 }
 
 /** Options for file output */
@@ -190,7 +221,7 @@ export class RuntimeMethods {
     // For sub-modules, we only need the specific export, not vue-i18n imports
     // unless the module needs them (like useI18nTypeSafe)
     const needsVueI18nImports = ['useI18nTypeSafe', 'createI18nInstance', 'createI18nInstancePlugin'].includes(target);
-    const importsCode = needsVueI18nImports ? this._data[imports] : '';
+    const importsCode = true ? this._data[imports] : '';
 
     // Messages, availableLocales, and fallbackLocales are already exported in resolvedCode
     // so we don't need to add 'export default'

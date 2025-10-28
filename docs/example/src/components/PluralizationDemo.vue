@@ -71,7 +71,7 @@
       <div class="card-gray">
         <div class="code-label">t('PluralizationDemo.files.uploaded', {{ count }})</div>
         <div class="text-sm font-medium text-gray-900">
-          {{ t('PluralizationDemo.files.uploaded', count) }}
+          {{ $t('PluralizationDemo.files.uploaded', count) }}
         </div>
         <div class="text-hint">
           Count: {{ count }} → {{ getPluralForm(count) }}
@@ -137,7 +137,7 @@
 
       <div class="info-box-purple px-4 py-3">
         <p class="info-text-purple">
-          {{ t('App.fruits.label', amount, {fruit: fruitName}) }}
+          {{ $t('App.fruits.label', amount, {fruit: fruitName}) }}
         </p>
       </div>
     </div>
@@ -146,12 +146,14 @@
 </template>
 
 <script setup lang="ts">
+import type {AllTranslationKeys, MessageSchemaGen} from "virtual:vue-i18n-types";
 import {useI18nTypeSafe} from "virtual:vue-i18n-types";
-import type {AllTranslationKeys, MessageSchemaGen} from "virtual:vue-i18n-types/messages";
 import {computed, ref} from "vue";
+import {useI18n} from "vue-i18n";
 
 const {t} = useI18nTypeSafe()
-
+const x = useI18n().t("App.fruits.apple")
+const a: AllTranslationKeys = 'App.fruits.apple' as AllTranslationKeys
 const count = ref<number>(0)
 const amount = ref<number>(1)
 
