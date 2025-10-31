@@ -72,5 +72,3 @@ export function createColoredLogger(level?: LogLevel | 'debug', options?: Logger
     hasWarned: logger.hasWarned,
   };
 }
-
-export type CustomLogger = ReturnType<typeof createColoredLogger>;

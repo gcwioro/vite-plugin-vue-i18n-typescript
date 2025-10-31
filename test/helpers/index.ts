@@ -2,8 +2,9 @@ import {promises as fs} from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import {fileURLToPath} from 'node:url'
-import {afterEach} from 'vitest'
+import {afterEach, expect} from 'vitest'
 import {createServer, type InlineConfig, type ViteDevServer} from 'vite'
+import {FileChangeInfo} from "node:fs/promises";
 
 type CleanupFn = () => Promise<void> | void
 
@@ -32,10 +33,10 @@ afterEach(async () => {
   }
 
   const dirs = Array.from(tempDirectories)
-  tempDirectories.clear()
+  // tempDirectories.clear()
   for (const dir of dirs) {
     try {
-      await removeDirectory(dir)
+      // await removeDirectory(dir)
     } catch {
       // Ignore cleanup errors to avoid masking test failures
     }
@@ -67,7 +68,9 @@ export async function createTempProjectDir(fixtureName: string): Promise<string>
   } catch {
     throw new Error(`Fixture not found: ${fixtureName}`)
   }
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'vite-plugin-vue-i18n-types-'))
+  const randomSuffix = Math.random().toString(36).substring(2, 8)
+  let tempDir = path.join(os.tmpdir(), 'vite-plugin-vue-i18n-types', randomSuffix);
+  await fs.mkdir(tempDir, {recursive: true});
   await copyDirectory(sourceDir, tempDir)
   tempDirectories.add(tempDir)
   registerCleanup(() => removeDirectory(tempDir))
@@ -76,7 +79,7 @@ export async function createTempProjectDir(fixtureName: string): Promise<string>
 
 export async function waitForFile(
   filePath: string,
-  {timeoutMs = 10_000, pollIntervalMs = 100}: {timeoutMs?: number; pollIntervalMs?: number} = {}
+  {timeoutMs = 10_000, pollIntervalMs = 100}: { timeoutMs?: number; pollIntervalMs?: number } = {}
 ): Promise<void> {
   const start = Date.now()
   while (Date.now() - start < timeoutMs) {
@@ -91,19 +94,32 @@ export async function waitForFile(
   throw new Error(`Timed out waiting for file: ${filePath}`)
 }
 
-export async function waitForFileContent(
+
+export async function waitForFileContentContain(
   filePath: string,
-  predicate: (content: string) => boolean,
-  {timeoutMs = 10_000, pollIntervalMs = 200}: {timeoutMs?: number; pollIntervalMs?: number} = {}
+  predicate: string,
+  {timeoutMs = 10_000, pollIntervalMs = 1000}: { timeoutMs?: number; pollIntervalMs?: number } = {}
 ): Promise<string> {
   const start = Date.now()
   let lastError: unknown
 
+  await sleep(pollIntervalMs)
   while (Date.now() - start < timeoutMs) {
     try {
-      const content = await fs.readFile(filePath, 'utf-8')
-      if (predicate(content)) {
+
+      // check if file exists
+
+      console.log(`Checking file content match of ${filePath}...`)
+      const content = await fs.readFile(filePath, {flag: 'r', encoding: 'utf8'})
+      const a: NodeJS.AsyncIterator<FileChangeInfo<string>> = fs.watch(filePath, {encoding: 'utf8'})
+
+
+      if (content) {
+        expect(content).toContain(predicate)
         return content
+      } else {
+        console.log(`File content of ${filePath} did not satisfy predicate yet.`, content.slice(0, 100))
+
       }
     } catch (error) {
       lastError = error
@@ -113,8 +129,43 @@ export async function waitForFileContent(
   }
 
   const error = new Error(`Timed out waiting for file content: ${filePath}`)
-  ;(error as Error & {cause?: unknown}).cause = lastError
+  ;(error as Error & { cause?: unknown }).cause = lastError
   throw error
+}
+
+export async function waitForRealFileChange(filePath: string,
+                                            {timeoutMs = 10_000}: { timeoutMs?: number } = {}) {
+  return waitForFileChange(filePath, false, {timeoutMs});
+}
+
+
+export async function waitForFileChange(
+  filePath: string, returnFileOnNoChange = true,
+  {timeoutMs = 10_000}: { timeoutMs?: number } = {}
+): Promise<string> {
+  const ac = new AbortController();
+  const {signal} = ac;
+  setTimeout(() => ac.abort(), timeoutMs);
+
+
+  try {
+    const watcher = fs.watch(filePath, {signal});
+    for await (const event of watcher) {
+      console.log(`File change detected: ${event.eventType} on ${event.filename}`);
+      return await fs.readFile(filePath, {encoding: 'utf-8'});
+    }
+
+  } catch (err: any) {
+    if (err.name !== 'AbortError')
+      throw err;
+  }
+  if (returnFileOnNoChange) {
+    return await fs.readFile
+    (filePath, {encoding: 'utf-8'});
+  }
+  throw new Error(`Timed out waiting for file change: ${filePath}`);
+
+
 }
 
 export async function withDevServer<T>(
@@ -134,7 +185,7 @@ export async function withDevServer<T>(
   registerCleanup(closeServer)
 
   try {
-    await server.listen()
+    await server.listen(config?.server?.port)
     const result = await run(server)
     await closeServer()
     return result
@@ -145,7 +196,7 @@ export async function withDevServer<T>(
 }
 
 export function registerTestCleanup(callback: CleanupFn): void {
-  registerCleanup(callback)
+  // registerCleanup(callback)
 }
 
 export function sleep(ms: number): Promise<void> {

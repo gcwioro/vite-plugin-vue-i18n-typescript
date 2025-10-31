@@ -1,0 +1,27 @@
+{
+  "PluralizationDemo": {
+    "fruits": {
+      "label": "You have no {fruit} | You have one {fruit} | You have {count} {fruit}",
+      "apple": "apple | apples",
+      "banana": "banana | bananas"
+    },
+    "title": "Pluralization Examples",
+    "items": "no items | one item | {count} items",
+    "people": "nobody | one person | {count} people",
+    "messages": "no messages | one message | {count} message",
+    "files": {
+      "uploaded": "no files uploaded | one file uploaded | {count} files uploaded"
+    },
+    "cart": {
+      "status": "Your cart is empty | You have one item in your cart | You have {count} items in your cart"
+    },
+    "notifications": {
+      "unread": "no unread notifications | one unread notification | {n} unread notifications"
+    },
+    "explanation": {
+      "format": "Format: 'zero | one | many'",
+      "parameter": "Pass {count} parameter matching the count value",
+      "note": "The {count} value determines which form is used: 0=first, 1=second, 2+=third"
+    }
+  }
+}

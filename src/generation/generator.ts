@@ -1,7 +1,6 @@
-import type {JSONObject} from '../types'
+import type {GenerationOptions, JSONObject} from '../types'
 import {CombinedMessages} from '../core/combined-messages'
 import {RuntimeGenerationParams, RuntimeMethods} from "./treeShakeGenerator";
-import {type GenerationOptions} from "../core/config";
 
 
 /**
@@ -38,65 +37,157 @@ export function toTypesContent(params: {
   // Type definitions only - build with array for better performance
   const bodyLines = [
     '// types content',
-`declare module '${sourceId}' {
-   import {type Plugin, type WritableComputedRef} from 'vue'
-   import { availableLocales } from '${sourceId}/availableLocales'
-   import type {  Composer, Locale, FallbackLocale, ComposerOptions as Options, ComposerOptions, I18n, I18nOptions, NamedValue, TranslateOptions, UseI18nOptions} from "vue-i18n"
-   import type { MessagesType,AllTranslations,AllTranslationKeys,I18nMessages,MessageSchemaGen} from '${sourceId}/messages'
-   export type { MessagesType,AllTranslations,AllTranslationKeys,I18nMessages,MessageSchemaGen} from '${sourceId}/messages'
-   import type { AvailableLocale,AvailableLocales} from '${sourceId}/availableLocales'
-   export type { AvailableLocale,AvailableLocales} from '${sourceId}/availableLocales'
-   export interface I18nCustom {  (key: AllTranslationKeys, plural: number, options?: TranslateOptions): string
+
+
+    `
+
+declare module '${sourceId}/messages' {
+  import type {ResourceValue,TranslationsPaths,PickupPaths,RemoveIndexSignature,PickupKeys,PickupLocales, ResourcePath, IsEmptyObject,} from "@intlify/core-base";
+
+  import type { DefineLocaleMessage, DefaultLocaleMessageSchema,Locale } from 'vue-i18n';
+  // const _AllMessage = ;
+  export type AllMessages = Readonly<${JSON.stringify(combinedMessages.messages)}>;
+   // const _MessageScheme = ${JSON.stringify(baseLocaleMessages)};
+      export type MessageSchemeType = AllMessages['en'];
+
+  export type AllTranslationKeys = TranslationsPaths<AllMessages> | '${(finalKeys??[]).join("' | '")}';
+  export type MessageSchemaGen = MessageSchemeType & DefineLocaleMessage;
+  export type I18nMessages = AllMessages;
+  export type AllTranslations = I18nMessages;
+  export type MessagesType = I18nMessages;
+
+
+  export const messages: MessagesType;
+  export {messages as default };
+}
+declare module '${sourceId}/availableLocales' {
+  import type {PickupLocales } from "@intlify/core-base";
+
+  export type AvailableLocales =  Readonly<[${availableLocales.map(l => `'${l}'`).join(', ')}]>
+  export type AvailableLocale = PickupLocales<AllMessages>
+  export const availableLocales : AvailableLocales;
+  export default availableLocales;
+}
+declare module '${sourceId}' {
+   import {type Plugin, type WritableComputedRef} from 'vue';
+   import { availableLocales } from '${sourceId}/availableLocales';
+   import type {  Composer, Locale, FallbackLocale, ComposerOptions as Options, ComposerOptions, I18n, I18nOptions,DefaultDateTimeFormatSchema,DefaultNumberFormatSchema, NamedValue, TranslateOptions, UseI18nOptions} from "vue-i18n";
+   import type { MessagesType,AllMessages, AllTranslations,AllTranslationKeys,I18nMessages,MessageSchemaGen} from '${sourceId}/messages';
+   export type * from '${sourceId}/messages';
+    export type * from '${sourceId}/availableLocales';
+   import type { AvailableLocale,AvailableLocales} from '${sourceId}/availableLocales';
+
+   export interface I18nCustom {
+     (key: AllTranslationKeys, plural: number, options: TranslateOptions): string
+      (key: AllTranslationKeys): string
       (key: AllTranslationKeys, options?: TranslateOptions): string
       (key: AllTranslationKeys, defaultMsg?: string): string
       (key: AllTranslationKeys, defaultMsg: string, options?: TranslateOptions): string
       (key: AllTranslationKeys, named: NamedValue, defaultMsg?: string): string
       (key: AllTranslationKeys, named: NamedValue, plural?: number): string
-      (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions): string
-      (key: AllTranslationKeys, plural: number, named: NamedValue): string
-      (key: AllTranslationKeys, plural: number, defaultMsg: string): string
+      (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions & Record<string,string|number>): string
+      (key: AllTranslationKeys, plural: number| UnwrapRef<number>, named?: NamedValue<TranslateOptions>): string
+      (key: AllTranslationKeys, plural: number, defaultMsg?: string): string
+  };
+
+
+declare module 'vue' {
+  import type {NamedValue, TranslateOptions} from "vue-i18n";
+  import type {AllTranslationKeys, I18nCustom} from 'virtual:vue-i18n-types';
+
+
+  /**
+   * Component Custom Properties for Vue I18n
+   *
+   * @VueI18nInjection
+   */
+  export interface ComponentCustomProperties {
+
+    // $i18n: VueI18nInstance
+
+
+
+    $t(key: AllTranslationKeys, plural?: number|TranslateOptions|string|NamedValue, options?: TranslateOptions|string|number): string
+
   }
-  export type UseI18nTypesafeReturn = Omit<Composer<NonNullable<Options['messages']>, NonNullable<Options['datetimeFormats']>, NonNullable<Options['numberFormats']>, Options['locale'] extends unknown ? string : Options['locale']>,'t'> & { t: I18nCustom};
-  export function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T):
-      I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>
-  export function createI18nInstancePlugin<T extends Partial<ComposerOptions>&I18nOptions >(options?: T):
-      Plugin<unknown[]>&( I18n<AllTranslations, T["datetimeFormats"] extends Record<string,unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : object, T["locale"] extends string ? T["locale"] : Locale, false> )
+}
+
+
+
+export type DateTimeFormats = Record<AvailableLocale|string, DefaultDateTimeFormatSchema>
+export type NumberFormats = Record<AvailableLocale|string, DefaultNumberFormatSchema>
+
+ export type I18nOptions = Omit<ComposerOptions,'messages'>&
+ {
+   messages:AllMessages,locale: ${combinedMessages.config.baseLocale},
+
+ };
+ export type CreateI18nOptions = Omit<ComposerOptions,'messages'>& I18nOptions &
+ {
+
+  lecacy: false,
+  dateTimeFormats?: DateTimeFormats,
+  numberFormats?: NumberFormats
+ };
+//   export type DateTimeFormats = DefaultDateTimeFormatSchema
+// export type NumberFormats =  DefaultNumberFormatSchema
+
+  export type I18InstanceType<Options extends CreateI18nOptions> = I18n<AllMessages,DateTimeFormats, NumberFormats, AvailableLocale,false>
+
+  export type UseI18nTypesafeReturn<TOptions extends I18nOptions=I18nOptions> = Omit<Composer<AllMessages, NonNullable<TOptions['datetimeFormats']>, NonNullable<TOptions['numberFormats']>, TOptions['locale'] extends unknown ?AvailableLocale: TOptions['locale']>,'t'> &
+  {
+   t: I18nCustom
+   tm: <TKey extends string |PickupPaths<MessageSchemaGen>,TResult extends ResourceValue<MessageSchemaGen, TKey>>(t: TKey) =>  TResult
+   locale: WritableComputedRef<AvailableLocale>};
+
+
+  // export function createI18nInstance<T extends Partial<ComposerOptions> >(options?: T):
+  //     I18n<MessagesType, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : object, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"]: object, T["locale"] extends string ? T["locale"] : Locale, false>
+  type I18nInstance<T extends Omit<ComposerOptions,'messages'>> = I18n<
+    MessagesType,
+    T['datetimeFormats'] extends Record<string, unknown> ? T['datetimeFormats'] : object,
+    T['numberFormats'] extends Record<string, unknown> ? T['numberFormats'] : object,
+    T['locale'] extends string ? T['locale'] : Locale,
+    false
+  >
+  export function createI18nInstance<Options extends CreateI18nOptions>(options?: Options): I18InstanceType<Options>;
+  export function createI18nInstancePlugin<T extends  CreateI18nOptions>(options?: T):
+      Plugin<unknown[]>& I18nInstance<T>
 
   export {fallbackLocales} from '${sourceId}/fallbackLocales'
   export {availableLocales} from '${sourceId}/availableLocales'
   export {messages} from '${sourceId}/messages'
   export const useI18nApp: ()=> UseI18nTypesafeReturn
-  export function useI18nTypeSafe(options?: Omit<UseI18nOptions, 'messages'>):UseI18nTypesafeReturn;
+  export function useI18nTypeSafe(options?:I18nOptions):UseI18nTypesafeReturn;
 }
+// declare module '@intlify/core-base' {
+//
+//   export type DefineCoreLocaleMessage = _AllMessages;
+// }
+//   import type { Composer, UseI18nOptions,DefaultLocaleMessageSchema, SchemaParams, LocaleParams, VueMessageType } from 'vue-i18n';
+// declare module 'vue-i18n' {
+  // type messageScheme = ${JSON.stringify(baseLocaleMessages)}
+  // export type DefaultLocaleMessageSchema = _MessageSchemeType
 
-declare module '${sourceId}/messages' {
-  export type AllTranslationKeys = ${finalKeys.length ? `'${finalKeys.join(`' | '`)}'` : 'never'}
-  export type I18nMessages = Readonly<Record<AvailableLocale, MessageSchemaGen>>
-  export type AllTranslations = I18nMessages
-  export type MessagesType = I18nMessages
-  export type MessageSchemaGen = ${JSON.stringify(baseLocaleMessages)}
-  export const messages: MessagesType;
-  export default messages;
-}
-declare module '${sourceId}/availableLocales' {
-  export type AvailableLocale = AvailableLocales[number]
-  export type AvailableLocales = readonly [${availableLocales.map(l => `'${l}'`).join(', ')}]
-  export const availableLocales: AvailableLocales;
-  export default availableLocales;
-}
+  // export type DefineLocaleMessage = _MessageSchemeType
+  // export type Locale =  ${combinedMessages.languagesUnion()};
+//export type ComposerTranslation
+// }
+
+
 declare module '${sourceId}/fallbackLocales' {
   import type { Locale } from "vue-i18n";
   export const fallbackLocales: { [locale in string]: Locale[];}
   export default fallbackLocales;
 }
 declare module '${sourceId}/createI18nInstance' {
-  import type {createI18nInstance as ImportedType} from '${sourceId}'
-  export const createI18nInstance: ImportedType
+  import type {createI18nInstance as ImportedType} from '${sourceId}';
+  export const createI18nInstance: ImportedType;
   export default createI18nInstance;
 }
 declare module '${sourceId}/createI18nInstancePlugin' {
-  import type {createI18nInstancePlugin as ImportedType} from '${sourceId}'
-  export const createI18nInstancePlugin: ImportedType
+  import type {createI18nInstancePlugin as ImportedType} from '${sourceId}';
+  export const createI18nInstancePlugin: ImportedType;
   export default createI18nInstancePlugin;
 }
 declare module '${sourceId}/useI18nTypeSafe' {
@@ -104,6 +195,29 @@ declare module '${sourceId}/useI18nTypeSafe' {
   export const useI18nTypeSafe: ImportedType
   export default useI18nTypeSafe;
 }
+
+// export {};
+// declare module '@intlify/core-base' {
+//   export interface DefineCoreLocaleMessage {
+//     title: string
+//     menu: {
+//       login: string
+//     }
+//   }
+// }
+
+// declare module 'vue-i18n' {
+//
+// //  import type { messages } from '${sourceId}/messages'
+//    interface DefineLocaleMessage {
+//    //(typeof messages)['de']
+//    test: string
+//    }
+//    export declare type I18nMode = 'composition'
+//
+//      export = DefineLocaleMessage;
+//      export = x
+// }
 `,
 
 

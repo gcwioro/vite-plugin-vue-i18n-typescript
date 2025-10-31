@@ -1,11 +1,6 @@
 {
   "App": {
-    "fruitsLabel": "Es gibt keine Früchte | Es gibt eine Frucht | Es gibt {count} Früchte",
-    "fruits": {
-      "label": "Du hast keine {fruit} | Du hast eine {fruit} | Du hast {count} {fruit}",
-      "apple": "kein Apfel | ein Apfel | {n} Äpfel",
-      "banana": "keine Banane | eine Banane | {count} Bananen"
-    },
+
     "menu": [
       "Startseite",
       "Über uns",
@@ -14,6 +9,12 @@
     ]
   },
   "PluralizationDemo": {
+    "fruitsLabel": "Es gibt keine Früchte | Es gibt eine Frucht | Es gibt {count} Früchte",
+    "fruits": {
+      "label": "Du hast keine {fruit} | Du hast eine {fruit} | Du hast {count} {fruit}",
+      "apple": "kein Apfel | ein Apfel | {n} Äpfel",
+      "banana": "keine Banane | eine Banane | {count} Bananen"
+    },
     "title": "Pluralisierungsbeispiele",
     "items": "keine Artikel | ein Artikel | {n} Artikel",
     "people": "niemand | {n} Person | {n} Personen",

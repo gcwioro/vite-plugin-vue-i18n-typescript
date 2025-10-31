@@ -1,44 +1,71 @@
-import { defineConfig } from 'tsup'
+import {defineConfig, type Options} from 'tsup'
+//
+//
+// const defaultOptions = (entryFile: string[] | string) => ({
+//   entryFile: entryFile,
+//   format: ['cjs', 'esm'],
+//   dts: true,
+//   clean: true,
+//   sourcemap: true,
+//
+//   minify: false,
+//   target: ['node22', 'esnext'],
+//   external: ['vite', 'fast-glob'],
+//   shims: true,
+//   cjsInterop: true,
+//   splitting: true,
+//   treeshake: 'safest',
+//   bundle: true,
+// } as Options)
+// export default defineConfig([
+//   // Main plugin entry
+//   // {
+//   //   ...defaultOptions('src/index.ts'),
+//   //   name: 'vite-plugin-vue-i18n-typescript'
+//   // },
+//   {
+//     ...defaultOptions('src/plugin.ts'),
+//     name: 'plugin',
+//     outDir: 'dist',
+//   },
+//   {
+//     ...defaultOptions('src/api.ts'),
+//     name: 'api',
+//     outDir: 'dist/api',
+//   },
+//   {
+//     ...defaultOptions('src/cli.ts'),
+//     name: 'cli',
+//     outDir: 'dist/cli',
+//   },
+//
+// ])
+// import type {Options} from "tsup";/**/
 
-export default defineConfig([
-  // Main plugin entry
-  {
-    entry: ['src/index.ts'],
-    format: ['cjs', 'esm'],
-    dts: true,
-    clean: true,
-    sourcemap: true,
-    minify: false,
-    target: 'node22',
-    external: ['vite', 'fast-glob'],
-    shims: true,
-    splitting: false,
-    treeshake: true,
+export const tsup: Options = {
+  outDir: 'dist',
+  splitting: false,
+  clean: true,
+  sourcemap: true,
+
+  dts: {
+    entry: ['src/index.ts', 'src/plugin.ts', 'src/api.ts', 'src/vite-env-override-components.ts',
+    ]
   },
-  // API entry
-  {
-    entry: ['src/api.ts'],
-    format: ['cjs', 'esm'],
-    dts: true,
-    sourcemap: true,
-    minify: false,
-    target: 'node22',
-    external: ['vite', 'fast-glob'],
-    shims: true,
-    splitting: false,
-    treeshake: true,
+  format: ['cjs', 'esm'],
+  ignoreWatch: [
+    'dist',
+    'doc',
+  ],
+  bundle: true,
+  treeshake: true,
+  entry: {
+    plugin: 'src/plugin.ts',
+    index: 'src/index.ts',
+    api: 'src/api.ts',
+    cli: 'src/cli.ts',
   },
-  // CLI entry (ESM only for bin)
-  {
-    entry: ['src/cli.ts'],
-    format: ['esm'],
-    dts: false,
-    sourcemap: false,
-    minify: false,
-    target: 'node22',
-    external: ['vite', 'fast-glob'],
-    shims: true,
-    splitting: false,
-    treeshake: true,
-  },
-])
+  target: ['node22', 'esnext'],
+  external: ['vite', 'fast-glob', 'path'],
+};
+export default defineConfig(tsup);

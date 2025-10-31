@@ -137,7 +137,7 @@
 
       <div class="info-box-purple px-4 py-3">
         <p class="info-text-purple">
-          {{ t('App.fruits.label', amount, {fruit: fruitName}) }}
+          {{ t('PluralizationDemo.fruits.label', amount, {fruit: fruitName}) }}
         </p>
       </div>
     </div>
@@ -146,17 +146,19 @@
 </template>
 
 <script setup lang="ts">
+import type {AllTranslationKeys, MessageSchemaGen} from "virtual:vue-i18n-types";
 import {useI18nTypeSafe} from "virtual:vue-i18n-types";
-import type {AllTranslationKeys, MessageSchemaGen} from "virtual:vue-i18n-types/messages";
 import {computed, ref} from "vue";
+import {useI18n} from "vue-i18n";
 
 const {t} = useI18nTypeSafe()
-
+const x = useI18n().t("PluralizationDemo.fruits.apple")
+const a: AllTranslationKeys = 'PluralizationDemo.fruits.apple' as AllTranslationKeys
 const count = ref<number>(0)
 const amount = ref<number>(1)
 
 // Infer fruit types from the MessageSchemaGen type
-type FruitKeys = keyof MessageSchemaGen['App']['fruits']
+type FruitKeys = keyof MessageSchemaGen['PluralizationDemo']['fruits']
 // Filter to only get the fruit types (not 'label')
 type FruitType = Exclude<FruitKeys, 'label'>
 
@@ -164,7 +166,7 @@ const fruit = ref<FruitType>('apple')
 
 // Helper to construct the translation key with proper typing
 const getFruitKey = (fruitType: FruitType): AllTranslationKeys => {
-  return `App.fruits.${String(fruitType)}` as AllTranslationKeys
+  return `PluralizationDemo.fruits.${String(fruitType)}` as AllTranslationKeys
 }
 
 const fruitName = computed(() => {

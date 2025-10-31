@@ -1,4 +1,5 @@
 /// <reference types="./src/vite-env-override.d.ts" />
+/// <reference types="vite-plugin-vue-i18n-typescript" />
 /// <reference types="vite/client" />
 
 import {join} from "path";
@@ -10,12 +11,13 @@ import {defineConfig} from 'vite'
 import viteTsChecker from 'vite-plugin-checker';
 import {viteSingleFile} from "vite-plugin-singlefile"
 
-// import vitePluginVueI18nTypes from "vite-plugin-vue-i18n-typescript";
+import vitePluginVueI18nTypes from "vite-plugin-vue-i18n-typescript";
 // @xts-nocheck
-import vitePluginVueI18nTypes from "../src/plugin.ts";
+// import vitePluginVueI18nTypes from "../../dist/index";
 
 export default defineConfig({
   resolve: {
+
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
@@ -28,15 +30,17 @@ export default defineConfig({
       vueTsc: {root: __dirname, tsconfigPath: join('./tsconfig.app.json')}
 
     }),
-    // @ts-expect-error Only because of import of ../src/..
+    //@ts-expect-error Only because of import of ../src/..
     vitePluginVueI18nTypes({
       baseLocale: 'en',
+      include: ['./src/**/*.json',],
+      // exclude: ['src/**/FileMergingDemo.de.json',],
+      typesPath: 'src/vite-env-override.d.ts',
       // virtualFilePath: 'src/i18n/i18n.virtual.gen.js',
       debug: true,
       // virtualFilePath: './src/i18n/virtual.js',
-
       emit: {emitJson: true, inlineDataInBuild: false}
-    }),
+    } as any),
     tailwindcss(),
 
   ],

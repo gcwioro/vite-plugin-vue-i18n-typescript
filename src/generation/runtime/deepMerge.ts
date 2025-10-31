@@ -1,4 +1,4 @@
-export function deepMerge<T extends Record<string, any>>(target: T, source: T): T {
+function deepMerge<T extends Record<string, any>>(target: T, source: T): T {
   if (target === source) return target;
   if (Array.isArray(target) && Array.isArray(source)) return source as T;
   if (
@@ -18,7 +18,4 @@ export function deepMerge<T extends Record<string, any>>(target: T, source: T): 
   return source;
 }
 
-export const shallowMerge = <T extends Record<string, any>>(a: T, b: T) => Object.assign({}, a, b);
-
-export const toArray = <T, >(v?: T | T[]) => (Array.isArray(v) ? v : v ? [v] : []);
-export default deepMerge;
+export {deepMerge, deepMerge as default};

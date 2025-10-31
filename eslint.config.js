@@ -13,7 +13,7 @@ export default [
       '**/dist/**',
       '**/node_modules/**',
       '**/coverage/**',
-      'example/**',
+      'docs/**',
       '*.config.js',
       '*.config.ts',
       'tsup.config.ts',

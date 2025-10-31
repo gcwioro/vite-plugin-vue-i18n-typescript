@@ -1,22 +1,17 @@
 import path from "node:path";
 import {promises as fs} from "node:fs";
-import type {Logger} from "vite";
-import {toArray} from "../utils";
-import {parseJSONWithLocation, wrapErrorWithFile} from "../utils/error-formatter";
-import {CustomLogger} from "../createConsoleLogger";
 
-export interface FileManagerOptions {
-  include: string | string[];
-  exclude: string | string[];
-  root: string;
-  getLocaleFromPath: (absPath: string, root: string) => string | null;
-  transformJson?: (json: unknown, absPath: string) => unknown;
-  merge: (a: any, b: any) => any;
-  logger?: CustomLogger;
-  debug?: boolean;
-}
 
-interface ParsedFile {
+import type {GenerationOptions, JSONValue} from "../types.ts";
+import {toArray} from "../generation/runtime/merge.ts";
+import {canonicalize, detectKeyConflicts} from "../utils/json.ts";
+import {parseJSONWithLocation, wrapErrorWithFile} from "../utils/error-formatter.ts";
+import {CombinedMessages} from "./combined-messages.ts";
+
+type FilesProcesedCallback = (files: CombinedMessages, change?: string[]) => void | Promise<void>;
+type FileUpdatedCallback = (file: ParsedFile) => (void | Promise<void>)
+
+export interface ParsedFile {
   localeKey: string;
   prepared: any;
 }
@@ -25,11 +20,57 @@ interface ParsedFile {
  * Manages file reading, caching, and incremental updates for locale files
  */
 export class FileManager {
-  private fileModTimes = new Map<string, number>();
   private parsedFilesCache = new Map<string, ParsedFile>();
-  private lastFiles: string[] = [];
+  // private grouped:Record<string, any> = {};
+  private processedFiles: Set<string> = new Set<string>();
+  public filesToProcess: Set<string> = new Set<string>();
 
-  constructor(private options: FileManagerOptions) {
+  constructor(private options: GenerationOptions) {
+
+  }
+
+  public async findFiles() {
+    const allfiles = (await this.collectJsonFiles())
+
+
+    this.filesToProcess = new Set(allfiles);
+
+
+  }
+
+  public async processFile(file?: string) {
+    file ??= this.filesToProcess.values().next().value;
+    if (file) {
+
+      await this.readFile(file);
+
+
+      return file;
+    }
+    return null
+
+  }
+
+  private async fastGlob() {
+    const patterns = toArray(this.options.include);
+    // Remove the '!' prefix from exclude patterns since fast-glob's ignore option doesn't use it
+    const ignore = toArray(this.options.exclude).map(p => p.startsWith('!') ? p.slice(1) : p);
+
+    const cwd = this.options.root;
+    const start = performance.now();
+    const {default: fg} = await import("fast-glob");
+    const list: string[] = await fg(patterns, {
+      cwd,
+      ignore,
+      absolute: true,
+      onlyFiles: true,
+      dot: false
+    });
+
+
+    const entries = list.map(p => path.normalize(p));
+    this.options.logger.info(`[FileManager] [findFiles] fast-glob: found ${entries.length} files in ${Math.round(performance.now() - start)}ms`);
+    return entries;
   }
 
   /**
@@ -37,156 +78,150 @@ export class FileManager {
    */
   async collectJsonFiles(): Promise<string[]> {
     const patterns = toArray(this.options.include);
-    const ignore = toArray(this.options.exclude);
-    const entries = new Set<string>();
+    // Remove the '!' prefix from exclude patterns since fast-glob's ignore option doesn't use it
+    const ignore = toArray(this.options.exclude).map(p => p.startsWith('!') ? p.slice(1) : p);
+
     const cwd = this.options.root;
 
-    // Node 22+: fs.promises.glob exists
-    const fsAny = fs as unknown as {
-      glob?: (pattern: string | readonly string[], options?: any) => AsyncIterable<string>;
-    };
+    this.options.logger.debug(`[FileManager] collectJsonFiles: patterns=${patterns.join(', ')}`);
+    this.options.logger.debug(`[FileManager] collectJsonFiles: cwd=${cwd}`);
+    this.options.logger.debug(`[FileManager] collectJsonFiles: ignore=${ignore.join(', ')}`);
 
-    if (typeof fsAny.glob === "function") {
-      // Use native glob
-      for (const pattern of patterns) {
-        for await (const rel of fsAny.glob(pattern, {cwd, exclude: ignore})) {
-          const abs = path.isAbsolute(rel) ? rel : path.join(cwd, rel);
-          entries.add(path.normalize(abs));
-        }
-      }
-    } else {
-      // Fallback: fast-glob
-      const {default: fg} = await import("fast-glob");
-      const list: string[] = await fg(patterns, {
-        cwd,
-        ignore,
-        absolute: true,
-        onlyFiles: true,
-        dot: false
-      });
-      for (const p of list) entries.add(path.normalize(p));
-    }
+    let start = performance.now();
+    // const allImports = await import.meta.glob(this.options.root + '/**/*.json');
+
+    // this.options.logger.debug(`[FileManager] collectJsonFiles: found ${Object.keys(allImports).length} JSON files via import.meta.glob in ${Math.round(performance.now() - start)}ms`);
+    start = performance.now();
+
+
+    const nativeGlobEntriess = [];//nativeGlob();
+
+    const fastGlobEntries = this.fastGlob();
+    const entries = new Set<string>([...(await fastGlobEntries)]);    // Fallbasck: fast-glob
+
 
     const out = Array.from(entries);
-    out.sort((a, b) => a.localeCompare(b));
-    return out;
+
+    this.options.logger.debug(`[FileManager] foundFiles:  ${out.slice(0, Math.min(out.length, 10)).join(', ')}`);
+    const filteredFiles = out;
+    this.options.logger.info(`[FileManager] findFiles: total files found: ${out.length}/${filteredFiles.length} after filtering`);
+
+
+    filteredFiles.sort((a, b) => a.localeCompare(b));
+    return filteredFiles;
   }
+
 
   /**
    * Read and group locale files with incremental updates
    */
-  async readAndGroup(): Promise<{
-    grouped: Record<string, any>;
-    stats: {
-      totalFiles: number;
-      filesRead: number;
-      durations: {
-        stat: number;
-        read: number;
-        merge: number;
-        total: number;
-      };
-    };
-  }> {
+  async readAndGroup() {
     const startReadGroup = performance.now();
-    const files = await this.collectJsonFiles();
-    this.lastFiles = files;
-    const grouped: Record<string, any> = {};
 
+    // Find all locale files first
+    if (this.filesToProcess.size === 0)
+
+      await this.findFiles();
+
+    const files = this.filesToProcess
     // Check which files need to be re-read (new or modified)
-    const filesToRead: string[] = [];
-    const startStatCheck = performance.now();
-    const fileStats = await Promise.all(
-      files.map(async (f) => {
-        try {
-          const stat = await fs.stat(f);
-          return {path: f, mtime: stat.mtimeMs};
-        } catch {
-          return {path: f, mtime: 0};
-        }
-      })
-    );
-    const statCheckDuration = Math.round(performance.now() - startStatCheck);
 
-    for (const {path: abs, mtime} of fileStats) {
-      const cachedMtime = this.fileModTimes.get(abs);
-      if (cachedMtime === undefined || mtime !== cachedMtime) {
-        filesToRead.push(abs);
-        this.fileModTimes.set(abs, mtime);
-      }
-    }
 
-    // Remove entries for files that no longer exist
-    const currentFiles = new Set(files);
-    for (const [cachedPath] of this.fileModTimes) {
-      if (!currentFiles.has(cachedPath)) {
-        this.fileModTimes.delete(cachedPath);
-        this.parsedFilesCache.delete(cachedPath);
-      }
-    }
-
-    // Read only changed/new files
     const startFileRead = performance.now();
-    await this.readChangedFiles(filesToRead);
-    const fileReadDuration = Math.round(performance.now() - startFileRead);
+    await this.readChangedFiles();
 
     // Merge all cached files (including unchanged ones)
-    const startMerge = performance.now();
-    for (const [_, {localeKey, prepared}] of this.parsedFilesCache) {
-      if (!(localeKey in grouped)) grouped[localeKey] = {};
-      grouped[localeKey] = this.options.merge(grouped[localeKey], prepared);
-    }
-    const mergeDuration = Math.round(performance.now() - startMerge);
 
     const totalDuration = Math.round(performance.now() - startReadGroup);
 
+    this.options.logger.info(`[FileManager] reading ${this.processedFiles.size} files completed in ${totalDuration}ms`);
+    const combinedMessages = await this.buildMessagesAndNotify(files);
     return {
-      grouped,
+      messages: combinedMessages,
       stats: {
-        totalFiles: files.length,
-        filesRead: filesToRead.length,
+
         durations: {
-          stat: statCheckDuration,
-          read: fileReadDuration,
-          merge: mergeDuration,
+          stat: totalDuration,
+          read: totalDuration,
+
           total: totalDuration,
         },
       },
     };
   }
 
+  private async buildMessagesAndNotify(files: Set<string> | string[]) {
+    const combinedMessages = new CombinedMessages(this.getGrouped(), this.options);
+    await Promise.all(this.callbacks.map(cb => cb(combinedMessages, [...files])));
+    return combinedMessages;
+  }
+
+  public getGrouped(files?: Map<string, ParsedFile>) {
+    const grouped: Record<string, any> = {}
+    files ??= this.parsedFilesCache;
+    for (const [_, {localeKey, prepared}] of files) {
+      if (!(localeKey in grouped)) grouped[localeKey] = {};
+      grouped[localeKey] = this.options.mergeFunction(grouped[localeKey], prepared);
+    }
+    return canonicalize(grouped as JSONValue) as Record<string, any>;
+
+
+  }
+
   /**
    * Read and parse changed files
    */
-  private async readChangedFiles(filesToRead: string[]): Promise<void> {
-    for (const abs of filesToRead) {
-      const localeKey = this.options.getLocaleFromPath(abs, this.options.root);
+  public async readChangedFiles(): Promise<void> {
+    let readFiles = 0;
+    const filesToProcess = new Set([...this.filesToProcess])
+    const totalFiles = filesToProcess.size;
+    const start = performance.now();
+    while (filesToProcess.size > 0) {
+      const readFileBatches = this.options.fileBatchSize ?? 100;
+      const filesToProcessInRound = [...filesToProcess].slice(0, Math.min(readFileBatches, filesToProcess.size));
+      this.options.logger.debug(`[FileManager] readChangedFiles: processing batch of ${readFiles} / ${totalFiles} files. | Elapsed: ${Math.round(performance.now() - start)}ms`);
+      const tasks = filesToProcessInRound
+        .map(a => this.processFile(a))
+      filesToProcessInRound.forEach(a => filesToProcess.delete(a));
+      await Promise.all(tasks);
+      filesToProcessInRound.forEach(file => this.filesToProcess.delete(file))
+      filesToProcessInRound.forEach(file => this.processedFiles.add(file))
 
-      if (!localeKey) {
-        this.options.logger?.warn(`Skipping file with invalid locale: ${abs}`);
-        continue;
-      }
+      readFiles += filesToProcessInRound.length;
 
-      if (localeKey.length !== 2 && localeKey.length !== 5) {
-        this.options.logger?.warn(`Uncommon locale: ${abs} -> ${localeKey}`);
-      }
+    }
+  }
 
-      try {
-        const raw = await fs.readFile(abs, "utf8");
+  private async readFile(abs: string, readFileContent?: () => string | Promise<string>, localeKey: string | null = null) {
+    localeKey ??= this.options.getLocaleFromPath(abs, this.options.root);
 
-        // Parse JSON with enhanced error messages
-        const parsed = parseJSONWithLocation(raw, abs);
 
-        const prepared = this.options.transformJson
-          ? this.options.transformJson(parsed, abs)
-          : parsed;
-        this.parsedFilesCache.set(abs, {localeKey, prepared});
-      } catch (err: any) {
-        // Wrap error with file context if not already formatted
-        const formattedError = wrapErrorWithFile(abs, err);
-        this.options.logger?.error(formattedError.message);
-        throw formattedError;
-      }
+    if (!localeKey) {
+      this.options.logger?.warn(`Skipping file with invalid locale: ${abs}`);
+      return;
+    }
+
+    if (localeKey.length !== 2 && localeKey.length !== 5) {
+      this.options.logger?.warn(`Uncommon locale: ${abs} -> ${localeKey}`);
+    }
+
+    try {
+      readFileContent ??= () => fs.readFile(abs, "utf8");
+      const raw = await readFileContent();
+
+      // Parse JSON with enhanced error messages
+      const parsed = parseJSONWithLocation(raw, abs);
+
+      const prepared = this.options.transformJson
+        ? this.options.transformJson(parsed, abs)
+        : parsed;
+      this.parsedFilesCache.set(abs, {localeKey, prepared});
+      return {localeKey, prepared} as ParsedFile;
+    } catch (err: any) {
+      // Wrap error with file context if not already formatted
+      const formattedError = wrapErrorWithFile(abs, err);
+      this.options.logger?.error(formattedError.message);
+      throw formattedError;
     }
   }
 
@@ -194,15 +229,79 @@ export class FileManager {
    * Get list of last processed files
    */
   getLastFiles(): string[] {
-    return this.lastFiles;
+    return [...this.processedFiles];
   }
 
   /**
    * Clear all caches
    */
   clearCache(): void {
-    this.fileModTimes.clear();
+
     this.parsedFilesCache.clear();
-    this.lastFiles = [];
+    this.processedFiles = new Set<string>();
+    this.filesToProcess = new Set<string>();
+  }
+
+  public async fileUpdated(filePath: string, readFile?: () => string | Promise<string>, locale: string | null = null): Promise<ParsedFile | undefined> {
+    // let newVar = await this.readFile(filePath, readFile, locale);
+    // if (newVar) {
+    //   await Promise.all(this.callbacksFileChanged.map(async a => await a(newVar)));
+    // }
+    // return newVar;
+
+    this.parsedFilesCache.delete(filePath);
+    this.filesToProcess.add(filePath);
+    const newVar = await this.readFile(filePath);
+    if (newVar) {
+      // this.callbacksFileChanged.map(async a => await a(newVar));
+    }
+    await this.buildMessagesAndNotify([filePath]);
+    return newVar;
+
+
+  }
+
+  public fileUpdatedWithLocale(filePath: string, locale: string): Promise<ParsedFile | undefined> {
+    return this.fileUpdated(filePath, undefined, locale);
+
+
+  }
+
+  public validateMessages(): Promise<string[]> {
+    return new Promise((resolve) => {
+
+      const conflicts = detectKeyConflicts(this.getGrouped());
+      if (conflicts.length > 0) {
+        this.options.logger.error('⚠️  Conflicting translation keys detected:', {
+          timestamp: true,
+        });
+        for (const conflict of conflicts) {
+          this.options.logger.error(`   ${conflict}`, {timestamp: true});
+        }
+      }
+      resolve(conflicts);
+
+    })
+  }
+
+  public async fileRemoved(filePath: string) {
+    this.parsedFilesCache.delete(filePath);
+    await this.buildMessagesAndNotify([filePath]);
+  }
+
+  public addNewFile(filePath: string, readFile: () => (string | Promise<string>), mtime: number) {
+    return this.fileUpdated(filePath, readFile);
+
+  }
+
+  public callbacksFileChanged: Array<FileUpdatedCallback> = [];
+  private callbacks: Array<FilesProcesedCallback> = [];
+
+  public addOnAllFilesProcessed(callback: FilesProcesedCallback) {
+    this.callbacks.push(callback);
+  }
+
+  public addOnFileChanged(callback: FileUpdatedCallback) {
+    this.callbacksFileChanged.push(callback);
   }
 }

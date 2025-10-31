@@ -27,6 +27,7 @@
           <span>All keys are available with full type safety across the application</span>
         </li>
       </ul>
+
     </div>
 
     <div class="space-y-3">
@@ -36,9 +37,9 @@
         </h3>
         <div class="space-y-2">
           <div class="card-content">
-            <span class="text-gray-500 text-xs">App.fruits.label:</span>
+            <span class="text-gray-500 text-xs">PluralizationDemo.fruits.label:</span>
             <p class="text-gray-900">
-              {{ t('App.fruits.label', {amount: 5, fruit: 'apples'}) }}
+              {{ t('PluralizationDemo.fruits.label', {amount: 5, fruit: 'apples'}) }}
             </p>
           </div>
           <div class="card-content">
@@ -127,11 +128,14 @@
     └── FileMergingDemo.de.json  ← Component-specific (merged)</pre>
     </div>
   </section>
+
 </template>
 
 <script setup lang="ts">
-import {useI18nTypeSafe} from "virtual:vue-i18n-types";
+
 import {computed} from "vue";
+import {useI18nTypeSafe} from "virtual:vue-i18n-types";
+
 
 const {t, tm} = useI18nTypeSafe()
 

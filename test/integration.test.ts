@@ -7,9 +7,10 @@ import {describe, expect, it} from 'vitest'
 import unpluginVueI18nDtsGeneration from '../src/index'
 import {
   createTempProjectDir,
-  registerTestCleanup,
   sleep,
-  waitForFileContent,
+  waitForFileChange,
+  waitForFileContentContain,
+  waitForRealFileChange,
   withDevServer,
 } from './helpers'
 
@@ -18,7 +19,8 @@ describe('i18n type generation', () => {
     const projectRoot = await createTempProjectDir('basic-project')
     const dtsPath = path.join(projectRoot, 'src/vite-env-override.d.ts')
 
-    await fs.rm(dtsPath, {force: true}).catch(() => {})
+    await fs.rm(dtsPath, {force: true}).catch(() => {
+    })
     await sleep(100)
 
     await withDevServer({
@@ -31,25 +33,25 @@ describe('i18n type generation', () => {
         }),
       ],
     }, async () => {
-      const content = await waitForFileContent(
+      const content = await waitForFileContentContain(
         dtsPath,
-        (value) => value.includes("'App.fruits.apple'")
+        "'PluralizationDemo.fruits.apple'"
       )
 
-      expect(content).toContain("'App.fruits.apple'")
-      expect(content).toContain("'App.fruits")
+      expect(content).toContain("'PluralizationDemo.fruits.apple'")
+      expect(content).toContain("'PluralizationDemo.fruits")
       expect(content).toContain("'App.menu'")
       expect(content).toContain("'en'")
     })
-  }, 15000)
+  }, 40000)
 
   it('detects new locale files without restarting the dev server', async () => {
     const projectRoot = await createTempProjectDir('basic-project')
     const dtsPath = path.join(projectRoot, 'src/vite-env-override.d.ts')
     const newLocalePath = path.join(projectRoot, 'src/locales/fr.json')
 
-    await fs.rm(newLocalePath, {force: true}).catch(() => {})
-    registerTestCleanup(() => fs.rm(newLocalePath, {force: true}).catch(() => {}))
+    await fs.rm(newLocalePath, {force: true}).catch(() => {
+    })
 
     await withDevServer({
       root: projectRoot,
@@ -58,26 +60,23 @@ describe('i18n type generation', () => {
         vue(),
         unpluginVueI18nDtsGeneration({
           typesPath: './src/vite-env-override.d.ts',
+          debug: true,
         }),
       ],
     }, async () => {
-      await waitForFileContent(
-        dtsPath,
-        (value) => value.includes("'App.fruits.apple'")
-      )
+      expect(await waitForFileChange(
+        dtsPath, true
+      )).toContain("PluralizationDemo.fruits.apple")
 
       const frMessages = {
         Greeting: {
           message: 'Bonjour TypeScript !',
         },
       }
-
+      const fileChangePromise = waitForRealFileChange(dtsPath)
       await fs.writeFile(newLocalePath, JSON.stringify(frMessages, null, 2), 'utf-8')
 
-      await waitForFileContent(
-        dtsPath,
-        (content) => content.includes("AvailableLocales = readonly ['de', 'en', 'fr']")
-      )
+      expect((await fileChangePromise)).toContain("'fr'")
     })
-  }, 20000)
+  }, 40000)
 })

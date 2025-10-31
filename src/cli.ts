@@ -6,7 +6,8 @@ import {watch} from "chokidar";
 import {mkdir, writeFile} from "node:fs/promises";
 import {generateI18nTypes} from "./api";
 import {createColoredLogger} from "./createConsoleLogger";
-import {GenerationOptions, normalizeConfig} from "./core/config";
+import {normalizeConfig} from "./core/config";
+
 
 const helpText = `
 vite-plugin-vue-i18n-typescript CLI
@@ -124,21 +125,12 @@ async function mergeExportCommand(args: string[]) {
     debug: debugEnabled,
   }, logger, {root: rootDir});
 
-  const fileManager = new FileManager({
-    include: config.include,
-    exclude: config.exclude,
-    root: rootDir,
-    getLocaleFromPath: config.getLocaleFromPath,
-    transformJson: config.transformJson,
-    merge: config.mergeFunction,
-    logger,
-    debug: debugEnabled,
-  });
+  const fileManager = new FileManager(config);
 
   // Read and group locale files
   const result = await fileManager.readAndGroup();
-  const grouped = result.grouped;
-  const locales = Object.keys(grouped).filter((l) => l !== "js-reserved");
+  const grouped = result.messages;
+  const locales = grouped.languages;
 
   if (locales.length === 0) {
     console.error("❌ No locales found");
@@ -165,7 +157,7 @@ async function mergeExportCommand(args: string[]) {
       await mkdir(outputDir, {recursive: true});
 
       // Write locale messages
-      await writeFile(outputPath, JSON.stringify(grouped[locale], null, 2), "utf-8");
+      await writeFile(outputPath, JSON.stringify(grouped.messages, null, 2), "utf-8");
 
       if (verbose) {
         console.log(`📄 Wrote ${locale}: ${path.relative(rootDir, outputPath)}`);
@@ -245,6 +237,7 @@ async function main() {
         debug: {type: "boolean"},
         verbose: {type: "boolean", short: "v"},
       },
+
       strict: true,
       allowPositionals: false,
     });

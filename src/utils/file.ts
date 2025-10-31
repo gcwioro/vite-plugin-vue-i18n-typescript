@@ -20,7 +20,8 @@ export async function writeFileAtomic(filePath: string, content: string) {
     // await fs.rename(tmp, filePath)
     //     const dir = path.dirname(filePath)
     // const tmp = path.join(dir, `.${path.basename(filePath)}.${randomUUID()}.tmp`)
-    await fs.writeFile(filePath, content, 'utf8')
+    await fs.writeFile(filePath, content, {encoding: 'utf8', flush: true})
+
     // await fs.rename(tmp, filePath)
   } catch (e) {
     console.error('writeFileAtomic', e)

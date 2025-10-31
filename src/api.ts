@@ -1,69 +1,15 @@
 import path from "node:path";
-import type {VirtualKeysDtsOptions} from "./types";
+import type {GenerateTypesOptions, GenerateTypesResult} from "./types";
 import {normalizeConfig} from "./core/config";
 import {FileManager} from "./core/file-manager";
-import {GenerationCoordinator} from "./core/generation-coordinator";
+
 import {RebuildManager} from "./core/rebuild-manager";
-import {createColoredLogger} from "./createConsoleLogger";
+import {createColoredLogger, createConsoleLogger} from "./createConsoleLogger";
 
-/**
- * Options for standalone type generation
- */
-export interface GenerateTypesOptions extends VirtualKeysDtsOptions {
-  /**
-   * Root directory for the project (defaults to current working directory)
-   */
-  root?: string;
+import {CombinedMessages} from "./core/combined-messages.ts";
 
-  /**
-   * Enable verbose logging
-   */
-  verbose?: boolean;
-}
+export {normalizeConfig, createColoredLogger, createConsoleLogger, CombinedMessages}
 
-/**
- * Result of type generation
- */
-export interface GenerateTypesResult {
-  /**
-   * Number of files written
-   */
-  filesWritten: number;
-
-  /**
-   * Total files that were checked
-   */
-  totalFiles: number;
-
-  /**
-   * List of generated file paths (relative to root)
-   */
-  generatedFiles: string[];
-
-  /**
-   * Performance metrics
-   */
-  durations: {
-    content: number;
-    write: number;
-    total: number;
-  };
-
-  /**
-   * Detected locales
-   */
-  locales: string[];
-
-  /**
-   * Number of locale files processed
-   */
-  localeFilesCount: number;
-
-  /**
-   * Absolute paths of all locale files that were processed
-   */
-  localeFiles: string[];
-}
 
 /**
  * Generate TypeScript definitions from Vue i18n locale files
@@ -103,25 +49,15 @@ export async function generateI18nTypes(
   logger.info(`Types output: ${config.typesPath}`);
 
   // Initialize core managers
-  const fileManager = new FileManager({
-    include: config.include,
-    exclude: config.exclude,
-    root,
-    getLocaleFromPath: config.getLocaleFromPath,
-    transformJson: config.transformJson,
-    merge: config.mergeFunction,
-    logger,
-    debug: config.debug,
-  });
+  const fileManager = new FileManager(config);
 
-  const generationCoordinator = new GenerationCoordinator(config);
 
   let lastFiles: string[] = [];
 
   const rebuildManager = new RebuildManager({
     config: config,
     fileManager,
-    generationCoordinator,
+
     root,
     logger,
     onRebuildComplete: (_cache) => {
@@ -130,7 +66,7 @@ export async function generateI18nTypes(
   });
 
   // Perform generation
-  const result = await rebuildManager.rebuild("api", []);
+  const result = await rebuildManager.rebuild("api");
 
   lastFiles = fileManager.getLastFiles();
 

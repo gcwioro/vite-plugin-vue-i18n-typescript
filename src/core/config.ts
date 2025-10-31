@@ -1,47 +1,17 @@
-import type {VirtualKeysDtsOptions} from "../types";
-import {deepMerge, defaultGetLocaleFromPath, shallowMerge} from "../utils";
-import type {CustomLogger} from "../createConsoleLogger";
+import type {CustomLogger, GenerationOptions, VirtualKeysDtsOptions} from "../types";
+
+
 import path from "node:path";
 import {normalizePath, type ResolvedConfig} from "vite";
+import {defaultGetLocaleFromPath} from "../utils/defaultGetLocaleFromPath.ts";
+import {shallowMerge} from "../generation/runtime/merge.ts";
+import {deepMerge} from "../generation/runtime/deepMerge.ts";
 
 export const Consts = {
   //devUrlPath
   devUrlPath: "/_virtual_locales.json",
   debugUrlPath: "/__locales_debug__",
 } as const;
-
-// export type GenerationOptions =
-//   Required<Omit<VirtualKeysDtsOptions, 'exclude' | 'include' | 'emit' | 'root' | 'virtualFilePath'>>
-//   & {
-export interface GenerationOptions extends Omit<VirtualKeysDtsOptions, 'exclude' | 'extends'> {
-
-  root: string;
-  sourceId: string;
-  typesPath: string;
-  // virtualFilePath?: string;
-  getLocaleFromPath: (absPath: string, root: string) => string | null;
-  baseLocale: string;
-
-  merge: "deep" | "shallow";
-
-  // banner?: string;
-  // debug: boolean;
-
-  virtualFilePath?: string,
-
-  mergeFunction: (a: any, b: any) => any;
-  emit: {
-    inlineDataInBuild: boolean;
-    fileName: string;
-    emitJson: boolean;
-  };
-  include: string[];
-  exclude: string[];
-  debug: boolean;
-  transformJson?: (json: unknown, absPath: string) => unknown;
-  verbose: boolean;
-  logger: CustomLogger,
-}
 
 /**
  * Normalize and validate plugin configuration
@@ -71,6 +41,7 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}, logger:
     ...userOptions,
     sourceId,
     root,
+    fileBatchSize: userOptions.fileBatchSize ?? 100,
     verbose: userOptions.debug ?? false,
     typesPath: userOptions.typesPath ?? './src/vite-env-override.d.ts',
     virtualFilePath: userOptions.virtualFilePath,
@@ -118,7 +89,8 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}, logger:
       emitJson: userOptions.emit?.emitJson ?? true,
     },
     logger,
-  };
+    transformJson: userOptions.transformJson,
+  } as GenerationOptions;
 
   // Validate config
   if (!config.emit.emitJson && !config.emit.inlineDataInBuild) {
