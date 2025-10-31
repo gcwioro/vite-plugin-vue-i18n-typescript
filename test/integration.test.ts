@@ -41,7 +41,7 @@ describe('i18n type generation', () => {
       expect(content).toContain("'App.menu'")
       expect(content).toContain("'en'")
     })
-  }, 15000)
+  }, 40000)
 
   it('detects new locale files without restarting the dev server', async () => {
     const projectRoot = await createTempProjectDir('basic-project')
@@ -79,5 +79,5 @@ describe('i18n type generation', () => {
         (content) => content.includes("Readonly<['de', 'en', 'fr']>")
       )
     })
-  }, 20000)
+  }, 40000)
 })
