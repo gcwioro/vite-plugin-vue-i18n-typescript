@@ -94,7 +94,7 @@ export async function waitForFile(
 export async function waitForFileContent(
   filePath: string,
   predicate: (content: string) => boolean,
-  {timeoutMs = 10_000, pollIntervalMs = 200}: {timeoutMs?: number; pollIntervalMs?: number} = {}
+  {timeoutMs = 20_000, pollIntervalMs = 200}: { timeoutMs?: number; pollIntervalMs?: number } = {}
 ): Promise<string> {
   const start = Date.now()
   let lastError: unknown

@@ -24,6 +24,7 @@ export type CustomHotReplaceI18nPayload = {
   locale?: undefined,
   messages: CombinedMessages,
   timestamp: number,
+  files: string[]
 }
 export type CustomHotModuleUpdatePayload =
   CustomHotReplaceI18nPayload
@@ -33,7 +34,10 @@ export type CustomHotModuleUpdatePayload =
 export function hrmHotUpdate(messages: Record<string, JSONObject>, data: CustomHotReplaceI18nPayload | CustomHotFileChangedPayload, app: I18nGlobalApp, deepMerge: (a: any, b: any) => any) {
 
   const i18nModule = app ?? globalThis?.i18nModule?.global;
-
+  if (!i18nModule) {
+    console.error('[i18n hotUpdate] No i18n module instance found, skipping update.');
+    return;
+  }
   if (!data?.messages?.languages?.length && !data?.locale) {
     console.warn('[i18n hotUpdate] No languages found in hot update data, skipping update.', data);
     return;
@@ -41,15 +45,16 @@ export function hrmHotUpdate(messages: Record<string, JSONObject>, data: CustomH
 
   if (data.messages) {
 
-    console.trace('[i18n hotUpdate] Received FULL hot update with new messages :' + data.messages.contentId);
+    console.debug(`[i18n hotUpdate] Received FULL hot update with ${data.messages.contentId}: ${data.messages.languages.join(',')} for files: ${data.files.join(', ')}`);
     // Update the exported messages
-    const mergedMessages = Object.assign({}, messages, deepMerge(data.messages.messages, messages));
+    const mergedMessages = data.messages.messages;
 
     // Update the global i18n instance if it exists
     if (i18nModule) {
       // Update messages for all locales
       data.messages.languages.forEach(locale => {
         i18nModule.setLocaleMessage(locale, mergedMessages[locale]);
+        // console.log('[i18n hotUpdate]' ,locale,mergedMessages[locale])
       });
     }
 

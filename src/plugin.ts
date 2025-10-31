@@ -1,5 +1,5 @@
 import path from "node:path";
-import {promises as fs} from "node:fs";
+import {promises as fs, type Stats} from "node:fs";
 import {
   createLogger,
   type EnvironmentModuleNode,
@@ -88,6 +88,7 @@ function vitePluginVueI18nTypescript(
     return true;
   }
 
+  let addOnAllFilesProcessedLogPrefix = `[${pc.bold(pc.bgGreenBright('addOnAllFilesProcessed'))}] - `;
 
   return {
     name: "vite-plugin-locale-json",
@@ -115,17 +116,22 @@ function vitePluginVueI18nTypescript(
         await messagesCached.writeFiles(emittedRefId);
       });
       fileManager.addOnAllFilesProcessed(async (result) => {
-        combinedMessages = result;
+        try {
+          combinedMessages = result;
+          await combinedMessages.writeFiles(emittedRefId);
+          pluginLogger.info(`🚀 [${addOnAllFilesProcessedLogPrefix}] Rebuild complete. Locales: ${combinedMessages.languages.join(", ")}, Total Keys: ${combinedMessages.keys.length}`);
 
-        await combinedMessages.writeFiles(emittedRefId);
-        pluginLogger.info(`🚀 [buildStart] Rebuild complete. Locales: ${combinedMessages.languages.join(", ")}, Total Keys: ${combinedMessages.keys.length}`);
-        combinedMessages.validateMessages()
+          combinedMessages.validateMessages()
+        } catch (err) {
+          pluginLogger.error(`Error in file processing callback: ${err}`);
+          throw err;
+        }
       })
 
       fileManager.addOnAllFilesProcessed(async () => {
         const errors = await fileManager.validateMessages()
         if (errors.length > 0) {
-          pluginLogger.error(`🚀 [buildStart] Validation errors found in locale messages:`);
+          pluginLogger.error(`🚀 [${addOnAllFilesProcessedLogPrefix}] Validation errors found in locale messages:`);
         }
       })
       const buildPromise = fileManager.readAndGroup()
@@ -133,11 +139,6 @@ function vitePluginVueI18nTypescript(
       // if (isBuild) {
       await buildPromise;
 
-      // }
-      if (isBuild) {
-
-        // await rebuildManager.rebuild("initial", emittedRefId);
-      }
       // let update = await fileManager.fileUpdated(id, () => src, Date.now())
       // cfg.server.warmup()
       // await checkTypesFileExists();
@@ -157,6 +158,7 @@ function vitePluginVueI18nTypescript(
       const self = this;
       fileManager.addOnAllFilesProcessed(messages => {
         if (isBuild) {
+          pluginLogger.info(`🚀 [${addOnAllFilesProcessedLogPrefix}] Emitting locale JSON asset: ${config.emit.fileName}`);
           self.emitFile({
             originalFileName: config.emit.fileName,
             fileName: config.emit.fileName,
@@ -258,66 +260,6 @@ function vitePluginVueI18nTypescript(
     }
     ,
 
-    // async moduleParsed(module) {
-    //   pluginLogger.info(`Module parsed: ${module.id}`);
-    //   const grouped = fileManager.getGrouped();
-    //   const messagesCached = new CombinedMessages(grouped, config)
-    //   await messagesCached.writeFiles(emittedRefId);
-    //
-    // },
-    //
-    // async transform(src, id) {
-    //   let hotUpdatePrefix = `🔧 [${pc.magenta('transform')}] - ${normalizePath(id)}`;
-    //   if (!isWatchedFile(id)) {
-    //
-    //     pluginLogger.debug(`${hotUpdatePrefix} File not watched, skipping: ${id} `);
-    //     return;
-    //   }
-    //   this.addWatchFile(id);
-    //   pluginLogger.debug(`${hotUpdatePrefix} File transform: ${id} ${src} bytes`);
-    //   let update = await fileManager.fileUpdated(id, () => src, Date.now())
-    //
-    //
-    //   if (!update) {
-    //     pluginLogger.warn(`${hotUpdatePrefix} No update information returned for file: ${id}`);
-    //     return;
-    //   }
-    //   pluginLogger.info(`${hotUpdatePrefix} File processed: ${id}, locale: ${update.localeKey} keys: ${Object.keys(update.prepared).length}`);
-    //
-    //
-    //   // // Send custom HMR event to update i18n messages directly
-    //   pluginLogger.info(`${hotUpdatePrefix} Sending custom i18n-update event with new messages`);
-    //
-    //   // const grouped = fileManager.getGrouped();
-    //   // const messagesCached = new CombinedMessages(grouped, config)
-    //   // // await messagesCached.writeFiles(emittedRefId);
-    //
-    //   return {code: src, map: null};
-    // },
-// transform(src, id, ut) {
-//     pluginLogger.info(id + ' - ' + JSON.stringify(ut));
-//
-//     // replace useI18nTypeSafe with useI18nApp().tmp('keyMatchingFile')
-//     if (id.endsWith('.vue')) {
-//       const keyForFile = id.split('/').pop()?.replace('.vue', '') ;
-//
-//       const foundKeys =lastFiles.filter(file => file.includes(keyForFile))//combinedMessages.keys.filter(key =>  key.endsWith(keyForFile)) ;
-//
-//
-//       if(foundKeys.length >0) {
-//          pluginLogger.warn(`🔧 [${pc.magenta('transform')}] Processing .vue file: ${pc.blue(id)} with key fragment: ${foundKeys} ${pc.yellow(keyForFile)}`);
-//         pluginLogger.info(`🔧 [${pc.magenta('transform')}] Found matching keys for .vue file: ${pc.blue(id)} => ${pc.yellow(foundKeys.join(', '))}`);
-//       // const transformed = src.replaceAll(/useI18n\(\)/g, `( import ("virtual:vue-i18n-types/useI18nTypeSafe??raw")).useI18nTypeSafe()`)//'${keyForFile}')`);
-//          const transformed = src.replaceAll(/useI18nTypeSafe\(\)/g, `useI18nTypeSafe({messages: globalThis?.i18nModule?.global.tm('${keyForFile}')});\nconsole.error('${keyForFile}',globalThis?.i18nModule?.global.tm('${keyForFile}'))`)//'${keyForFile}')`);
-//
-//       if (transformed !== src) {
-//         pluginLogger.info(`🔧 [${pc.magenta('transform')}] Transformed useI18nTypeSafe in: ${pc.blue(id)}`);
-//       }
-//       return transformed;
-//       }
-//
-//     }
-// },
     async configureServer(viteServer) {
       server = viteServer
       fileManager.addOnFileChanged(file => {
@@ -332,11 +274,13 @@ function vitePluginVueI18nTypescript(
           } as CustomHotFileChangedPayload
         });
       })
-      fileManager.addOnAllFilesProcessed((result) => {
+      fileManager.addOnAllFilesProcessed((result, change) => {
+        pluginLogger.info(`${[addOnAllFilesProcessedLogPrefix]} Sending custom i18n-update event with new messages`);
         viteServer.ws.send({
           type: 'custom',
           event: 'i18n-update',
           data: {
+            files: change,
             locale: undefined,
             messages: result,
             timestamp: new Date().getTime(),
@@ -346,16 +290,37 @@ function vitePluginVueI18nTypescript(
 
       pluginLogger.info(`🌐 [configureServer] Server reference set for virtual module: ${config.sourceId}`);
 
-      const watcherPatterns = [...(config.include), ...(config.exclude)];
+      // Only watch include patterns (exclude patterns start with "!" and should not be watched)
+      const watcherPatterns = config.include;
 
       if (watcherPatterns.length > 0) {
         server.watcher.add(watcherPatterns);
 
+        const watchPatternsString = watcherPatterns.map((pattern, i) => `${i + 1}.${pattern}`);
+        pluginLogger.info(
+          `🌐 [configureServer] Registered ${watcherPatterns.length} watcher patterns: ${watchPatternsString}`);
 
-        pluginLogger.debug(
-          `🌐 [configureServer] Registered watcher patterns: ${watcherPatterns.join(", ")}`
-        );
 
+        // Listen for file changes directly from the watcher
+        // let fileWatcherCb = async (file: string, stats?: Stats) => {
+        //
+        //   pluginLogger.info(`🔍 [watcher.change] Event fired for: ${file}`,{timestamp: true});
+        //   const localeFromPath = config.getLocaleFromPath(file, config.root);
+        //   if (localeFromPath) {
+        //
+        //     try {
+        //       // Trigger full rebuild to regenerate types and send complete messages
+        //       await fileManager.fileUpdatedWithLocale(file, localeFromPath);
+        //       // await fileManager.readAndGroup();
+        //     } catch (err) {
+        //       pluginLogger.error(`🔍 [watcher.change] Error during rebuild: ${err}`);
+        //     }
+        //   } else {
+        //     pluginLogger.debug(`🔍 [watcher.change] File not watched, skipping: ${file}`);
+        //   }
+        // };
+        // server.watcher.on('change', fileWatcherCb);
+        // server.watcher.on('add', fileWatcherCb);
       }
 
       // Initial rebuild
@@ -406,49 +371,45 @@ function vitePluginVueI18nTypescript(
         EnvironmentModuleNode[] | void
       > {
       const {server, timestamp, type, modules, ...ctx} = hotUpdateOptions
-// hotUpdateOptions.
+      pluginLogger.debug(`🔥 [${pc.red('hotUpdate')}] Called for file: ${ctx.file}`);
 
       if (!isWatchedFile(ctx.file)) {
-
-        // pluginLogger.debug(`${hotUpdatePrefix} File not watched, skipping: ${ctx.file} for ${modules}`);
+        pluginLogger.debug(`🔥 [${pc.red('hotUpdate')}] File not watched, skipping: ${ctx.file}`);
         return;
       }
-      let hotUpdatePrefix = `🔥 [${pc.red('hotUpdate')}] [${type}] [${pc.blueBright(this.environment.name)}] - ${timestamp}`;
-      pluginLogger.info(`hotUpdatePrefix Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`)
+      let hotUpdatePrefix = `🔥 [${pc.red('hotUpdate')}] [${type}] [${pc.blueBright(this.environment?.name ?? 'unknown')}] - ${timestamp}`;
+      pluginLogger.info(`${pc.red('hotUpdate')} Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`, {timestamp: true})
 
 
       // Only process in client environment to avoid duplicate rebuilds
-      if (this.environment?.name !== 'client') {
-        // pluginLogger.debug(`${hotUpdatePrefix} Skipping for non-client environment: ${this.environment?.name}`);
+      const envName = this.environment?.name;
+      if (envName && envName !== 'client') {
+        pluginLogger.debug(`${hotUpdatePrefix} Skipping for non-client environment: ${envName}`);
         return;
       }
 
 
-      pluginLogger.debug(`${hotUpdatePrefix} Debug: Module details for ${type}:`);
-      modules.forEach((m, i) => {
-        pluginLogger.debug(`  Module ${i}: id=${m.id}, url=${m.url}, type=${m.type}`);
-      });
+      // pluginLogger.debug(`${hotUpdatePrefix} Debug: Module details for ${type}:`);
+      // modules.forEach((m, i) => {
+      //   pluginLogger.debug(`  Module ${i}: id=${m.id}, url=${m.url}, type=${m.type}`);
+      // });
 
 
       try {
         // Perform rebuild immediately (no debouncing needed in Vite 7)
         let update: ParsedFile | undefined | null = null
         if (type === 'update' || type === 'create') {
-          update = await fileManager.fileUpdated(ctx.file, ctx.read, timestamp)
+          update = await fileManager.fileUpdated(ctx.file, ctx.read)
         } else {
-          await fileManager.fileRemoved(ctx.file, ctx.read, timestamp)
+          await fileManager.fileRemoved(ctx.file)
         }
 
-        if (!update) {
-          pluginLogger.warn(`${hotUpdatePrefix} No update information returned for file: ${ctx.file}`);
-          await fileManager.readAndGroup()
-          return;
-        }
-        pluginLogger.info(`${hotUpdatePrefix} File processed: ${ctx.file}, locale: ${update.localeKey} keys: ${Object.keys(update.prepared).length}`);
+        if (update)
+          pluginLogger.info(`${hotUpdatePrefix} File processed: ${ctx.file}, locale: ${update.localeKey} keys: ${Object.keys(update.prepared).length}`);
 
 
         // // Send custom HMR event to update i18n messages directly
-        pluginLogger.info(`${hotUpdatePrefix} Sending custom i18n-update event with new messages`);
+
 // pluginLogger.debug(`${JSON.stringify(await ctx.read())} vs ${JSON.stringify(result.messages)}`);
         // Send the updated messages to the client
 

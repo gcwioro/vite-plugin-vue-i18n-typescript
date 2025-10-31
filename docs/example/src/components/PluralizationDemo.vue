@@ -71,7 +71,7 @@
       <div class="card-gray">
         <div class="code-label">t('PluralizationDemo.files.uploaded', {{ count }})</div>
         <div class="text-sm font-medium text-gray-900">
-          {{ $t('PluralizationDemo.files.uploaded', count) }}
+          {{ t('PluralizationDemo.files.uploaded', count) }}
         </div>
         <div class="text-hint">
           Count: {{ count }} → {{ getPluralForm(count) }}
@@ -137,7 +137,7 @@
 
       <div class="info-box-purple px-4 py-3">
         <p class="info-text-purple">
-          {{ $t('App.fruits.label', amount, {fruit: fruitName}) }}
+          {{ t('PluralizationDemo.fruits.label', amount, {fruit: fruitName}) }}
         </p>
       </div>
     </div>
@@ -152,13 +152,13 @@ import {computed, ref} from "vue";
 import {useI18n} from "vue-i18n";
 
 const {t} = useI18nTypeSafe()
-const x = useI18n().t("App.fruits.apple")
-const a: AllTranslationKeys = 'App.fruits.apple' as AllTranslationKeys
+const x = useI18n().t("PluralizationDemo.fruits.apple")
+const a: AllTranslationKeys = 'PluralizationDemo.fruits.apple' as AllTranslationKeys
 const count = ref<number>(0)
 const amount = ref<number>(1)
 
 // Infer fruit types from the MessageSchemaGen type
-type FruitKeys = keyof MessageSchemaGen['App']['fruits']
+type FruitKeys = keyof MessageSchemaGen['PluralizationDemo']['fruits']
 // Filter to only get the fruit types (not 'label')
 type FruitType = Exclude<FruitKeys, 'label'>
 
@@ -166,7 +166,7 @@ const fruit = ref<FruitType>('apple')
 
 // Helper to construct the translation key with proper typing
 const getFruitKey = (fruitType: FruitType): AllTranslationKeys => {
-  return `App.fruits.${String(fruitType)}` as AllTranslationKeys
+  return `PluralizationDemo.fruits.${String(fruitType)}` as AllTranslationKeys
 }
 
 const fruitName = computed(() => {

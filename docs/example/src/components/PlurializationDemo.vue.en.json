@@ -1,69 +1,27 @@
 {
-  "App": {
-    "fruitsLabel": "Es gibt keine Früchte | Es gibt eine Frucht | Es gibt {count} Früchte",
+  "PluralizationDemo": {
     "fruits": {
-      "label": "Du hast keine {fruit} | Du hast eine {fruit} | Du hast {count} {fruit}",
-      "apple": "kein Apfel | ein Apfel | {n} Äpfel",
-      "banana": "keine Banane | eine Banane | {count} Bananen"
+      "label": "You have no {fruit} | You have one {fruit} | You have {count} {fruit}",
+      "apple": "apple | apples",
+      "banana": "banana | bananas"
     },
-    "menu": [
-      "ddStadrteite",
-      "Über uns",
-      "Kontakt",
-      "Hilzsffe",
-      "dd"
-    ]
-  },
-  "Pluralidzaodesds": {
-    "items": "keidne Artikel | ein Artikel | {n} Artikel",
-    "people": "niemand | {n} Person | {n} Personen",
-    "messages": "keine Nachrichten | eine Nachricht | {n} Nachrichten",
+    "title": "Pluralization Examples",
+    "items": "no items | one item | {count} items",
+    "people": "nobody | one person | {count} people",
+    "messages": "no messages | one message | {count} message",
     "files": {
-      "uploaded": "keine Dateien hochgeladen | {n} Datei hochgeladen | {n} Dateien hochgeladen"
+      "uploaded": "no files uploaded | one file uploaded | {count} files uploaded"
     },
     "cart": {
-      "status": "Ihr Warenkorb ist leer | Sie haben einen Artikel im Warenkorb | Sie haben {n} Artikel im Warenkorb"
+      "status": "Your cart is empty | You have one item in your cart | You have {count} items in your cart"
     },
     "notifications": {
-      "unread": "keine ungelesenen Benachrichtigungen | eine ungelesene Benachrichtigung | {n} ungelesene Benachrichtigungen"
+      "unread": "no unread notifications | one unread notification | {n} unread notifications"
     },
     "explanation": {
-      "format": "Format: 'null | eins | viele'",
-      "parameter": "Übergeben Sie den Parameter {n} mit dem Zählwert",
-      "note": "Der {n}-Wert bestimmt welche Form verwendet wird: 0=erste, 1=zweite, 2+=dritte"
-    }
-  },
-  "LanguageDropdown": {
-    "label": "Sprache:"
-  },
-  "Greeting": {
-    "message": "Hallo TypeScript Freunde!",
-    "greetings": "unplug-i18n-dts-generation Plugin - Demo Projekt"
-  },
-  "InterpolationDemo": {
-    "welcome": "Willkommen, {name}!",
-    "profile": "{name} ist {age} Jahre alt",
-    "birthday": "Nächstes Jahr wirst du {age}!"
-  },
-  "NestedKeysDemo": {
-    "settings": {
-      "theme": {
-        "label": "Design-Einstellungen",
-        "description": "Dunkler oder heller Modus"
-      },
-      "notifications": {
-        "label": "Benachrichtigungen",
-        "description": "E-Mail- und Push-Benachrichtigungen"
-      },
-      "privacy": {
-        "label": "Datenschutz-Kontrollen",
-        "description": "Wer kann Ihre Daten sehen"
-      }
-    },
-    "status": {
-      "success": "Operation erfolgreich abgeschlossen!",
-      "warning": "Bitte überprüfen Sie Ihre Änderungen, bevor Sie fortfahren.",
-      "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+      "format": "Format: 'zero | one | many'",
+      "parameter": "Pass {count} parameter matching the count value",
+      "note": "The {count} value determines which form is used: 0=first, 1=second, 2+=third"
     }
   }
 }

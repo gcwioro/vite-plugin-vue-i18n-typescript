@@ -68,10 +68,10 @@ import type {
 
 import {useI18nTypeSafe} from "virtual:vue-i18n-types";
 
-type a = ResourceValue<AllMessages, 'de.App.fruits'>
+type a = ResourceValue<AllMessages, 'en.PluralizationDemo.fruits'>
 const {tm, rt} = useI18nTypeSafe()
 type x = PickupPaths<AllMessages>
-type sx = ResourceValue<MessageSchemeType, "App">
-let aa = tm('App') as ResourceValue<MessageSchemeType, "App">;
+type sx = ResourceValue<MessageSchemeType, "PluralizationDemo">
+let aa = tm('PluralizationDemo') as ResourceValue<MessageSchemeType, "PluralizationDemo">;
 
 </script>

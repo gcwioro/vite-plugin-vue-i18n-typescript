@@ -39,7 +39,7 @@
           <div class="card-content">
             <span class="text-gray-500 text-xs">App.fruits.label:</span>
             <p class="text-gray-900">
-              {{ t('App.fruits.label', {amount: 5, fruit: 'apples'}) }}
+              {{ t('PluralizationDemo.fruits.label', {amount: 5, fruit: 'apples'}) }}
             </p>
           </div>
           <div class="card-content">

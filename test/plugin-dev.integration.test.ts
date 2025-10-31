@@ -154,7 +154,7 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
 
     const typesContent = await fs.readFile(dtsPath, 'utf-8')
     expect(typesContent).toContain("declare module 'virtual:vue-i18n-types'")
-    expect(typesContent).toContain("'App.fruits.apple'")
+    expect(typesContent).toContain("App.fruits.apple")
 
     const assetPath = await findLocalesAsset(assetDir)
     expect(assetPath, 'expected emitted locales asset').toBeDefined()

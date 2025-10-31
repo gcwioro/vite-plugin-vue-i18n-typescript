@@ -8,7 +8,7 @@ import {canonicalize, detectKeyConflicts} from "../utils/json.ts";
 import {parseJSONWithLocation, wrapErrorWithFile} from "../utils/error-formatter.ts";
 import {CombinedMessages} from "./combined-messages.ts";
 
-type FilesProcesedCallback = (files: CombinedMessages) => void | Promise<void>;
+type FilesProcesedCallback = (files: CombinedMessages, change?: string[]) => void | Promise<void>;
 type FileUpdatedCallback = (file: ParsedFile) => (void | Promise<void>)
 
 export interface ParsedFile {
@@ -20,7 +20,6 @@ export interface ParsedFile {
  * Manages file reading, caching, and incremental updates for locale files
  */
 export class FileManager {
-  private fileModTimes = new Map<string, number>();
   private parsedFilesCache = new Map<string, ParsedFile>();
   // private grouped:Record<string, any> = {};
   private processedFiles: Set<string> = new Set<string>();
@@ -144,6 +143,7 @@ export class FileManager {
 
       await this.findFiles();
 
+    const files = this.filesToProcess
     // Check which files need to be re-read (new or modified)
 
 
@@ -155,8 +155,7 @@ export class FileManager {
     const totalDuration = Math.round(performance.now() - startReadGroup);
 
     this.options.logger.info(`[FileManager] reading ${this.processedFiles.size} files completed in ${totalDuration}ms`);
-    let combinedMessages = new CombinedMessages(this.getGrouped(), this.options);
-    await Promise.all(this.callbacks.map(cb => cb(combinedMessages)));
+    let combinedMessages = await this.buildMessagesAndNotify(files);
     return {
       messages: combinedMessages,
       stats: {
@@ -169,6 +168,12 @@ export class FileManager {
         },
       },
     };
+  }
+
+  private async buildMessagesAndNotify(files: Set<string> | string[]) {
+    let combinedMessages = new CombinedMessages(this.getGrouped(), this.options);
+    await Promise.all(this.callbacks.map(cb => cb(combinedMessages, [...files])));
+    return combinedMessages;
   }
 
   public getGrouped(files?: Map<string, ParsedFile>) {
@@ -207,8 +212,8 @@ export class FileManager {
     }
   }
 
-  private async readFile(abs: string, readFileContent?: () => string | Promise<string>) {
-    const localeKey = this.options.getLocaleFromPath(abs, this.options.root);
+  private async readFile(abs: string, readFileContent?: () => string | Promise<string>, localeKey: string | null = null) {
+    localeKey ??= this.options.getLocaleFromPath(abs, this.options.root);
 
 
     if (!localeKey) {
@@ -251,48 +256,35 @@ export class FileManager {
    * Clear all caches
    */
   clearCache(): void {
-    this.fileModTimes.clear();
+
     this.parsedFilesCache.clear();
     this.processedFiles = new Set<string>();
     this.filesToProcess = new Set<string>();
   }
 
-  public async fileUpdated(filePath: string, readFile: () => string | Promise<string>, mtime: number): Promise<ParsedFile | undefined> {
+  public async fileUpdated(filePath: string, readFile?: () => string | Promise<string>, locale: string | null = null): Promise<ParsedFile | undefined> {
+    // let newVar = await this.readFile(filePath, readFile, locale);
+    // if (newVar) {
+    //   await Promise.all(this.callbacksFileChanged.map(async a => await a(newVar)));
+    // }
+    // return newVar;
+
+    this.parsedFilesCache.delete(filePath);
+    this.filesToProcess.add(filePath);
     let newVar = await this.readFile(filePath);
     if (newVar) {
-      this.callbacksFileChanged.map(async a => await a(newVar));
+      // this.callbacksFileChanged.map(async a => await a(newVar));
     }
+    await this.buildMessagesAndNotify([filePath]);
     return newVar;
-    // const localeKey = this.options.readFile(filePath, this.options.root);
-    //
-    // if (!localeKey) {
-    //   this.options.logger?.warn(`Skipping file with invalid locale: ${filePath}`);
-    //   return;
-    // }
-    //
-    // if (localeKey.length !== 2 && localeKey.length !== 5) {
-    //   this.options.logger?.warn(`Uncommon locale: ${filePath} -> ${localeKey}`);
-    // }
-    //
-    // try {
-    //   const raw = await readFile();
-    //
-    //   // Parse JSON with enhanced error messages
-    //   const parsed = parseJSONWithLocation(raw, filePath);
-    //
-    //   const prepared = this.options.transformJson
-    //     ? this.options.transformJson(parsed, filePath)
-    //     : parsed;
-    //   this.parsedFilesCache.set(filePath, {localeKey, prepared});
-    //   this.fileModTimes.set(filePath, mtime);
-    //   this.options.logger.debug(`File updated: ${filePath}`);
-    //   return {localeKey, prepared};
-    // } catch (err: any) {
-    //   // Wrap error with file context if not already formatted
-    //   const formattedError = wrapErrorWithFile(filePath, err);
-    //   this.options.logger?.error(formattedError.message);
-    //   throw formattedError;
-    // }
+
+
+  }
+
+  public fileUpdatedWithLocale(filePath: string, locale: string): Promise<ParsedFile | undefined> {
+    return this.fileUpdated(filePath, undefined, locale);
+
+
   }
 
   public validateMessages(): Promise<string[]> {
@@ -312,14 +304,13 @@ export class FileManager {
     })
   }
 
-  public fileRemoved(filePath: string, readFile: () => (string | Promise<string>), mtime: number) {
+  public async fileRemoved(filePath: string) {
     this.parsedFilesCache.delete(filePath);
-    this.fileModTimes.delete(filePath);
-
+    await this.buildMessagesAndNotify([filePath]);
   }
 
   public addNewFile(filePath: string, readFile: () => (string | Promise<string>), mtime: number) {
-    return this.fileUpdated(filePath, readFile, mtime);
+    return this.fileUpdated(filePath, readFile);
 
   }
 

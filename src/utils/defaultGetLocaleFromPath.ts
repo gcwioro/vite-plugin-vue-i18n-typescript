@@ -20,5 +20,6 @@ export function defaultGetLocaleFromPath(filePath: string): string | null {
   if (fileName.startsWith('.')) {
     return null;
   }
-  return regexValid.groups?.locale?.length > 0 ? regexValid.groups.locale : null
+  let locale = regexValid.groups?.locale;
+  return locale && locale?.length > 0 ? locale : null
 }

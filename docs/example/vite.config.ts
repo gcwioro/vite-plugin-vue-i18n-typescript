@@ -30,7 +30,7 @@ export default defineConfig({
       vueTsc: {root: __dirname, tsconfigPath: join('./tsconfig.app.json')}
 
     }),
-    // @ts-exxpect-error Only because of import of ../src/..
+    //@ts-expect-error Only because of import of ../src/..
     vitePluginVueI18nTypes({
       baseLocale: 'en',
       include: ['./src/**/*.json',],
@@ -39,9 +39,8 @@ export default defineConfig({
       virtualFilePath: 'src/i18n/i18n.virtual.gen.js',
       debug: true,
       // virtualFilePath: './src/i18n/virtual.js',
-
       emit: {emitJson: true, inlineDataInBuild: false}
-    }),
+    } as any),
     tailwindcss(),
 
   ],

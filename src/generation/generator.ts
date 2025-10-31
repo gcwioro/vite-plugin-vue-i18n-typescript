@@ -96,14 +96,10 @@ declare module '${sourceId}' {
       (key: AllTranslationKeys, defaultMsg: string, options?: TranslateOptions): string
       (key: AllTranslationKeys, named: NamedValue, defaultMsg?: string): string
       (key: AllTranslationKeys, named: NamedValue, plural?: number): string
-      (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions): string
-      (key: AllTranslationKeys, plural: number, named: NamedValue): string
-      (key: AllTranslationKeys, plural: number, defaultMsg: string): string
+      (key: AllTranslationKeys, named: NamedValue, options?: TranslateOptions & Record<string,string|number>): string
+      (key: AllTranslationKeys, plural: number| UnwrapRef<number>, named?: NamedValue<TranslateOptions>): string
+      (key: AllTranslationKeys, plural: number, defaultMsg?: string): string
   };
-
-
-
-
 
 
 declare module 'vue' {

@@ -57,12 +57,9 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
   }
 
   public async writeTypesFile() {
-    // Write types file
     await ensureDir(this.typesOutpath);
-    // if (await this.shouldWriteFile(typesPath, typesContent)) {
     this.config.logger.info(`Writing types file to: ${this.typesOutpath}`);
     await writeFileAtomic(this.typesOutpath, this.getTypesContent());
-
   }
 
   public async writeVirtualFile(buildAssetRefId?: string) {
@@ -94,13 +91,10 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
   }
 
   public async writeFiles(buildAssetRefId?: string) {
-
     const startWrite = performance.now();
     await Promise.all([this.writeTypesFile(), this.writeVirtualFile(buildAssetRefId)]);
     const writeDuration = Math.round(performance.now() - startWrite);
-
-
-    this.config.logger.debug("Generation took: " + writeDuration);
+    this.config.logger.debug(`Generation took: ${writeDuration}ms`);
   }
 
   public getTypesContent() {
