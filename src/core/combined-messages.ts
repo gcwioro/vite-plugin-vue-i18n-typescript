@@ -64,7 +64,7 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
 
   public async writeVirtualFile(buildAssetRefId?: string) {
     // Write types file
-    let filePath = this.virtualOutPath;
+    const filePath = this.virtualOutPath;
     if (!filePath) return;
     await ensureDir(filePath);
     // if (await this.shouldWriteFile(typesPath, typesContent)) {

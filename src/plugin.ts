@@ -41,7 +41,7 @@ function vitePluginVueI18nTypescript(
   let isBuild = false;
   let emittedRefId: string | undefined;
   let combinedMessages: CombinedMessages = new CombinedMessages({['en']: {test: ''}}, config);
-  let lastFiles: string[] = [];
+  const lastFiles: string[] = [];
 
   // Core managers (initialized in configResolved)
   let fileManager: FileManager;
@@ -88,7 +88,7 @@ function vitePluginVueI18nTypescript(
     return true;
   }
 
-  let addOnAllFilesProcessedLogPrefix = `[${pc.bold(pc.bgGreenBright('addOnAllFilesProcessed'))}] - `;
+  const addOnAllFilesProcessedLogPrefix = `[${pc.bold(pc.bgGreenBright('addOnAllFilesProcessed'))}] - `;
 
   return {
     name: "vite-plugin-locale-json",
@@ -155,12 +155,12 @@ function vitePluginVueI18nTypescript(
         pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + Consts.devUrlPath)}`);
 
       }
-      const self = this;
+
       if (isBuild) {
         fileManager.addOnAllFilesProcessed(messages => {
 
           pluginLogger.info(`🚀 [${addOnAllFilesProcessedLogPrefix}] Emitting locale JSON asset: ${config.emit.fileName}`);
-          self.emitFile({
+          this.emitFile({
             originalFileName: config.emit.fileName,
             fileName: config.emit.fileName,
             type: "asset",
@@ -379,7 +379,7 @@ function vitePluginVueI18nTypescript(
         pluginLogger.debug(`🔥 [${pc.red('hotUpdate')}] File not watched, skipping: ${ctx.file}`);
         return;
       }
-      let hotUpdatePrefix = `🔥 [${pc.red('hotUpdate')}] [${type}] [${pc.blueBright(this.environment?.name ?? 'unknown')}] - ${timestamp}`;
+      const hotUpdatePrefix = `🔥 [${pc.red('hotUpdate')}] [${type}] [${pc.blueBright(this.environment?.name ?? 'unknown')}] - ${timestamp}`;
       pluginLogger.info(`${pc.red('hotUpdate')} Hook triggered for file: ${ctx.file}, type: ${type}, timestamp: ${timestamp}`, {timestamp: true})
 
 

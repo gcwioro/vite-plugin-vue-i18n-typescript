@@ -74,7 +74,7 @@ export function hrmHotUpdate(messages: Record<string, JSONObject>, data: CustomH
   if (isReactive(i18nModule.locale)) {
     i18nModule.locale.value = currentLocale;
   } else {
-    // @ts-ignore
+    // @ts-expect-error fallback for non-reactive locale
     // globalThis.i18nModule = useI18n({useScope: 'global', locale: currentLocale});
     i18nModule.locale = data.locale || currentLocale;
   }

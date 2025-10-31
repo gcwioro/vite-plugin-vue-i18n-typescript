@@ -221,7 +221,7 @@ export class RuntimeMethods {
     // For sub-modules, we only need the specific export, not vue-i18n imports
     // unless the module needs them (like useI18nTypeSafe)
     const needsVueI18nImports = ['useI18nTypeSafe', 'createI18nInstance', 'createI18nInstancePlugin'].includes(target);
-    const importsCode = true ? this._data[imports] : '';
+    const importsCode = this._data[imports];
 
     // Messages, availableLocales, and fallbackLocales are already exported in resolvedCode
     // so we don't need to add 'export default'

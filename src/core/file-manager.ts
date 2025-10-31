@@ -51,6 +51,28 @@ export class FileManager {
 
   }
 
+  private async fastGlob() {
+    const patterns = toArray(this.options.include);
+    // Remove the '!' prefix from exclude patterns since fast-glob's ignore option doesn't use it
+    const ignore = toArray(this.options.exclude).map(p => p.startsWith('!') ? p.slice(1) : p);
+
+    const cwd = this.options.root;
+    const start = performance.now();
+    const {default: fg} = await import("fast-glob");
+    const list: string[] = await fg(patterns, {
+      cwd,
+      ignore,
+      absolute: true,
+      onlyFiles: true,
+      dot: false
+    });
+
+
+    const entries = list.map(p => path.normalize(p));
+    this.options.logger.info(`[FileManager] [findFiles] fast-glob: found ${entries.length} files in ${Math.round(performance.now() - start)}ms`);
+    return entries;
+  }
+
   /**
    * Collect JSON files using native Node.js glob or fast-glob fallback
    */
@@ -72,51 +94,9 @@ export class FileManager {
     start = performance.now();
 
 
-    const self = this;
-
-    async function fastGlob() {
-      const start = performance.now();
-      const {default: fg} = await import("fast-glob");
-      const list: string[] = await fg(patterns, {
-        cwd,
-        ignore,
-        absolute: true,
-        onlyFiles: true,
-        dot: false
-      });
-
-
-      const entries = list.map(p => path.normalize(p));
-      self.options.logger.info(`[FileManager] [findFiles] fast-glob: found ${entries.length} files in ${Math.round(performance.now() - start)}ms`);
-      return entries;
-    }
-
-    // async function nativeGlob() {
-    //   const entries = new Set<string>();
-    //   try {
-    //     const fsAny = await import('fs');
-    //
-    //
-    //     for (const pattern of patterns) {
-    //       // for await (const rel of fsAny.glob(pattern, {cwd, exclude: ignore})) {
-    //       for await (const rel of  fsAny.promises.glob(pattern, {cwd, exclude: ignore})) {
-    //
-    //         const abs = path.isAbsolute(rel) ? rel : path.join(cwd, rel);
-    //         entries.add(path.normalize(abs));
-    //       }
-    //     }
-    //     self.options.logger.info(`[FileManager] [findFiles] fs.glob: found ${entries.size} files in ${Math.round(performance.now() - start)}ms`);
-    //     // this.options.logger.debug(`[FileManager] collectJsonFiles: collected files via fs.promises.glob in ${Math.round(performance.now() - start)}ms`);
-    //   } catch (e) {
-    //     self.options.logger.warnOnce(`[FileManager] collectJsonFiles (native glob): fs.promises.glob not available, falling back to fast-glob: ${e}`);
-    //   }
-    //   return entries;
-    // }
-
-
     const nativeGlobEntriess = [];//nativeGlob();
 
-    const fastGlobEntries = fastGlob();
+    const fastGlobEntries = this.fastGlob();
     const entries = new Set<string>([...(await fastGlobEntries)]);    // Fallbasck: fast-glob
 
 
@@ -155,7 +135,7 @@ export class FileManager {
     const totalDuration = Math.round(performance.now() - startReadGroup);
 
     this.options.logger.info(`[FileManager] reading ${this.processedFiles.size} files completed in ${totalDuration}ms`);
-    let combinedMessages = await this.buildMessagesAndNotify(files);
+    const combinedMessages = await this.buildMessagesAndNotify(files);
     return {
       messages: combinedMessages,
       stats: {
@@ -171,7 +151,7 @@ export class FileManager {
   }
 
   private async buildMessagesAndNotify(files: Set<string> | string[]) {
-    let combinedMessages = new CombinedMessages(this.getGrouped(), this.options);
+    const combinedMessages = new CombinedMessages(this.getGrouped(), this.options);
     await Promise.all(this.callbacks.map(cb => cb(combinedMessages, [...files])));
     return combinedMessages;
   }
@@ -193,12 +173,12 @@ export class FileManager {
    */
   public async readChangedFiles(): Promise<void> {
     let readFiles = 0;
-    let filesToProcess = new Set([...this.filesToProcess])
-    let totalFiles = filesToProcess.size;
-    let start = performance.now();
+    const filesToProcess = new Set([...this.filesToProcess])
+    const totalFiles = filesToProcess.size;
+    const start = performance.now();
     while (filesToProcess.size > 0) {
-      let readFileBatches = this.options.fileBatchSize ?? 100;
-      let filesToProcessInRound = [...filesToProcess].slice(0, Math.min(readFileBatches, filesToProcess.size));
+      const readFileBatches = this.options.fileBatchSize ?? 100;
+      const filesToProcessInRound = [...filesToProcess].slice(0, Math.min(readFileBatches, filesToProcess.size));
       this.options.logger.debug(`[FileManager] readChangedFiles: processing batch of ${readFiles} / ${totalFiles} files. | Elapsed: ${Math.round(performance.now() - start)}ms`);
       const tasks = filesToProcessInRound
         .map(a => this.processFile(a))
@@ -271,7 +251,7 @@ export class FileManager {
 
     this.parsedFilesCache.delete(filePath);
     this.filesToProcess.add(filePath);
-    let newVar = await this.readFile(filePath);
+    const newVar = await this.readFile(filePath);
     if (newVar) {
       // this.callbacksFileChanged.map(async a => await a(newVar));
     }

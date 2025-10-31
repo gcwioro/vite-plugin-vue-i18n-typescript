@@ -72,6 +72,6 @@ type a = ResourceValue<AllMessages, 'en.PluralizationDemo.fruits'>
 const {tm, rt} = useI18nTypeSafe()
 type x = PickupPaths<AllMessages>
 type sx = ResourceValue<MessageSchemeType, "PluralizationDemo">
-let aa = tm('PluralizationDemo') as ResourceValue<MessageSchemeType, "PluralizationDemo">;
+const aa = tm('PluralizationDemo') as ResourceValue<MessageSchemeType, "PluralizationDemo">;
 
 </script>
