@@ -36,7 +36,7 @@ export default defineConfig({
       include: ['./src/**/*.json',],
       // exclude: ['src/**/FileMergingDemo.de.json',],
       typesPath: 'src/vite-env-override.d.ts',
-      virtualFilePath: 'src/i18n/i18n.virtual.gen.js',
+      // virtualFilePath: 'src/i18n/i18n.virtual.gen.js',
       debug: true,
       // virtualFilePath: './src/i18n/virtual.js',
       emit: {emitJson: true, inlineDataInBuild: false}
