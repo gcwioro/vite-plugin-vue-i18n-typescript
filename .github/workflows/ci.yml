@@ -47,22 +47,22 @@ jobs:
         run: bun link
 
       - name: Demo - Install dependencies
-        working-directory: example
+        working-directory: docs/example
         run: |
           bun uninstall vite-plugin-vue-i18n-typescript
           bun install
           bun link vite-plugin-vue-i18n-typescript
 
       - name: Demo - Build
-        working-directory: example
+        working-directory: docs/example
         run: bun run build-only
 
       - name: Demo - Lint
-        working-directory: example
+        working-directory: docs/example
         run: bun run lint
 
       - name: Demo - Type Check
-        working-directory: example
+        working-directory: docs/example
         run: bun run typecheck
 
       - name: Upload artifact
@@ -70,7 +70,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload built demo site
-          path: example/dist
+          path: docs/example/dist
 
       - name: Deploy to GitHub Pages
         if: startsWith(github.ref, 'refs/heads/main/')
