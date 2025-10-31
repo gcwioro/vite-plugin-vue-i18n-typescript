@@ -8,8 +8,8 @@ import {describe, expect, it, vi} from 'vitest'
 import unpluginVueI18nTypes from '../src/index'
 import {
   createTempProjectDir,
-  waitForFile,
-  waitForFileContent,
+  waitForFileContentContain,
+  waitForRealFileChange,
   withDevServer,
 } from './helpers'
 
@@ -41,6 +41,7 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
 
     await withDevServer(
       {
+        server: {port: 5177},
         root: projectRoot,
         configFile: false,
         plugins: [
@@ -54,9 +55,9 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
       async (server) => {
         const sendSpy = vi.spyOn(server.ws, 'send')
 
-        const initialContent = await waitForFileContent(
+        const initialContent = await waitForFileContentContain(
           dtsPath,
-          (content) => content.includes("'App.menu'")
+          "'App.menu'"
         )
 
         expect(initialContent).toContain("'App.menu'")
@@ -68,14 +69,14 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
 
         const locale = JSON.parse(await fs.readFile(enLocalePath, 'utf-8')) as any
         locale.PluralizationDemo.fruits.blueberry = 'blueberry | blueberries'
+
+
+        const updatedContent = waitForRealFileChange(
+          dtsPath
+        )
         await fs.writeFile(enLocalePath, JSON.stringify(locale, null, 2), 'utf-8')
 
-        const updatedContent = await waitForFileContent(
-          dtsPath,
-          (content) => content.includes("'PluralizationDemo.fruits.blueberry'")
-        )
-
-        expect(updatedContent).toContain("'PluralizationDemo.fruits.blueberry'")
+        expect(await updatedContent).toContain("'PluralizationDemo.fruits.blueberry'")
 
         // Wait for i18n-update event to be sent
         const startTime = Date.now()
