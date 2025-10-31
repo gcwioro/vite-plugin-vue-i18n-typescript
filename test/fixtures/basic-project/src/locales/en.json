@@ -1,15 +1,17 @@
 {
   "App": {
-    "fruits": {
-      "label": "You have no {fruit} | You have one {fruit} | You have {count} {fruit}",
-      "apple": "apple | apples",
-      "banana": "banana | bananas"
-    },
     "menu": [
       "Home",
       "About",
       "Contact"
     ]
+  },
+  "PluralizationDemo": {
+    "fruits": {
+      "label": "You have no {fruit} | You have one {fruit} | You have {count} {fruit}",
+      "apple": "apple | apples",
+      "banana": "banana | bananas"
+    }
   },
   "Greeting": {
     "message": "Hello TypeScript friends!"

@@ -41,17 +41,6 @@ export function toTypesContent(params: {
 
     `
 
-
-// declare global {
-//    const _MessageScheme = ${JSON.stringify(baseLocaleMessages)};
-//    type _MessageSchemeType = typeof _MessageScheme;
-//    const _AllTranslationKeys = '${(finalKeys??[]).join("' | '")}';
-//    type _AllTranslationKeysType = typeof _AllTranslationKeys;
-//    type _AllMessages = Readonly<Record<string, _MessageSchemeType>>;
-//    type DefaultLocaleMessageSchema = _MessageSchemeType;
-//    type DefineLocaleMessage = _MessageSchemeType;
-//    type Locale =  '${combinedMessages.config.baseLocale}';
-// }
 declare module '${sourceId}/messages' {
   import type {ResourceValue,TranslationsPaths,PickupPaths,RemoveIndexSignature,PickupKeys,PickupLocales, ResourcePath, IsEmptyObject,} from "@intlify/core-base";
 

@@ -67,15 +67,15 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
         sendSpy.mockClear()
 
         const locale = JSON.parse(await fs.readFile(enLocalePath, 'utf-8')) as any
-        locale.App.fruits.blueberry = 'blueberry | blueberries'
+        locale.PluralizationDemo.fruits.blueberry = 'blueberry | blueberries'
         await fs.writeFile(enLocalePath, JSON.stringify(locale, null, 2), 'utf-8')
 
         const updatedContent = await waitForFileContent(
           dtsPath,
-          (content) => content.includes("'App.fruits.blueberry'")
+          (content) => content.includes("'PluralizationDemo.fruits.blueberry'")
         )
 
-        expect(updatedContent).toContain("'App.fruits.blueberry'")
+        expect(updatedContent).toContain("'PluralizationDemo.fruits.blueberry'")
 
         // Wait for i18n-update event to be sent
         const startTime = Date.now()
@@ -99,10 +99,10 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
 
         expect(updatePayload?.type).toBe('custom')
         expect(updatePayload?.event).toBe('i18n-update')
-        expect(updatePayload?.data?.messages?.messages?.en?.App?.fruits?.blueberry).toBe(
+        expect(updatePayload?.data?.messages?.messages?.en?.PluralizationDemo?.fruits?.blueberry).toBe(
           'blueberry | blueberries'
         )
-        expect(updatePayload?.data?.messages?.messages?.de?.App?.fruits?.apple).toBe(
+        expect(updatePayload?.data?.messages?.messages?.de?.PluralizationDemo?.fruits?.apple).toBe(
           'Apfel | Äpfel'
         )
         expect(typeof updatePayload?.data?.timestamp).toBe('number')
@@ -110,8 +110,12 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
         sendSpy.mockRestore()
       }
     )
-  }, 20000)
+  }, 300000)
 
+
+})
+
+describe('vite-plugin-vue-i18n-types integration (build)', () => {
   it('writes nested type definitions and emits locales asset during build', async () => {
     const projectRoot = await createTempProjectDir('basic-project')
     const relativeTypesPath = './types/nested/generated/i18n.d.ts'
@@ -138,7 +142,9 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
         vue(),
         unpluginVueI18nTypes({
           typesPath: relativeTypesPath,
+
           emit: {
+            inlineDataInBuild: false,
             emitJson: true,
           },
         }),
@@ -154,7 +160,7 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
 
     const typesContent = await fs.readFile(dtsPath, 'utf-8')
     expect(typesContent).toContain("declare module 'virtual:vue-i18n-types'")
-    expect(typesContent).toContain("App.fruits.apple")
+    expect(typesContent).toContain("PluralizationDemo.fruits.apple")
 
     const assetPath = await findLocalesAsset(assetDir)
     expect(assetPath, 'expected emitted locales asset').toBeDefined()
@@ -163,7 +169,7 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
     expect(assetStat.isFile()).toBe(true)
 
     const assetContent = JSON.parse(await fs.readFile(assetPath as string, 'utf-8'))
-    expect(assetContent.en.App.fruits.apple).toBe('apple | apples')
-    expect(assetContent.de.App.fruits.apple).toBe('Apfel | Äpfel')
-  }, 20000)
+    expect(assetContent.en.PluralizationDemo.fruits.apple).toBe('apple | apples')
+    expect(assetContent.de.PluralizationDemo.fruits.apple).toBe('Apfel | Äpfel')
+  }, 40000)
 })

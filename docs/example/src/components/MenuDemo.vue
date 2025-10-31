@@ -44,7 +44,7 @@ import type {
 // const {tm, rt} = useI18n()
 //
 // const x =createI18nInstance( )
-// x.global.tm('App.fruits')
+// x.global.tm('PluralizationDemo.fruits')
 // const mess = {de: {App: {apple: 'Apfel'}}}  as const
 // const a = useI18n({locale: 'de', messages: mess, legacy:false} )
 //

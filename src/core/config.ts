@@ -89,6 +89,7 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}, logger:
       emitJson: userOptions.emit?.emitJson ?? true,
     },
     logger,
+    transformJson: userOptions.transformJson,
   } as GenerationOptions;
 
   // Validate config

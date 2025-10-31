@@ -156,8 +156,9 @@ function vitePluginVueI18nTypescript(
 
       }
       const self = this;
-      fileManager.addOnAllFilesProcessed(messages => {
-        if (isBuild) {
+      if (isBuild) {
+        fileManager.addOnAllFilesProcessed(messages => {
+
           pluginLogger.info(`🚀 [${addOnAllFilesProcessedLogPrefix}] Emitting locale JSON asset: ${config.emit.fileName}`);
           self.emitFile({
             originalFileName: config.emit.fileName,
@@ -167,9 +168,10 @@ function vitePluginVueI18nTypescript(
             name: config.emit.fileName,
             source: messages.messagesJsonString,
           })
-        }
-      })
 
+        })
+        await fileManager.readAndGroup()
+      }
 
       // if (isBuild) {
       //

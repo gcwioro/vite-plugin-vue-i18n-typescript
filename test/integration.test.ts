@@ -33,11 +33,11 @@ describe('i18n type generation', () => {
     }, async () => {
       const content = await waitForFileContent(
         dtsPath,
-        (value) => value.includes("'App.fruits.apple'")
+        (value) => value.includes("'PluralizationDemo.fruits.apple'")
       )
 
-      expect(content).toContain("'App.fruits.apple'")
-      expect(content).toContain("'App.fruits")
+      expect(content).toContain("'PluralizationDemo.fruits.apple'")
+      expect(content).toContain("'PluralizationDemo.fruits")
       expect(content).toContain("'App.menu'")
       expect(content).toContain("'en'")
     })
@@ -63,7 +63,7 @@ describe('i18n type generation', () => {
     }, async () => {
       await waitForFileContent(
         dtsPath,
-        (value) => value.includes("'App.fruits.apple'")
+        (value) => value.includes("'PluralizationDemo.fruits.apple'")
       )
 
       const frMessages = {
