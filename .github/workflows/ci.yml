@@ -49,6 +49,7 @@ jobs:
       - name: Demo - Install dependencies
         working-directory: example
         run: |
+          bun uninstall vite-plugin-vue-i18n-typescript
           bun install
           bun link vite-plugin-vue-i18n-typescript
 
