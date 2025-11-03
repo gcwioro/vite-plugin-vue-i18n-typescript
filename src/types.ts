@@ -2,7 +2,7 @@ import type {createColoredLogger} from "./api.ts";
 import './vite-env-override-components.ts'
 
 /**
- * Options for the unplugin-vue-i18n-dts-generation Vite plugin.
+ * Options for the plugin.
  *
  * This plugin generates TypeScript definitions from JSON locale files,
  * providing type-safe i18n keys for your Vue application.

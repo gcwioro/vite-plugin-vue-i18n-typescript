@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-10-31
+
+### Added
+
+- **`merge-export` CLI command** for exporting combined locales or per-locale JSON snapshots (invoked as
+  ` i18n-typescript merge-export` when installed locally).
+- **Debug middleware endpoints** exposed when `debug: true`, serving live locale data at `/_virtual_locales.json` and
+  `/__locales_debug__`.
+- **`fileBatchSize` option** to control how many locale files are processed simultaneously for large repositories.
+- **Locale conflict detection** that reports duplicate keys during generation for faster troubleshooting.
+
+### Changed
+
+- Default `emit.emitJson` is now `true`, ensuring `assets/locales.json` is generated in build output unless explicitly
+  disabled.
+- The published CLI binary name is ` i18n-typescript`, so local scripts should call ` i18n-typescript` while ad-hoc
+  `npx` usage
+  remains `npx vite-plugin-vue-i18n-typescript`.
+- Additional debug logging around file discovery and rebuild phases for better observability when `debug` is enabled.
+
+### Fixed
+
+- Corrected CLI usage examples to match the actual executable name so automated scripts resolve reliably.
+
 ## [1.1.0] - 2025-01-22
 
 ### Added
@@ -106,8 +130,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Debounced generation (300ms) with max wait (2000ms)
 - In-memory caching of parsed locale data
 
-[Unreleased]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/compare/v1.1.0...HEAD
-
+[1.2.0]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/compare/v1.0.2...v1.1.0
 
 [1.0.2]: https://github.com/gcwioro/vite-plugin-vue-i18n-typescript/compare/v1.0.1...v1.0.2

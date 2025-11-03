@@ -19,7 +19,7 @@ export {normalizeConfig, createColoredLogger, createConsoleLogger, CombinedMessa
  *
  * @example
  * ```typescript
- * import { generateI18nTypes } from 'unplugin-vue-i18n-dts-generation/api'
+ * import { generateI18nTypes } from 'unplugin- i18n-typescript-generation/api'
  *
  * const result = await generateI18nTypes({
  *   baseLocale: 'en',

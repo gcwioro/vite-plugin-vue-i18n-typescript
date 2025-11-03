@@ -25,9 +25,10 @@ t('nav.home')  // IDE shows all available keys
 **Features:**
 
 - 🔥 True hot reload (no page refresh!)
-- 🎯 Zero config needed
-- ⚡ Only rebuilds what changed
-- 🛠️ Works as Vite plugin, CLI, or API
+- Built-in debug dashboards when `debug: true`
+- Zero config needed with smart glob + batching defaults
+- ⚡ Only rebuilds what changed and surfaces key conflicts
+- 🛠️ Works as Vite plugin, CLI (` i18n-typescript`), or API
 
 ## Quick Start
 
@@ -148,6 +149,15 @@ import { availableLocales } from 'virtual:vue-i18n-types/availableLocales'
 import { fallbackLocales } from 'virtual:vue-i18n-types/fallbackLocales'
 ```
 
+### Debug Dashboards
+
+Enable `debug: true` in your Vite config and visit:
+
+- `/_virtual_locales.json` for the merged locale payload
+- `/__locales_debug__` for metadata (hash, files, fallback map)
+
+Perfect for validating generated data without leaving the browser.
+
 ## Common Configuration
 
 ```typescript
@@ -192,21 +202,20 @@ Your JSON files work without changes!
 | Setup          | ✅ Zero config         | ⚠️ Requires configuration  |
 | Performance    | ✅ Incremental updates | ⚠️ Full rebuilds           |
 
-## What's New (v1.1.0)
+## What's New (v1.2.0)
 
-### New Features 🎉
+### New Features
 
-- **Modular imports** - Import only what you need for better tree-shaking
-- **Helper functions** - `createI18nInstance()` and `createI18nInstancePlugin()`
-- **Fallback locales** - Export and use locale fallback chains
-- **Better architecture** - Improved code organization and performance
+- **Merge-export CLI** - Ship locale snapshots via ` i18n-typescript merge-export`, including per-locale splits.
+- **Live debug dashboards** - Hit `/_virtual_locales.json` or `/__locales_debug__` when `debug: true` to inspect data.
+- **Batch tuning** - Control large projects with the new `fileBatchSize` option.
+- **Automatic conflict alerts** - The generator now flags duplicate keys during rebuilds.
 
 ### Breaking Changes ⚠️
 
-- `supportedLanguages` renamed to `availableLocales`
-- Imports now from `virtual:vue-i18n-types` instead of generated files
-
-See [CLAUDE.md](./CLAUDE.md#changes-since-v101) for full details.
+- `emit.emitJson` now defaults to `true` so builds emit `assets/locales.json` unless disabled.
+- Local installs expose the ` i18n-typescript` binary (use `npx vite-plugin-vue-i18n-typescript generate` for one-off
+  runs).
 
 ## FAQ
 

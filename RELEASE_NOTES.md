@@ -1,115 +1,80 @@
-# Release Notes - v1.0.2
+# Release Notes - v1.2.0
 
-## 🎉 vite-plugin-vue-i18n-typescript v1.0.2
+## Highlights
 
-This patch release includes critical bug fixes, improved developer experience, and enhanced test coverage.
+- **`merge-export` CLI command** ships merged or per-locale JSON dumps straight from your locales directory.
+- **Live debug dashboards** expose `/_virtual_locales.json` and `/__locales_debug__` when `debug: true` to inspect
+  runtime data.
+- **Configurable batching** via the new `fileBatchSize` option keeps huge repositories responsive.
+- **Automatic conflict detection** warns when two locale files define the same key differently.
 
-## 🐛 Bug Fixes
+## New Features
 
-### Critical Fix: Base Locale Message Resolution
+### CLI: `merge-export`
 
-- **Fixed** incorrect base locale message assignment that could cause translation fallback issues
-- The plugin now correctly resolves base messages from the appropriate locale object
-- This ensures proper message inheritance and fallback behavior
+- Export all locales into a single JSON file or split them per locale with the `{locale}` placeholder.
+- Shares include/exclude filters with the generator so CI workflows stay consistent.
+- Supports `--split`, `--output`, and verbose debug logging for audits.
+- Invoke as ` i18n-typescript merge-export` in local scripts or `npx vite-plugin-vue-i18n-typescript merge-export` for
+  one-off runs.
 
-### Additional Fixes
+### Debug Middleware
 
-- **Fixed** ESLint configuration for test helpers to ensure consistent code quality
-- **Fixed** CI/CD artifact upload paths for improved build reliability
+- When the plugin runs with `debug: true`, Vite serves:
+    - `/_virtual_locales.json` containing the merged locale payload.
+    - `/__locales_debug__` with metadata (hashes, processed files, fallback mapping).
+- Useful for validating generated data without digging through the virtual module.
 
-## ✨ Improvements
+### Generation Controls
 
-### Better Debugging Experience
+- `fileBatchSize` limits how many files are processed per batch, preventing long rebuild pauses on large monorepos.
+- Conflict detection logs precise key paths so you can fix divergent translations quickly.
 
-- **Improved** logging behavior - verbose output is now controlled by the `debug` flag
-- Reduces console noise during normal operation while preserving detailed logs when debugging
-- The `verbose` option is maintained for backward compatibility but maps to `debug` internally
-- Enable with: `debug: true` in your plugin configuration
+## ⚙️ Improvements
 
-### Enhanced Development Workflow
+- Default `emit.emitJson` is now `true`, creating `assets/locales.json` automatically in production builds.
+- Additional debug logging captures file discovery patterns and rebuild durations to simplify troubleshooting.
 
-- **Added** proper file watching for locale patterns in development server
-- The plugin now automatically detects new locale files matching your include/exclude patterns
-- Improved hot module replacement for faster development iteration
+## ⚠️ Breaking Changes
 
-### More Flexible Imports
+- The installed binary is now named ` i18n-typescript`. Update local scripts (e.g., `package.json` commands) to call
+  ` i18n-typescript` instead of `vite-plugin-vue-i18n-typescript`. For ad-hoc runs with `npx`, continue using
+  `npx vite-plugin-vue-i18n-typescript generate`.
+- Disable JSON emission explicitly (`emit: { emitJson: false }`) if you relied on the older `false` default.
 
-- **Added** named export `vitePluginVueI18nTypes` alongside the default export
-- **New** dedicated plugin export path for cleaner imports
-- You can now import the plugin in multiple ways:
-  ```typescript
-  // Default import (unchanged)
-  import i18nTypes from 'vite-plugin-vue-i18n-typescript'
+## Recommended Validation
 
-  // Named import (new)
-  import { vitePluginVueI18nTypes } from 'vite-plugin-vue-i18n-typescript'
-
-  // Direct plugin import (new)
-  import { vitePluginVueI18nTypes } from 'vite-plugin-vue-i18n-typescript/plugin'
-  ```
-
-### Robust File Pattern Matching
-
-- **Added** `fast-glob` as a production dependency for more reliable file globbing
-- Improves consistency across different operating systems and environments
-
-## 🧪 Test Coverage
-
-- **Added** comprehensive integration tests for development and build modes
-- **Added** programmatic API integration tests with full coverage
-- **Added** reusable test fixtures and helpers for maintainability
-- Test coverage now includes:
-    - Type definition regeneration in dev mode
-    - WebSocket payload emission for HMR
-    - Nested type definition generation
-    - Build artifact generation
-    - API functionality validation
-
-## 📦 Dependencies
-
-- Added `fast-glob` as a production dependency for improved file pattern matching
-
-## 💡 Migration Guide
-
-This is a backward-compatible patch release with no breaking changes. However, we recommend:
-
-1. **For debugging**: Use `debug: true` instead of `verbose: true` in your configuration (though `verbose` still works)
-2. **For imports**: Consider using the new named export for better tree-shaking and clearer intent
-
-## 🙏 Acknowledgments
-
-Thanks to all contributors who helped identify issues and improve the plugin!
-
----
-
-**Full Changelog
-**: [v1.0.0...v1.0.2](https://github.com/your-repo/vite-plugin-vue-i18n-typescript/compare/v1.0.0...v1.0.2)
+1. Run `npx vite-plugin-vue-i18n-typescript generate --verbose` once to confirm everything still executes in your CI (or
+   `pnpm  i18n-typescript generate` if installed locally).
+2. Visit `http://localhost:<port>/_virtual_locales.json` after enabling `debug: true` to ensure endpoints respond.
+3. For large projects, experiment with `fileBatchSize` (e.g. `50`, `200`) and watch rebuild timings in the console.
 
 ## Installation
-
 ```bash
 # npm
-npm install vite-plugin-vue-i18n-typescript@1.0.2
+npm install vite-plugin-vue-i18n-typescript@1.2.0
 
 # pnpm
-pnpm add vite-plugin-vue-i18n-typescript@1.0.2
+pnpm add vite-plugin-vue-i18n-typescript@1.2.0
 
 # bun
-bun add vite-plugin-vue-i18n-typescript@1.0.2
+bun add vite-plugin-vue-i18n-typescript@1.2.0
 ```
 
 ## Quick Start
-
 ```typescript
 // vite.config.ts
 import {defineConfig} from 'vite'
-import {vitePluginVueI18nTypes} from 'vite-plugin-vue-i18n-typescript'
+import vue from '@vitejs/plugin-vue'
+import i18nTypes from 'vite-plugin-vue-i18n-typescript'
 
 export default defineConfig({
     plugins: [
-        vitePluginVueI18nTypes({
-            include: ['src/locales/**/*.json'],
-            debug: true // Enable detailed logging when needed
+        vue(),
+        i18nTypes({
+            debug: true,
+            fileBatchSize: 200,
+            emit: {emitJson: true}
         })
     ]
 })

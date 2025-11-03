@@ -51,6 +51,19 @@ i18nTypes({
 })
 ```
 
+#### `fileBatchSize`
+
+- **Type:** `number`
+- **Default:** `100`
+- **Description:** Controls how many locale files are processed per batch. Increase the value to speed up large
+  projects, or lower it to reduce memory usage.
+
+```typescript
+i18nTypes({
+    fileBatchSize: 200 // Process 200 files at a time
+})
+```
+
 #### `getLocaleFromPath`
 
 - **Type:** `(absPath: string, root: string) => string | null`
@@ -181,7 +194,7 @@ import messages from 'virtual:my-i18n/messages'
 #### `emit`
 
 - **Type:** `{ fileName?: string; inlineDataInBuild?: boolean; emitJson?: boolean }`
-- **Default:** `{ fileName: 'assets/locales.json', inlineDataInBuild: false, emitJson: false }`
+- **Default:** `{ fileName: 'assets/locales.json', inlineDataInBuild: false, emitJson: true }`
 - **Description:** Asset emission configuration for build
 
 ```typescript
@@ -200,7 +213,8 @@ i18nTypes({
 
 - **Type:** `boolean`
 - **Default:** `false`
-- **Description:** Enable detailed debug logging
+- **Description:** Enable detailed debug logging and expose inspection endpoints (`/_virtual_locales.json`,
+  `/__locales_debug__`)
 
 ```typescript
 i18nTypes({
@@ -377,7 +391,10 @@ i18nTypes({
   // Use shallow merge if deep nesting isn't needed
   merge: 'shallow',
 
-  // Disable debug in production
+    // Tune batching to balance speed vs memory
+    fileBatchSize: 150,
+
+    // Disable debug in production
   debug: process.env.NODE_ENV !== 'production'
 })
 ```
@@ -414,8 +431,9 @@ Check your configuration:
 
 ```typescript
 i18nTypes({
-  debug: true, // Enable debug logs
-  verbose: true // Show detailed output
+    debug: true,        // Enable debug logs + dev endpoints
+    verbose: true,      // Show detailed output
+    fileBatchSize: 150, // Optional: adjust batching for large projects
 })
 ```
 

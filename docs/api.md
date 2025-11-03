@@ -78,6 +78,7 @@ Generates TypeScript type definitions from locale JSON files.
 interface GenerateTypesOptions {
   // Project Configuration
   root?: string                    // Project root directory (default: current directory)
+  fileBatchSize?: number           // Files processed per batch (default: 100)
 
   // File Discovery
   include?: string | string[]      // Glob patterns for locale files
@@ -100,7 +101,7 @@ interface GenerateTypesOptions {
   // Build Output
   emit?: {
     inlineDataInBuild?: boolean    // Inline locale data into the bundle (default: false)
-    emitJson?: boolean             // Emit combined JSON asset during build (default: false)
+    emitJson?: boolean             // Emit combined JSON asset during build (default: true)
     fileName?: string              // Output filename when emitJson is enabled (default: 'assets/locales.json')
   }
 
@@ -441,6 +442,8 @@ const i18n = createI18n({
 2. **Add error handling** to catch and report generation failures
 3. **Use verbose mode** during development for detailed logs
 4. **Generate debug files** with `virtualFilePath` when troubleshooting
-5. **Cache results** when processing multiple packages in sequence
-6. **Import sub-modules** for better tree-shaking when you don't need all features
-7. **Use `useI18nApp()`** for app-level i18n access outside components
+5. **Visit `/_virtual_locales.json` and `/__locales_debug__`** after setting `debug: true` to inspect merged data
+   quickly
+6. **Cache results** when processing multiple packages in sequence
+7. **Import sub-modules** for better tree-shaking when you don't need all features
+8. **Use `useI18nApp()`** for app-level i18n access outside components

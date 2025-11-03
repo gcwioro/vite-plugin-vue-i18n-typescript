@@ -5,7 +5,8 @@ hooks.
 
 ## Installation
 
-The CLI comes bundled with the package:
+The CLI comes bundled with the package and is exposed as the `i18n-typescript` executable (available when the package is
+installed locally).
 
 ```bash
 npm install -D vite-plugin-vue-i18n-typescript
@@ -26,6 +27,10 @@ npx vite-plugin-vue-i18n-typescript generate \
   --types-path src/types/i18n.d.ts \
   --verbose
 ```
+
+> Note: After installing the package locally (for example under `devDependencies`), you can invoke the binary directly
+> via package runners (`pnpm  i18n-typescript generate`, `npm run i18n:generate`) or
+`npx vite-plugin-vue-i18n-typescript generate`.
 
 ## Command Reference
 
@@ -102,10 +107,10 @@ Add these scripts to your `package.json`:
 ```json
 {
   "scripts": {
-    "i18n:generate": "vite-plugin-vue-i18n-typescript generate",
-    "i18n:watch": "vite-plugin-vue-i18n-typescript generate --watch",
-    "i18n:debug": "vite-plugin-vue-i18n-typescript generate --verbose --debug",
-    "precommit": "vite-plugin-vue-i18n-typescript generate"
+      "i18n:generate": "i18n-typescript generate",
+      "i18n:watch": "i18n-typescript generate --watch",
+      "i18n:debug": "i18n-typescript generate --verbose --debug",
+      "precommit": "i18n-typescript generate"
   }
 }
 ```
@@ -171,6 +176,9 @@ npx vite-plugin-vue-i18n-typescript merge-export --output ./export/messages.json
 # Export separate files per locale
 npx vite-plugin-vue-i18n-typescript merge-export --split --output ./export/{locale}.json
 ```
+
+> Note: In project scripts you can invoke the installed binary directly (
+` i18n-typescript merge-export --split --output ./export/{locale}.json`).
 
 ### Export Options
 

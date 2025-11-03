@@ -69,7 +69,7 @@
   "module": "./dist/index.js",
   "types": "./dist/vite-env-override-components.d.ts",
   "bin": {
-    "vue-i18n-dts": "./dist/cli.js"
+    "i18n-typescript": "./dist/cli.js"
   },
   "files": [
     "dist"

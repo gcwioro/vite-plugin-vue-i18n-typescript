@@ -5,7 +5,7 @@ import pc from 'picocolors';
 /**
  * Create a simple console logger compatible with Vite's Logger interface
  */
-export function createConsoleLogger(debugEnabled: boolean = false, prefix: string = `vue-i18n-dts`): Logger {
+export function createConsoleLogger(debugEnabled: boolean = false, prefix: string = ` i18n-typescript`): Logger {
   const warnedMessages = new Set<string>();
 
 
@@ -40,7 +40,7 @@ export function createConsoleLogger(debugEnabled: boolean = false, prefix: strin
 export function createColoredLogger(level?: LogLevel | 'debug', options?: LoggerOptions) {
 
   const logger: Logger = options?.customLogger ?? createConsoleLogger(true, options?.prefix)
-  const prefix = options?.prefix ?? `vue-i18n-dts`;
+  const prefix = options?.prefix ?? `vue-i18n-typescript`;
 
   return {
     debug: (msg: string, options?: LogOptions) => {
