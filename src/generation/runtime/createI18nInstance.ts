@@ -7,7 +7,6 @@ declare global {
   export const messages: DefaultLocaleMessageSchema;
 }
 
-
 export function createI18nInstance<T extends ComposerOptions>(options?: T): I18n<DefaultLocaleMessageSchema, T["datetimeFormats"] extends Record<string, unknown> ? T["datetimeFormats"] : Record<string, unknown>, T["numberFormats"] extends Record<string, unknown> ? T["numberFormats"] : Record<string, unknown>, T["locale"] extends string ? T["locale"] : Locale, false> {
 
 //I18n<Messages, DateTimeFormats, NumberFormats, OptionLocale, false>

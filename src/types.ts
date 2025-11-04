@@ -20,20 +20,6 @@ export interface VirtualKeysDtsOptions {
   getLocaleFromPath?: (absFilePath: string, root: string) => string | null;
   merge?: "deep" | "shallow";
   transformJson?: (json: unknown, absFilePath: string) => unknown;
-  emit?: {
-    /**
-     * Flag to inline locale data file in the build output.
-     * @default false
-     */
-    inlineDataInBuild?: boolean;
-
-    /**
-     * Flag to emit the combined messages JSON file during build.
-     * When enabled, writes messages.json alongside your bundle.
-     * @default false
-     */
-    emitJson?: boolean;
-  };
   debug?: boolean;
 
   /**
@@ -158,11 +144,6 @@ export interface GenerationOptions extends Omit<VirtualKeysDtsOptions, 'exclude'
   virtualFilePath?: string,
 
   mergeFunction: (a: any, b: any) => any;
-  emit: {
-    inlineDataInBuild: boolean;
-    fileName: string;
-    emitJson: boolean;
-  };
   include: string[];
   exclude: string[];
   debug: boolean;

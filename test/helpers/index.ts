@@ -69,10 +69,11 @@ export async function createTempProjectDir(fixtureName: string): Promise<string>
     throw new Error(`Fixture not found: ${fixtureName}`)
   }
   const randomSuffix = Math.random().toString(36).substring(2, 8)
-  let tempDir = path.join(os.tmpdir(), 'vite-plugin-vue-i18n-types', randomSuffix);
+  const tempDir = path.join(os.tmpdir(), 'vite-plugin-vue-i18n-types', randomSuffix);
   await fs.mkdir(tempDir, {recursive: true});
   await copyDirectory(sourceDir, tempDir)
   tempDirectories.add(tempDir)
+  console.log(`Created temp project dir: ${tempDir}`)
   registerCleanup(() => removeDirectory(tempDir))
   return tempDir
 }
@@ -160,8 +161,7 @@ export async function waitForFileChange(
       throw err;
   }
   if (returnFileOnNoChange) {
-    return await fs.readFile
-    (filePath, {encoding: 'utf-8'});
+    return await fs.readFile(filePath, {encoding: 'utf-8'});
   }
   throw new Error(`Timed out waiting for file change: ${filePath}`);
 

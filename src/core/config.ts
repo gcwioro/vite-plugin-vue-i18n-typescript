@@ -82,21 +82,9 @@ export function normalizeConfig(userOptions: VirtualKeysDtsOptions = {}, logger:
     mergeFunction: (userOptions.merge ?? 'deep') === 'deep' ? deepMerge : shallowMerge,
     banner: userOptions.banner,
     debug: userOptions.debug ?? false,
-    emit: {
-      fileName: "assets/locales.json",
-      inlineDataInBuild: userOptions.emit?.inlineDataInBuild ?? false,
-
-      emitJson: userOptions.emit?.emitJson ?? true,
-    },
     logger,
     transformJson: userOptions.transformJson,
   } as GenerationOptions;
-
-  // Validate config
-  if (!config.emit.emitJson && !config.emit.inlineDataInBuild) {
-    logger.error(`'emit.emitJson' and 'emit.inlineDataInBuild' are both 'false'.`);
-  }
-
 
   return config;
 }

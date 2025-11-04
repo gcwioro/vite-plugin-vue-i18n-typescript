@@ -22,6 +22,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  build: {sourcemap: true, minify: false},
   plugins: [
     vue(),
     viteTsChecker({
@@ -38,8 +39,7 @@ export default defineConfig({
       typesPath: 'src/vite-env-override.d.ts',
       // virtualFilePath: 'src/i18n/i18n.virtual.gen.js',
       debug: true,
-      // virtualFilePath: './src/i18n/virtual.js',
-      emit: {emitJson: true, inlineDataInBuild: false}
+
     } as any),
     tailwindcss(),
 

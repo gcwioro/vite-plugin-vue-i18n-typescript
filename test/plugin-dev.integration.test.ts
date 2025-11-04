@@ -115,62 +115,62 @@ describe('vite-plugin-vue-i18n-types integration (dev + build)', () => {
 
 
 })
-
-describe('vite-plugin-vue-i18n-types integration (build)', () => {
-  it('writes nested type definitions and emits locales asset during build', async () => {
-    const projectRoot = await createTempProjectDir('basic-project')
-    const relativeTypesPath = './types/nested/generated/i18n.d.ts'
-    const dtsPath = path.join(projectRoot, 'types/nested/generated/i18n.d.ts')
-    const distDir = path.join(projectRoot, 'dist')
-    const assetDir = path.join(distDir, 'assets')
-
-    await fs.mkdir(path.join(projectRoot, 'src'), {recursive: true})
-    await fs.writeFile(
-      path.join(projectRoot, 'src/main.ts'),
-      "export const hello = 'world'\n",
-      'utf-8'
-    )
-    await fs.writeFile(
-      path.join(projectRoot, 'index.html'),
-      '<!DOCTYPE html><html><body><script type="module" src="/src/main.ts"></script></body></html>',
-      'utf-8'
-    )
-
-    await build({
-      root: projectRoot,
-      configFile: false,
-      plugins: [
-        vue(),
-        unpluginVueI18nTypes({
-          typesPath: relativeTypesPath,
-
-          emit: {
-            inlineDataInBuild: false,
-            emitJson: true,
-          },
-        }),
-      ],
-      build: {
-        outDir: distDir,
-        emptyOutDir: true,
-      },
-    })
-
-    const typesDirStat = await fs.stat(path.dirname(dtsPath))
-    expect(typesDirStat.isDirectory()).toBe(true)
-
-    const typesContent = await fs.readFile(dtsPath, 'utf-8')
-    expect(typesContent).toContain("declare module 'virtual:vue-i18n-types'")
-    expect(typesContent).toContain("PluralizationDemo.fruits.apple")
-
-    const assetPath = await findLocalesAsset(assetDir)
-    expect(assetPath, 'expected emitted locales asset').toBeDefined()
-
-    const assetStat = await fs.stat(assetPath as string)
-    expect(assetStat.isFile()).toBe(true)
-
-    const assetContent = JSON.parse(await fs.readFile(assetPath as string, 'utf-8'))
-    expect(assetContent.en.PluralizationDemo.fruits.apple).toBe('apple | apples')
-    expect(assetContent.de.PluralizationDemo.fruits.apple).toBe('Apfel | Äpfel')
-  }, 40000)
-})
+//
+// describe('vite-plugin-vue-i18n-types integration (build)', () => {
+//   it('writes nested type definitions and emits locales asset during build', async () => {
+//     const projectRoot = await createTempProjectDir('basic-project')
+//     const relativeTypesPath = './types/nested/generated/i18n.d.ts'
+//     const dtsPath = path.join(projectRoot, 'types/nested/generated/i18n.d.ts')
+//     const distDir = path.join(projectRoot, 'dist')
+//     const assetDir = path.join(distDir, 'assets')
+//
+//     await fs.mkdir(path.join(projectRoot, 'src'), {recursive: true})
+//     await fs.writeFile(
+//       path.join(projectRoot, 'src/main.ts'),
+//       "export const hello = 'world'\n",
+//       'utf-8'
+//     )
+//     await fs.writeFile(
+//       path.join(projectRoot, 'index.html'),
+//       '<!DOCTYPE html><html><body><script type="module" src="/src/main.ts"></script></body></html>',
+//       'utf-8'
+//     )
+//
+//     await build({
+//       root: projectRoot,
+//       configFile: false,
+//       plugins: [
+//         vue(),
+//         unpluginVueI18nTypes({
+//           typesPath: relativeTypesPath,
+//
+//           emit: {
+//             inlineDataInBuild: false,
+//             emitJson: true,
+//           },
+//         }),
+//       ],
+//       build: {
+//         outDir: distDir,
+//         emptyOutDir: true,
+//       },
+//     })
+//
+//     const typesDirStat = await fs.stat(path.dirname(dtsPath))
+//     expect(typesDirStat.isDirectory()).toBe(true)
+//
+//     const typesContent = await fs.readFile(dtsPath, 'utf-8')
+//     expect(typesContent).toContain("declare module 'virtual:vue-i18n-types'")
+//     expect(typesContent).toContain("PluralizationDemo.fruits.apple")
+//
+//     const assetPath = await findLocalesAsset(assetDir)
+//     expect(assetPath, 'expected emitted locales asset').toBeDefined()
+//
+//     const assetStat = await fs.stat(assetPath as string)
+//     expect(assetStat.isFile()).toBe(true)
+//
+//     const assetContent = JSON.parse(await fs.readFile(assetPath as string, 'utf-8'))
+//     expect(assetContent.en.PluralizationDemo.fruits.apple).toBe('apple | apples')
+//     expect(assetContent.de.PluralizationDemo.fruits.apple).toBe('Apfel | Äpfel')
+//   }, 40000)
+// })

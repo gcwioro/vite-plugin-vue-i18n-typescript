@@ -2,8 +2,6 @@ import path from "node:path";
 import type {GenerateTypesOptions, GenerateTypesResult} from "./types";
 import {normalizeConfig} from "./core/config";
 import {FileManager} from "./core/file-manager";
-
-import {RebuildManager} from "./core/rebuild-manager";
 import {createColoredLogger, createConsoleLogger} from "./createConsoleLogger";
 
 import {CombinedMessages} from "./core/combined-messages.ts";
@@ -54,19 +52,8 @@ export async function generateI18nTypes(
 
   let lastFiles: string[] = [];
 
-  const rebuildManager = new RebuildManager({
-    config: config,
-    fileManager,
-
-    root,
-    logger,
-    onRebuildComplete: (_cache) => {
-      lastFiles = fileManager.getLastFiles();
-    },
-  });
-
   // Perform generation
-  const result = await rebuildManager.rebuild("api");
+  const result = await fileManager.readAndGroup();
 
   lastFiles = fileManager.getLastFiles();
 

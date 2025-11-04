@@ -80,37 +80,32 @@ export interface RuntimeGenerationParams {
 }
 
 /** Builder: produces the enum-keyed record */
-function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: CombinedMessages): HelperMethodsRecord {
-  const {config} = ops;
+function buildRuntimeMethods(messagesCombined: CombinedMessages): HelperMethodsRecord {
+  const config = messagesCombined.config;
 
   function getMessages() {
     // When inlineDataInBuild is true, always inline the data directly
     // This avoids issues with virtual JSON modules in library builds
-    if (config.emit.inlineDataInBuild) {
-      return `export const messages = ${messagesCombined.messagesJsonString}`
-    } else if (ops.buildAssetRefId) {
-      ops.config.logger.info(`buildAssetRefId: ${ops.buildAssetRefId}`)
-
-      return `export const messages = import.meta.ROLLUP_FILE_URL_${ops.buildAssetRefId}`
-
-      // } else if (config.virtualJsonId) {
-      //   return `
-      //   import messageJson from '${config.virtualJsonId}'
-      //
-      //   export const messages = messageJson
-      //
-      //   `
-    } else {
-
-      const messagesImportedFromServer = `export const messages = ${messagesCombined.messagesJsonString};`
-      // config.logger.warn(messagesImportedFromServer)
-      return messagesImportedFromServer
-    }
+    // if (config.emit.buildAssetRefId) {
+    //   config.logger.info(`buildAssetRefId: ${config.emit.buildAssetRefId}`)
+    //   return `
+    //   // export const messages = ${messagesCombined.messagesJsonString}
+    //   import  messagesImported  from '${config.sourceId}/messages';
+    //   export const messages = messagesImported;
+    //   // const messages = import.meta.ROLLUP_FILE_URL_${config.emit.buildAssetRefId}`
+    //
+    // } else if (config.emit.inlineDataInBuild) {
+    //   return `export const messages = ${messagesCombined.messagesJsonString}`
+    // } else {
+    //
+    // config.logger.warn(messagesImportedFromServer)
+    return `export const messages = ${messagesCombined.messagesJsonString};`
+    // }
   }
 
   return {
     [imports]: `
-    import {isReactive, ref, toValue} from "vue";
+    import { isReactive, ref, toValue} from "vue";
     import { createI18n, useI18n } from 'vue-i18n';
     `,
     [messages]: getMessages(),
@@ -137,54 +132,19 @@ function buildRuntimeMethods(ops: RuntimeGenerationParams, messagesCombined: Com
   };
 }`,
   } as const;
-  /*     `
-     let useTranslation;
 
-export function useI18nTypeSafe(options) {
-if(!useTranslation){
-useTranslation={
-     ...globalThis.i18nApp.global,
-     t: globalThis.i18nApp.global.t,
-     d: globalThis.i18nApp.global.t,
-     n: globalThis.i18nApp.global.n,
-};
- const { t: originalT, d, n, ...rest } = useI18n({
-
-   ...(options ?? {}),
- });
- if(!options){
-   return useTranslation;
- }
-
- const all = useI18n({
-
-   ...(options ?? {}),
- });
- return {
-   ...all,
-   t: translateWrapperFunction(all.t),
- };
-
-}`,*/
 }
 
-/** Options for file output */
-export interface ToFileOptions {
-  /** Join string between sections (default: "\n\n") */
-  separator?: string;
-  /** Optional banner/header comment */
-  banner?: string;
-  /** Ensure directory exists (mkdir -p), default true */
-  ensureDir?: boolean;
-}
 
 
 /** Typed, compact class with ergonomic helpers */
 export class RuntimeMethods {
   private readonly _data: HelperMethodsRecord;
+  private readonly _config: GenerationOptions;
 
-  constructor(ops: RuntimeGenerationParams, messagesCombined: CombinedMessages) {
-    this._data = buildRuntimeMethods(ops, messagesCombined);
+  constructor(messagesCombined: CombinedMessages) {
+    this._data = buildRuntimeMethods(messagesCombined);
+    this._config = messagesCombined.config;
   }
 
 
@@ -209,12 +169,10 @@ export class RuntimeMethods {
   getFileContentFor(target: string | SymbolEnum, separator = "\n\n"): string {
     // remove "??*" from target
 
-    const resolved = this.parseSymbolEnumKey(target);
-
-    const resolvedCode = resolved;//? this._data?.[resolved] : this._data?.[target];
+    const resolvedCode = this.parseSymbolEnumKey(target);//? this._data?.[resolved] : this._data?.[target];
     if (!resolvedCode) {
       // throw new Error(`getFileContentFor: No code found for target "${target}". Available keys: ${Object.keys(this._data).join(", ")}`);
-      console.error(`getFileContentFor: No code found for target "${target}". Available keys: ${Object.entries(this._data).join(", ")}`);
+      this._config.logger.error(`getFileContentFor: No code found for target "${target}". Available keys: ${Object.entries(this._data).join(", ")}`);
       return this.toFileContent(target);
     }
 
@@ -223,6 +181,8 @@ export class RuntimeMethods {
     const needsVueI18nImports = ['useI18nTypeSafe', 'createI18nInstance', 'createI18nInstancePlugin'].includes(target);
     const importsCode = this._data[imports];
 
+// this._config.logger.info(`getFileContentFor: Generating code for target "${target}". needsVueI18nImports: ${needsVueI18nImports}`);
+// this._config.logger.debug(`Imports code: ${importsCode}`);
     // Messages, availableLocales, and fallbackLocales are already exported in resolvedCode
     // so we don't need to add 'export default'
     const needsDefaultExport = true;//!['messages', 'availableLocales', 'fallbackLocales', 'useI18nApp', 'translationWrapper', 'useI18nTypeSafe', 'createI18nInstance', 'createI18nInstancePlugin'].includes(target);

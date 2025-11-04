@@ -23,7 +23,7 @@ import { messages } from 'virtual:vue-i18n-types/messages'
 const enMessages = messages['en']
 console.log(enMessages?.welcome || 'Hello')
 
-export { messages }
+export { messages } from 'virtual:vue-i18n-types/messages'
 `
     await fs.writeFile(
       path.join(projectRoot, 'src/main-messages.ts'),
@@ -58,13 +58,13 @@ export { messages }
 
     // Read the built JS file
     const builtFiles = await fs.readdir(distDir)
-    const jsFile = builtFiles.find(f => f.endsWith('.js') || f.endsWith('.mjs'))
+    const jsFile = builtFiles.find(f => f.endsWith('.mjs'))
     if (!jsFile) throw new Error('No JS file found in build output')
 
     const jsContent = await fs.readFile(path.join(distDir, jsFile), 'utf-8')
-
+    console.log(jsContent)
     // Check that messages are included but other exports are not
-    expect(jsContent).toContain('welcome')
+    expect(jsContent).toContain('Banane | Bananen')
     expect(jsContent).not.toContain('createI18nInstance')
     expect(jsContent).not.toContain('useI18nTypeSafe')
     expect(jsContent).not.toContain('availableLocales')
@@ -116,7 +116,7 @@ export { availableLocales }
 
     // Read the built JS file
     const builtFiles = await fs.readdir(distDir)
-    const jsFile = builtFiles.find(f => f.endsWith('.js') || f.endsWith('.mjs'))
+    const jsFile = builtFiles.find(f => f.endsWith('.mjs'))
     if (!jsFile) throw new Error('No JS file found in build output')
 
     const jsContent = await fs.readFile(path.join(distDir, jsFile), 'utf-8')
@@ -124,7 +124,7 @@ export { availableLocales }
     // availableLocales should be there but not the full messages
     // Check for availableLocales array in minified code
     expect(jsContent).toMatch(/\["de",\s*"en"\]|\["en",\s*"de"\]/)
-    expect(jsContent).not.toContain('welcome')
+    expect(jsContent).not.toContain('Banane | Bananen')
     expect(jsContent).not.toContain('createI18nInstance')
   })
 
@@ -181,7 +181,7 @@ export { messages, availableLocales, createI18nInstance }
 
     // Read the built JS file
     const builtFiles = await fs.readdir(distDir)
-    const jsFile = builtFiles.find(f => f.endsWith('.js') || f.endsWith('.mjs'))
+    const jsFile = builtFiles.find(f => f.endsWith('.mjs'))
     if (!jsFile) throw new Error('No JS file found in build output')
 
     const jsContent = await fs.readFile(path.join(distDir, jsFile), 'utf-8')

@@ -4,6 +4,8 @@ import path from "node:path";
 import {fnv1a32} from "../utils/hash.ts";
 import {detectKeyConflicts, getFinalKeys} from "../utils/json.ts";
 import {ensureDir, writeFileAtomic} from "../utils/file.ts";
+import {RuntimeMethods, SymbolEnum} from "../generation/treeShakeGenerator.ts";
+import pc from "picocolors";
 
 export class CombinedMessages<TLanguages extends string = string, TMessages extends JSONObject = JSONObject> {
 
@@ -62,16 +64,17 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
     await writeFileAtomic(this.typesOutpath, this.getTypesContent());
   }
 
-  public async writeVirtualFile(buildAssetRefId?: string) {
+  public async writeVirtualFile() {
     // Write types file
     const filePath = this.virtualOutPath;
     if (!filePath) return;
     await ensureDir(filePath);
     // if (await this.shouldWriteFile(typesPath, typesContent)) {
     this.config.logger.info(`Writing types file to: ${filePath}`);
-    await writeFileAtomic(filePath, this.getRuntimeContent(buildAssetRefId));
+    await writeFileAtomic(filePath, this.getRuntimeContent());
 
   }
+
   public static getFallBackLocales(langs: string[]) {
     return langs.reduce((acc, locale) => {
       acc[locale] = [locale, locale === 'en' ? undefined : 'en', locale === 'de' ? undefined : 'de'].filter(a => a !== undefined);
@@ -80,19 +83,35 @@ export class CombinedMessages<TLanguages extends string = string, TMessages exte
     }, {} as Record<string, string[]>);
   }
 
-  public getRuntimeContent(buildAssetRefId?: string) {
-    const params = Object.assign({}, {
-      combinedMessages: this,
+  public getRuntimeContent() {
 
-      config: this.config,
-
-    })
-    return createVirtualModuleCode({config: this.config, buildAssetRefId}, this).toFileContent()
+    return this.getRuntimeMethods().toFileContent()
   }
 
-  public async writeFiles(buildAssetRefId?: string) {
+  private _runtimeMethodsCache: RuntimeMethods | null = null;
+
+  public getRuntimeMethods(): RuntimeMethods {
+    if (this._runtimeMethodsCache) return this._runtimeMethodsCache;
+    this._runtimeMethodsCache = createVirtualModuleCode(this);
+    return this._runtimeMethodsCache;
+  }
+
+  public loadVirtualModuleCode(moduleToResolve: string | SymbolEnum) {
+    const code = this.getRuntimeMethods()
+    if (moduleToResolve === "") {
+      this.config.logger.info(`📄 [${pc.green('load')}] Generated dev code for virtual module: ${moduleToResolve}`);
+      return code.toFileContent()
+    }
+
+    const methodCode = code.getFileContentFor(moduleToResolve);
+    this.config.logger.info(`📄 [${pc.green('load')}] Loading virtual sub-module: ${pc.yellow(moduleToResolve)}, length: ${methodCode.length}`);
+    return methodCode;
+
+  }
+
+  public async writeFiles() {
     const startWrite = performance.now();
-    await Promise.all([this.writeTypesFile(), this.writeVirtualFile(buildAssetRefId)]);
+    await Promise.all([this.writeTypesFile(), this.writeVirtualFile()]);
     const writeDuration = Math.round(performance.now() - startWrite);
     this.config.logger.debug(`Generation took: ${writeDuration}ms`);
   }

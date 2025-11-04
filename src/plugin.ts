@@ -1,5 +1,3 @@
-import path from "node:path";
-import {promises as fs, type Stats} from "node:fs";
 import {
   createLogger,
   type EnvironmentModuleNode,
@@ -9,11 +7,8 @@ import {
   type ViteDevServer,
 } from "vite";
 import type {GenerationOptions, JSONObject, VirtualKeysDtsOptions} from "./types";
-import {createVirtualModuleCode} from "./generation/generator";
 import {Consts, normalizeConfig} from "./core/config";
 import {FileManager, ParsedFile} from "./core/file-manager";
-
-import {RebuildManager} from "./core/rebuild-manager";
 import {CombinedMessages} from "./core/combined-messages";
 import {createColoredLogger} from "./createConsoleLogger";
 import pc from "picocolors";
@@ -31,7 +26,6 @@ function vitePluginVueI18nTypescript(
 ): PluginOption {
   // Normalize configuration
 
-
   // Plugin state
   let root = "";
   let pluginLogger = createColoredLogger(userOptions.debug ? 'debug' : 'info', {customLogger: createLogger(userOptions.debug ? 'info' : 'warn')});
@@ -39,34 +33,11 @@ function vitePluginVueI18nTypescript(
   let config: GenerationOptions = normalizeConfig(userOptions, pluginLogger);
 
   let isBuild = false;
-  let emittedRefId: string | undefined;
   let combinedMessages: CombinedMessages = new CombinedMessages({['en']: {test: ''}}, config);
-  const lastFiles: string[] = [];
 
   // Core managers (initialized in configResolved)
   let fileManager: FileManager;
-
-  let rebuildManager: RebuildManager;
   let server: ViteDevServer;
-
-  /**
-   * Check if types file exists and is accessible
-   */
-  async function checkTypesFileExists(): Promise<void> {
-    const typesOutPath = path.isAbsolute(config.typesPath)
-      ? config.typesPath
-      : path.join(root, config.typesPath);
-
-    try {
-      await fs.access(typesOutPath, fs.constants.W_OK);
-      pluginLogger.info(`Types file is accessible at: ${typesOutPath}`);
-    } catch (e: unknown) {
-      const err = e as Error;
-      pluginLogger.warn(
-        `Types file does not exist at: ${typesOutPath}. Will be created during buildStart. ${err.message}`
-      );
-    }
-  }
 
   /**
    * Check if a file change should trigger a rebuild
@@ -80,11 +51,7 @@ function vitePluginVueI18nTypescript(
 
     // const rel = normalizePath(path.relative(root, abs));
     // if (rel.startsWith("..")) return false;
-
-
     pluginLogger.debug(`Checking file change: ${abs}`);
-
-
     return true;
   }
 
@@ -113,12 +80,12 @@ function vitePluginVueI18nTypescript(
         // todo merge only changed file
         pluginLogger.info(`File changed: ${file.localeKey}, updating emitted asset...`);
         const messagesCached = new CombinedMessages(fileManager.getGrouped(), config)
-        await messagesCached.writeFiles(emittedRefId);
+        await messagesCached.writeFiles();
       });
       fileManager.addOnAllFilesProcessed(async (result) => {
         try {
           combinedMessages = result;
-          await combinedMessages.writeFiles(emittedRefId);
+          await combinedMessages.writeFiles();
           pluginLogger.info(`🚀 [${addOnAllFilesProcessedLogPrefix}] Rebuild complete. Locales: ${combinedMessages.languages.join(", ")}, Total Keys: ${combinedMessages.keys.length}`);
 
           combinedMessages.validateMessages()
@@ -145,9 +112,7 @@ function vitePluginVueI18nTypescript(
     },
 
     async buildStart() {
-
       pluginLogger.info(`🚀 [buildStart] Hook triggered. isBuild: ${isBuild}`);
-
 
       if (!isBuild) {
         const url = `http://localhost:${server.config.server.port}`;
@@ -155,69 +120,27 @@ function vitePluginVueI18nTypescript(
         pluginLogger.info(`🌐 [buildStart] Debug endpoint enabled at ${pc.yellow(url + Consts.devUrlPath)}`);
 
       }
-
+      // fileManager.emitFile = this.emitFile.bind(this);
+      // fileManager.getFileName = this.getFileName.bind(this);
       if (isBuild) {
-        fileManager.addOnAllFilesProcessed(messages => {
-
-          pluginLogger.info(`🚀 [${addOnAllFilesProcessedLogPrefix}] Emitting locale JSON asset: ${config.emit.fileName}`);
-          this.emitFile({
-            originalFileName: config.emit.fileName,
-            fileName: config.emit.fileName,
-            type: "asset",
-
-            name: config.emit.fileName,
-            source: messages.messagesJsonString,
-          })
-
-        })
         await fileManager.readAndGroup()
       }
-
-      // if (isBuild) {
-      //
-      //
-      //   emittedRefId = this.emitFile({
-      //     originalFileName: config.emit.fileName,
-      //     fileName: config.emit.fileName,
-      //     type: "asset",
-      //
-      //     name: config.emit.fileName,
-      //     source: combinedMessages.messagesJsonString,
-      //   });
-      //
-      // }
     },
 
-
-    resolveId(idResolve) {
-
-
+    resolveId(idResolve, importer, other) {
       if (idResolve === Consts.devUrlPath) {
-
         pluginLogger.debug(`🔍 [${pc.blueBright('resolveId')}]  Resolved dev JSON endpoint: ${idResolve}`);
         return "\0" + Consts.devUrlPath
-
       }
       const id = idResolve.replaceAll(/\?\?.*/g, '');
       if (!id.startsWith(config.sourceId)) {
         return
       }
 
-      const moduletoResolve = id.replace(config.sourceId, "")
-
-      if (moduletoResolve === "") {
-        return "\0" + config.sourceId;
-      }
-
-
-      pluginLogger.debug(`🔍 [${pc.blueBright('resolveId')}]  Resolved module: ${id} [${pc.yellow(moduletoResolve)}]`);
-      return '\0' + id;
-
+      return "\0" + config.sourceId;
     },
 
     load(idLoad) {
-
-
       if (!idLoad.startsWith("\0")) {
         return
       }
@@ -240,24 +163,7 @@ function vitePluginVueI18nTypescript(
         .replace(/^\//, '')
 
       pluginLogger.debug(`📄 [${pc.green('load')}] [${id}] loading [${pc.yellow(moduletoResolve)}]`);
-
-      const code = createVirtualModuleCode({
-        config: config,
-        buildAssetRefId: config.emit.emitJson ? emittedRefId : undefined,
-      }, combinedMessages);
-      if (moduletoResolve === "") {
-
-        pluginLogger.info(`📄 [${pc.green('load')}] Generated dev code for virtual module: ${id}`);
-        return code.toFileContent()
-
-      }
-
-      const methodCode = code.getFileContentFor(moduletoResolve);
-      pluginLogger.info(`📄 [${pc.green('load')}] Loading virtual sub-module: ${pc.yellow(moduletoResolve)}, length: ${methodCode.length}`);
-
-      // pluginLogger.debug(`📄 [load (Sub-module)] Generated code for method: ${method} [${methodCode.substring(0, 30)}`);
-      return methodCode;
-
+      return combinedMessages.loadVirtualModuleCode('')
 
     }
     ,
@@ -408,13 +314,6 @@ function vitePluginVueI18nTypescript(
 
         if (update)
           pluginLogger.info(`${hotUpdatePrefix} File processed: ${ctx.file}, locale: ${update.localeKey} keys: ${Object.keys(update.prepared).length}`);
-
-
-        // // Send custom HMR event to update i18n messages directly
-
-// pluginLogger.debug(`${JSON.stringify(await ctx.read())} vs ${JSON.stringify(result.messages)}`);
-        // Send the updated messages to the client
-
 
         // Return empty array to prevent default HMR behavior
         return [];

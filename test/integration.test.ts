@@ -59,7 +59,7 @@ describe('i18n type generation', () => {
       plugins: [
         vue(),
         unpluginVueI18nDtsGeneration({
-          typesPath: './src/vite-env-override.d.ts',
+          typesPath: dtsPath,
           debug: true,
         }),
       ],

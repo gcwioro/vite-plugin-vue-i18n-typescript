@@ -19,13 +19,14 @@ export interface ParsedFile {
 /**
  * Manages file reading, caching, and incremental updates for locale files
  */
+
 export class FileManager {
   private parsedFilesCache = new Map<string, ParsedFile>();
   // private grouped:Record<string, any> = {};
   private processedFiles: Set<string> = new Set<string>();
   public filesToProcess: Set<string> = new Set<string>();
 
-  constructor(private options: GenerationOptions) {
+  constructor(public options: GenerationOptions) {
 
   }
 
@@ -297,8 +298,13 @@ export class FileManager {
   public callbacksFileChanged: Array<FileUpdatedCallback> = [];
   private callbacks: Array<FilesProcesedCallback> = [];
 
-  public addOnAllFilesProcessed(callback: FilesProcesedCallback) {
-    this.callbacks.push(callback);
+  public addOnAllFilesProcessed(callback: FilesProcesedCallback, _priority: number = 0) {
+    if (_priority > 0) {
+      this.callbacks.unshift(callback);
+      return;
+    } else {
+      this.callbacks.push(callback);
+    }
   }
 
   public addOnFileChanged(callback: FileUpdatedCallback) {
