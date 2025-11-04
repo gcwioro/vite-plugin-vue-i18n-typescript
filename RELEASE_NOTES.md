@@ -15,7 +15,7 @@
 - Export all locales into a single JSON file or split them per locale with the `{locale}` placeholder.
 - Shares include/exclude filters with the generator so CI workflows stay consistent.
 - Supports `--split`, `--output`, and verbose debug logging for audits.
-- Invoke as ` i18n-typescript merge-export` in local scripts or `npx vite-plugin-vue-i18n-typescript merge-export` for
+- Invoke as `i18n-typescript merge-export` in local scripts or `npx vite-plugin-vue-i18n-typescript merge-export` for
   one-off runs.
 
 ### Debug Middleware
@@ -37,8 +37,8 @@
 
 ## Notes
 
-- The installed binary is now named ` i18n-typescript`. Update local scripts (e.g., `package.json` commands) to call
-  ` i18n-typescript` instead of `vite-plugin-vue-i18n-typescript`. For ad-hoc runs with `npx`, continue using
+- The installed binary is now named `i18n-typescript`. Update local scripts (e.g., `package.json` commands) to call
+  `i18n-typescript` instead of `vite-plugin-vue-i18n-typescript`. For ad-hoc runs with `npx`, continue using
   `npx vite-plugin-vue-i18n-typescript generate`.
 - Review any build scripts that consumed the emitted JSON asset and replace them with reads from the virtual module or
   source files.
@@ -46,7 +46,7 @@
 ## Recommended Validation
 
 1. Run `npx vite-plugin-vue-i18n-typescript generate --verbose` once to confirm everything still executes in your CI (or
-   `pnpm  i18n-typescript generate` if installed locally).
+   `pnpm i18n-typescript generate` if installed locally).
 2. Visit `http://localhost:<port>/_virtual_locales.json` after enabling `debug: true` to ensure endpoints respond.
 3. For large projects, experiment with `fileBatchSize` (e.g. `50`, `200`) and watch rebuild timings in the console.
 

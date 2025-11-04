@@ -1,4 +1,4 @@
-// import type {MessagesType} from "virtual:unplug-i18n-dts-generation";
+// import type {MessagesType} from "virtual:vue-i18n-types";
 import type {ComposerOptions, DefaultLocaleMessageSchema, I18n, Locale} from "vue-i18n"
 import {createI18n} from "vue-i18n"
 

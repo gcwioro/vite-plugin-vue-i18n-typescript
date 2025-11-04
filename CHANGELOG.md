@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`merge-export` CLI command** for exporting combined locales or per-locale JSON snapshots (invoked as
-  ` i18n-typescript merge-export` when installed locally).
+  `i18n-typescript merge-export` when installed locally).
 - **Debug middleware endpoints** exposed when `debug: true`, serving live locale data at `/_virtual_locales.json` and
   `/__locales_debug__`.
 - **`fileBatchSize` option** to control how many locale files are processed simultaneously for large repositories.
@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Locale asset emission options were removed; builds no longer generate `assets/locales.json` automatically.
-- The published CLI binary name is ` i18n-typescript`, so local scripts should call ` i18n-typescript` while ad-hoc
+- The published CLI binary name is `i18n-typescript`, so local scripts should call `i18n-typescript` while ad-hoc
   `npx` usage
   remains `npx vite-plugin-vue-i18n-typescript`.
 - Additional debug logging around file discovery and rebuild phases for better observability when `debug` is enabled.

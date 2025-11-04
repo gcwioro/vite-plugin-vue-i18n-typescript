@@ -5,12 +5,32 @@ hooks.
 
 ## Installation
 
-The CLI comes bundled with the package and is exposed as the `i18n-typescript` executable (available when the package is
-installed locally).
+The CLI comes bundled with the package and is exposed as the `i18n-typescript` executable (available when the package is installed locally).
 
 ```bash
 npm install -D vite-plugin-vue-i18n-typescript
 ```
+
+## Understanding the Binary Name
+
+**Binary Name:** `i18n-typescript`
+
+The plugin provides different ways to invoke the CLI depending on your use case:
+
+### When to Use Each Command Form
+
+| Scenario | Command | Use Case |
+|----------|---------|----------|
+| **One-time/Ad-hoc** | `npx vite-plugin-vue-i18n-typescript generate` | Quick runs without installing the package |
+| **Locally Installed** | `i18n-typescript generate` | After installing as devDependency |
+| **Package.json Scripts** | `"script": "i18n-typescript generate"` | Automated workflows, pre-commit hooks |
+| **Package Managers** | `pnpm i18n-typescript generate`<br>`npm exec i18n-typescript generate` | Using package manager runners |
+
+**Key Points:**
+- The **binary name** is `i18n-typescript` (no prefix when installed)
+- The **package name** is `vite-plugin-vue-i18n-typescript` (used with npx)
+- In `package.json` scripts, you don't need `npx` - just use `i18n-typescript` directly
+- Package manager runners (`pnpm`, `npm exec`) automatically find the binary
 
 ## Basic Usage
 
@@ -29,7 +49,7 @@ npx vite-plugin-vue-i18n-typescript generate \
 ```
 
 > Note: After installing the package locally (for example under `devDependencies`), you can invoke the binary directly
-> via package runners (`pnpm  i18n-typescript generate`, `npm run i18n:generate`) or
+> via package runners (`pnpm i18n-typescript generate`, `npm run i18n:generate`) or
 `npx vite-plugin-vue-i18n-typescript generate`.
 
 ## Command Reference
@@ -45,7 +65,7 @@ npx vite-plugin-vue-i18n-typescript generate [options]
 | Option                       | Description                                      | Default                    |
 |------------------------------|--------------------------------------------------|----------------------------|
 | `--root <path>`              | Project root directory                           | Current directory          |
-| `--include <pattern>`        | Glob pattern for locale files (multiple allowed) | `./**/locales/*.json`<br>`./**/*.vue.*.json`<br>`./**/*<base-locale>.json` |
+| `--include <pattern>`        | Glob pattern for locale files (multiple allowed) | `./**/locales/*.json`<br>`./**/*.vue.*.json`<br>`./**/*{baseLocale}.json` |
 | `--exclude <pattern>`        | Glob pattern to exclude (multiple allowed)       | `**/tsconfig.*`<br>`**/node_modules/**`<br>`**/.git/**`<br>`**/dist/**`<br>`**/.output/**`<br>`**/.vercel/**`<br>`**/.next/**`<br>`**/build/**` |
 | `--base-locale <locale>`     | Base locale for type generation                  | `de`                       |
 | `--types-path <path>`        | Output path for TypeScript definitions           | `./src/vite-env-override.d.ts` |
@@ -177,8 +197,8 @@ npx vite-plugin-vue-i18n-typescript merge-export --output ./export/messages.json
 npx vite-plugin-vue-i18n-typescript merge-export --split --output ./export/{locale}.json
 ```
 
-> Note: In project scripts you can invoke the installed binary directly (
-` i18n-typescript merge-export --split --output ./export/{locale}.json`).
+> Note: In project scripts you can invoke the installed binary directly
+> (`i18n-typescript merge-export --split --output ./export/{locale}.json`).
 
 ### Export Options
 

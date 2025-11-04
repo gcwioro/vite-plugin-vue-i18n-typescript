@@ -104,7 +104,7 @@ jobs:
           npm --no-git-tag-version version "${BASE_VERSION}"
 
       - name: Publish to npm
-        run: npm publish
+        run: bun publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -148,6 +148,6 @@ jobs:
           npm --no-git-tag-version version "${PRERELEASE_VERSION}"
 
       - name: Publish to npm (alpha)
-        run: npm publish --tag alpha
+        run: bun publish --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

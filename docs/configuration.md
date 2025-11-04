@@ -27,7 +27,8 @@ export default defineConfig({
 #### `include`
 
 - **Type:** `string | string[]`
-- **Default:** `['./**/locales/*.json', './**/*.vue.*.json', './**/*<baseLocale>.json']`
+- **Default:** `['./**/locales/*.json', './**/*.vue.*.json', './**/*{baseLocale}.json']` (where `{baseLocale}` is
+  replaced with your configured base locale, e.g., `de` or `en`)
 - **Description:** Glob patterns for finding locale files
 
 ```typescript

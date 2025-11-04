@@ -28,7 +28,7 @@ t('nav.home')  // IDE shows all available keys
 - Built-in debug dashboards when `debug: true`
 - Zero config needed with smart glob + batching defaults
 - ⚡ Only rebuilds what changed and surfaces key conflicts
-- 🛠️ Works as Vite plugin, CLI (` i18n-typescript`), or API
+- 🛠️ Works as Vite plugin, CLI (`i18n-typescript`), or API
 
 ## Quick Start
 
@@ -206,13 +206,13 @@ Your JSON files work without changes!
 
 ### New Features
 
-- **Merge-export CLI** - Ship locale snapshots via ` i18n-typescript merge-export`, including per-locale splits.
+- **Merge-export CLI** - Ship locale snapshots via `i18n-typescript merge-export`, including per-locale splits.
 - **Live debug dashboards** - Hit `/_virtual_locales.json` or `/__locales_debug__` when `debug: true` to inspect data.
 - **Batch tuning** - Control large projects with the new `fileBatchSize` option.
 - **Automatic conflict alerts** - The generator now flags duplicate keys during rebuilds.
 - **Simplified runtime output** - Locale asset emission options were removed; builds now rely exclusively on the virtual
   module outputs.
-- **CLI rename** - Local installs expose the ` i18n-typescript` binary (use
+- **CLI rename** - Local installs expose the `i18n-typescript` binary (use
   `npx vite-plugin-vue-i18n-typescript generate` for one-off
   runs).
 

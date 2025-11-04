@@ -25,7 +25,7 @@ export interface VirtualKeysDtsOptions {
   /**
    * The virtual module ID for the generated locale module.
    * Usually you don't need to change this.
-   * @default "virtual:unplug-i18n-dts-generation"
+   * @default "virtual:vue-i18n-types"
    */
   sourceId?: string
 
