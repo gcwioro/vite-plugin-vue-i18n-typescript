@@ -101,8 +101,20 @@ plugins: [i18nTypes()]  // Auto-generates types during dev
 
 ### 2. CLI Tool
 ```bash
+# One-time run (no installation needed)
 npx vite-plugin-vue-i18n-typescript generate
+
+# After installing as devDependency
+i18n-typescript generate
+
+# In package.json scripts
+"scripts": {
+  "i18n:generate": "i18n-typescript generate"
+}
 ```
+
+> **Note:** The binary is named `i18n-typescript`. Use `npx vite-plugin-vue-i18n-typescript` for ad-hoc runs, or
+`i18n-typescript` directly when installed locally.
 
 ### 3. Programmatic API
 ```typescript
