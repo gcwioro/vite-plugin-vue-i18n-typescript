@@ -157,7 +157,7 @@ async function mergeExportCommand(args: string[]) {
       await mkdir(outputDir, {recursive: true});
 
       // Write locale messages
-      await writeFile(outputPath, JSON.stringify(grouped.messages, null, 2), "utf-8");
+      await writeFile(outputPath, JSON.stringify(grouped.messages[locale], null, 2), "utf-8");
 
       if (verbose) {
         console.log(`📄 Wrote ${locale}: ${path.relative(rootDir, outputPath)}`);
@@ -402,9 +402,10 @@ async function main() {
 
     process.exit(0);
   } catch (error) {
-    console.error("\n❌ Error generating types:");
+    console.error("\n❌ Error generating types:" + error);
     if (error instanceof Error) {
       console.error(error.message);
+      console.error(error.stack);
       if (debugEnabled) {
         console.error("\nStack trace:");
         console.error(error.stack);
