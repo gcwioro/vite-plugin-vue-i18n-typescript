@@ -8,13 +8,13 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+
 concurrency:
-  group: "ci-${{ github.ref }}"
-  cancel-in-progress: false
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  build:
+  test:
     name: Lint, Type-Check, and Test
     runs-on: ubuntu-latest
     steps:
@@ -26,19 +26,52 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
       - name: Lint
-        continue-on-error: true
-        run:
-          # TODO store exit code of 'bun run lint' to Workflow variable to fail the workflow later
-          bun run lint
-      - name: Test
-        run: bun run test -- --run
+        run: bun run lint
 
       - name: Type Check
         run: bun run typecheck
+
+      - name: Test
+        run: bun run test -- --run
+
+      - name: Build
+        run: bun run build
+
+  demo:
+    name: Build and Test Demo
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies (main)
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
       - name: Build
         run: bun run build
@@ -46,16 +79,20 @@ jobs:
       - name: Link local package
         run: bun link
 
+      - name: Cache dependencies (demo)
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-demo-${{ hashFiles('docs/example/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-demo-
+
       - name: Demo - Install dependencies
         working-directory: docs/example
         run: |
           bun uninstall vite-plugin-vue-i18n-typescript
           bun install
           bun link vite-plugin-vue-i18n-typescript
-
-      - name: Demo - Build
-        working-directory: docs/example
-        run: bun run build-only
 
       - name: Demo - Lint
         working-directory: docs/example
@@ -65,15 +102,30 @@ jobs:
         working-directory: docs/example
         run: bun run typecheck
 
-      - name: Upload artifact
-        if: startsWith(github.ref, 'refs/heads/main/')
+      - name: Demo - Build
+        working-directory: docs/example
+        run: bun run build-only
+
+      - name: Upload demo artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload built demo site
           path: docs/example/dist
 
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: demo
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
-        if: startsWith(github.ref, 'refs/heads/main/')
         id: deployment
         uses: actions/deploy-pages@v4
 

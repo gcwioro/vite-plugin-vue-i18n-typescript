@@ -3,91 +3,50 @@ name: Publish to npm
 on:
   push:
     branches:
-      - 'release/**'     # publish alpha on pushes to git-flow release branches
+      - 'release/**'    # publish alpha on pushes to git-flow release branches
     tags:
-      - '*.*.*'         # publish stable on semver tags (e.g., v1.2.3)
+      - '*.*.*'         # publish stable on semver tags (e.g., 1.2.3, v1.2.3)
   workflow_dispatch: # manual trigger with version parameter
     inputs:
       npm_version:
         description: 'Version to publish (e.g., 1.2.3 or 1.2.3-alpha.1)'
         required: false
-      #channel
       release_channel:
         description: 'Release channel (stable or alpha)'
         required: true
         default: 'stable'
+        type: choice
+        options:
+          - stable
+          - alpha
+
 permissions:
   contents: read
+
 jobs:
-  release:
-    name: Publish stable (tagged release)
-    #    // if ref is a tag or release channel is stable
-    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.release_channel == 'stable'
+  validate:
+    name: Quality Checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-          registry-url: 'https://registry.npmjs.org'
 
-      #      - run: npm install
-      #     - run: npm test
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
-      - run: bun install --frozen-lockfile
-      - name: Lint
-        run: bun run lint
-
-      - name: Type Check
-        run: bun run typecheck
-
-      - name: Test
+      - name: Install dependencies
         run: bun install --frozen-lockfile
-      - name: Set version if npm_version input is provided
-        if: ${{ github.event.inputs.npm_version != '' }}
-        shell: bash
-        run: |
-          BASE_VERSION="${{ github.event.inputs.npm_version }}"
-          echo "Setting release version to ${BASE_VERSION}"
-          npm --no-git-tag-version version "${BASE_VERSION}"
 
-      - name: Build
-        run: bun run build
-      - name: Configure npm for publishing
-        run: printf "//registry.npmjs.org/:_authToken={{ secrets.NPM_TOKEN }}\n" >> ~/.npmrc
-      - name: Publish (alpha dist-tag)
-        continue-on-error: true
-        run: bun publish --tag latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish (stable)
-        continue-on-error: true
-        run: npm publish --tag latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish (stable)
-        continue-on-error: true
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  alpha-release:
-    name: Publish alpha (git-flow release/*)
-    if: startsWith(github.ref, 'refs/heads/release/') || github.event.inputs.release_channel == 'alpha'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-          registry-url: 'https://registry.npmjs.org'
-      - run: bun install --frozen-lockfile
-      #      - run: npm install
-      #     - run: npm test
       - name: Lint
         run: bun run lint
 
@@ -100,35 +59,95 @@ jobs:
       - name: Build
         run: bun run build
 
-      # Derive an alpha pre-release version from the base version in package.json
-      # Example: 1.4.0 -> 1.4.0-alpha.123  (123 = GITHUB_RUN_NUMBER)
-      - name: Set version if npm_version input is provided
-        if: ${{ github.event.inputs.npm_version != '' }}
-        shell: bash
+      - name: Verify build artifacts
+        run: |
+          if [ ! -f "dist/index.js" ] || [ ! -f "dist/index.cjs" ]; then
+            echo "Error: Build artifacts missing"
+            exit 1
+          fi
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  publish-stable:
+    name: Publish Stable Release
+    if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.release_channel == 'stable'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: npm-stable
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Set version if provided
+        if: github.event.inputs.npm_version != ''
+        run: |
+          BASE_VERSION="${{ github.event.inputs.npm_version }}"
+          echo "Setting release version to ${BASE_VERSION}"
+          npm --no-git-tag-version version "${BASE_VERSION}"
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-alpha:
+    name: Publish Alpha Release
+    if: startsWith(github.ref, 'refs/heads/release/') || github.event.inputs.release_channel == 'alpha'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: npm-alpha
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Set alpha version from input
+        if: github.event.inputs.npm_version != ''
         run: |
           BASE_VERSION="${{ github.event.inputs.npm_version }}"
           PRERELEASE_VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
-          echo "Setting release version to ${PRERELEASE_VERSION}"
+          echo "Setting pre-release version to ${PRERELEASE_VERSION}"
           npm --no-git-tag-version version "${PRERELEASE_VERSION}"
 
-      - name: Set alpha version (no git tag/commit)
-        shell: bash
-        if: ${{ github.event.inputs.npm_version == '' }}
-
+      - name: Set alpha version from package.json
+        if: github.event.inputs.npm_version == ''
         run: |
           BASE_VERSION=$(node -p "require('./package.json').version.split('-')[0]")
           PRERELEASE_VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
           echo "Setting pre-release version to ${PRERELEASE_VERSION}"
           npm --no-git-tag-version version "${PRERELEASE_VERSION}"
-      - name: Configure npm for publishing
-        run: printf "//registry.npmjs.org/:_authToken={{ secrets.NPM_TOKEN }}\n" >> .npmrc
-      - name: Publish (alpha dist-tag)
-        continue-on-error: true
-        run: bun publish --tag alpha
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Publish (alpha dist-tag)
-        continue-on-error: true
+
+      - name: Publish to npm (alpha)
         run: npm publish --tag alpha
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
