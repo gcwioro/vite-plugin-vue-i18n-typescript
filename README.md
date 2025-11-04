@@ -213,7 +213,7 @@ Your JSON files work without changes!
 
 ### Breaking Changes ⚠️
 
-- `emit.emitJson` now defaults to `true` so builds emit `assets/locales.json` unless disabled.
+- Locale asset emission options were removed; builds now rely exclusively on the virtual module outputs.
 - Local installs expose the ` i18n-typescript` binary (use `npx vite-plugin-vue-i18n-typescript generate` for one-off
   runs).
 

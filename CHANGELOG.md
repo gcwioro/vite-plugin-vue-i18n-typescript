@@ -20,8 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Default `emit.emitJson` is now `true`, ensuring `assets/locales.json` is generated in build output unless explicitly
-  disabled.
+- Locale asset emission options were removed; builds no longer generate `assets/locales.json` automatically.
 - The published CLI binary name is ` i18n-typescript`, so local scripts should call ` i18n-typescript` while ad-hoc
   `npx` usage
   remains `npx vite-plugin-vue-i18n-typescript`.

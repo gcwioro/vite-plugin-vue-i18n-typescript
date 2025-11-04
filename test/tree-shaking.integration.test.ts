@@ -49,9 +49,6 @@ export { messages } from 'virtual:vue-i18n-types/messages'
         vitePluginVueI18nTypes({
           typesPath: 'src/types.d.ts',
           baseLocale: 'en',
-          emit: {
-            inlineDataInBuild: true,
-          },
         }),
       ],
     })
@@ -107,9 +104,6 @@ export { availableLocales }
         vitePluginVueI18nTypes({
           typesPath: 'src/types.d.ts',
           baseLocale: 'en',
-          emit: {
-            inlineDataInBuild: true,
-          },
         }),
       ],
     })
@@ -172,9 +166,6 @@ export { messages, availableLocales, createI18nInstance }
         vitePluginVueI18nTypes({
           typesPath: 'src/types.d.ts',
           baseLocale: 'en',
-          emit: {
-            inlineDataInBuild: true,
-          },
         }),
       ],
     })
@@ -230,9 +221,6 @@ export { messages }
         vitePluginVueI18nTypes({
           typesPath: 'src/types.d.ts',
           baseLocale: 'en',
-          emit: {
-            inlineDataInBuild: true,
-          },
         }),
       ],
     })
@@ -272,9 +260,6 @@ export { messages, createI18nInstance, availableLocales }
         vitePluginVueI18nTypes({
           typesPath: 'src/types.d.ts',
           baseLocale: 'en',
-          emit: {
-            inlineDataInBuild: true,
-          },
         }),
       ],
     })

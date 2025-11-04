@@ -98,13 +98,6 @@ interface GenerateTypesOptions {
   // Virtual Module
   sourceId?: string                // Virtual module ID (default: 'virtual:vue-i18n-types')
 
-  // Build Output
-  emit?: {
-    inlineDataInBuild?: boolean    // Inline locale data into the bundle (default: false)
-    emitJson?: boolean             // Emit combined JSON asset during build (default: true)
-    fileName?: string              // Output filename when emitJson is enabled (default: 'assets/locales.json')
-  }
-
   // Diagnostics
   debug?: boolean                  // Enable debug logging
   verbose?: boolean                // Verbose console output when using the API/CLI helpers

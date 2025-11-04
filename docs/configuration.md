@@ -188,24 +188,11 @@ i18nTypes({
 import messages from 'virtual:my-i18n/messages'
 ```
 
+### Runtime Behavior
 
-### Runtime Options
-
-#### `emit`
-
-- **Type:** `{ fileName?: string; inlineDataInBuild?: boolean; emitJson?: boolean }`
-- **Default:** `{ fileName: 'assets/locales.json', inlineDataInBuild: false, emitJson: true }`
-- **Description:** Asset emission configuration for build
-
-```typescript
-i18nTypes({
-  emit: {
-    fileName: 'i18n-messages.json',
-    inlineDataInBuild: true,   // Embed in bundle instead of separate file
-    emitJson: true             // Emit physical JSON asset alongside build output
-  }
-})
-```
+Locale asset emission has been removed from the plugin. Virtual modules remain the primary way to access runtime data,
+and no JSON files are written during builds. If you need to persist locale payloads, run a custom build step that reads
+from the generated virtual module or source locale files.
 
 ### Development Options
 
@@ -277,13 +264,6 @@ export default defineConfig({
 
       // Virtual Module
       sourceId: 'virtual:i18n-messages',
-
-      // Runtime
-      emit: {
-        fileName: 'locales.json',
-        inlineDataInBuild: false,
-        emitJson: true
-      },
 
       // Custom Functions
       getLocaleFromPath: (absPath, root) => {
