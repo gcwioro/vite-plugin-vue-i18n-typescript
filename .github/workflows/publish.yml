@@ -84,11 +84,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          bun-version: latest
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -101,12 +100,16 @@ jobs:
         run: |
           BASE_VERSION="${{ github.event.inputs.npm_version }}"
           echo "Setting release version to ${BASE_VERSION}"
-          npm --no-git-tag-version version "${BASE_VERSION}"
+          jq --arg version "${BASE_VERSION}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+      - name: Configure npm authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       - name: Publish to npm
-        run: bun publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: bun publish --access public
 
   publish-alpha:
     name: Publish Alpha Release
@@ -119,11 +122,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          bun-version: latest
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -137,17 +139,22 @@ jobs:
           BASE_VERSION="${{ github.event.inputs.npm_version }}"
           PRERELEASE_VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
           echo "Setting pre-release version to ${PRERELEASE_VERSION}"
-          npm --no-git-tag-version version "${PRERELEASE_VERSION}"
+          jq --arg version "${PRERELEASE_VERSION}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
 
       - name: Set alpha version from package.json
         if: github.event.inputs.npm_version == ''
         run: |
-          BASE_VERSION=$(node -p "require('./package.json').version.split('-')[0]")
+          BASE_VERSION=$(jq -r '.version' package.json | cut -d'-' -f1)
           PRERELEASE_VERSION="${BASE_VERSION}-alpha.${GITHUB_RUN_NUMBER}"
           echo "Setting pre-release version to ${PRERELEASE_VERSION}"
-          npm --no-git-tag-version version "${PRERELEASE_VERSION}"
+          jq --arg version "${PRERELEASE_VERSION}" '.version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+      - name: Configure npm authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
 
       - name: Publish to npm (alpha)
-        run: bun publish --tag alpha
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: bun publish --tag alpha --access public
