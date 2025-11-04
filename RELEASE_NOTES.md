@@ -32,15 +32,16 @@
 
 ## ⚙️ Improvements
 
-- Default `emit.emitJson` is now `true`, creating `assets/locales.json` automatically in production builds.
+- Locale asset emission options were removed, so builds rely solely on the virtual module output.
 - Additional debug logging captures file discovery patterns and rebuild durations to simplify troubleshooting.
 
-## ⚠️ Breaking Changes
+## Notes
 
 - The installed binary is now named ` i18n-typescript`. Update local scripts (e.g., `package.json` commands) to call
   ` i18n-typescript` instead of `vite-plugin-vue-i18n-typescript`. For ad-hoc runs with `npx`, continue using
   `npx vite-plugin-vue-i18n-typescript generate`.
-- Disable JSON emission explicitly (`emit: { emitJson: false }`) if you relied on the older `false` default.
+- Review any build scripts that consumed the emitted JSON asset and replace them with reads from the virtual module or
+  source files.
 
 ## Recommended Validation
 
@@ -74,7 +75,6 @@ export default defineConfig({
         i18nTypes({
             debug: true,
             fileBatchSize: 200,
-            emit: {emitJson: true}
         })
     ]
 })

@@ -53,11 +53,18 @@ export async function generateI18nTypes(
   let lastFiles: string[] = [];
 
   // Perform generation
+  const startTime = performance.now();
   const result = await fileManager.readAndGroup();
 
   lastFiles = fileManager.getLastFiles();
 
   const locales = result.messages.languages.filter((l: string) => l !== "js-reserved");
+
+  // Write the generated files
+  const writeStartTime = performance.now();
+  await result.messages.writeFiles();
+  const writeDuration = Math.round(performance.now() - writeStartTime);
+  const totalDuration = Math.round(performance.now() - startTime);
 
   logger.info(`✅ Generated types for ${locales.length} locale(s): ${locales.join(", ")}`);
   logger.info(`📁 Processed ${lastFiles.length} locale file(s)`);
@@ -68,21 +75,23 @@ export async function generateI18nTypes(
     : path.join(root, config.typesPath);
 
   const generatedFiles = [path.relative(root, typesPath).replace(/\\/g, '/')];
+  let filesWritten = 1;
   if (config.virtualFilePath) {
     const virtualPath = path.isAbsolute(config.virtualFilePath)
       ? config.virtualFilePath
       : path.join(root, config.virtualFilePath);
     generatedFiles.push(path.relative(root, virtualPath).replace(/\\/g, '/'));
+    filesWritten = 2;
   }
 
   return {
-    filesWritten: generatedFiles.length,
+    filesWritten,
     totalFiles: generatedFiles.length,
     generatedFiles,
     durations: {
-      content: 0, // Will be populated by generation coordinator
-      write: 0,
-      total: 0,
+      content: totalDuration - writeDuration,
+      write: writeDuration,
+      total: totalDuration,
     },
     locales,
     localeFilesCount: lastFiles.length,
