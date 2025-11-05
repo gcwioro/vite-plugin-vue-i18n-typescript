@@ -774,6 +774,18 @@ describe('getJsonLeafPaths', () => {
     expect(paths).toContain('a.d')
     expect(paths).toContain('e')
   })
+
+  it('should include the path for empty objects', () => {
+    const input = {
+      a: {},
+      b: {
+        c: {}
+      }
+    };
+    const paths = getJsonLeafPaths(input);
+    expect(paths).toContain('a');
+    expect(paths).toContain('b.c');
+  });
 })
 
 describe('canonicalize', () => {
