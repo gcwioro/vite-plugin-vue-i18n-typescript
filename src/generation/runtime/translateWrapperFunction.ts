@@ -18,8 +18,6 @@ export function translateWrapperFunction<TFn extends (...args: any[]) => any>(fn
     // Condition 1: Check if there are at least two arguments.
     if (args.length >= 2) {
       const secondArg = args[1];
-      console.log(args, typeof secondArg)
-
 
       // Condition 2: Check if the second argument is a string that can be parsed into a number.
       // We use parseFloat and isFinite for a robust check.
@@ -41,7 +39,6 @@ export function translateWrapperFunction<TFn extends (...args: any[]) => any>(fn
           newThirdArg      // Modified or created third argument
 
         ];
-        console.log(newThirdArg);
         // Call the original function with the modified arguments.
         // @ts-expect-error TS cannot infer types here
         return fn.apply(this, newArgs);
